@@ -8,6 +8,12 @@ export type LoginState = {
   email?: string;
 };
 
+export type RegisterState = {
+  error?: string;
+  name?: string;
+  email?: string;
+};
+
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Llama a la API de autenticación. Devuelve el token si las credenciales son
@@ -69,6 +75,59 @@ export async function login(
 
   await createSession(token);
   redirect("/");
+}
+
+export async function register(
+  _prevState: RegisterState,
+  formData: FormData,
+): Promise<RegisterState> {
+  const name = String(formData.get("name") ?? "").trim();
+  const email = String(formData.get("email") ?? "").trim();
+  const password = String(formData.get("password") ?? "");
+
+  if (!name || !email || !password) {
+    return { error: "Ingresa los datos requeridos.", name, email };
+  }
+  if (!EMAIL_REGEX.test(email)) {
+    return { error: "Ingresa un correo válido.", name, email };
+  }
+  if (password.length < 8) {
+    return { error: "La contraseña debe tener al menos 8 caracteres.", name, email };
+  }
+
+  const apiUrl = process.env.API_URL;
+  if (!apiUrl) {
+    return { error: "No se pudo crear la cuenta. Intenta más tarde.", name, email };
+  }
+
+  let res: Response;
+  try {
+    res = await fetch(new URL("auth/register", apiUrl.replace(/\/?$/, "/")), {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ name, email, password }),
+      cache: "no-store",
+    });
+  } catch (error) {
+    console.error("Error al registrar la cuenta:", error);
+    return { error: "No se pudo crear la cuenta. Intenta más tarde.", name, email };
+  }
+
+  if (res.status === 409) {
+    return { error: "Ya existe una cuenta con ese correo electrónico.", name, email };
+  }
+  if (!res.ok) {
+    return { error: "No se pudo crear la cuenta. Intenta más tarde.", name, email };
+  }
+
+  const data = await res.json();
+  const token: string | undefined =
+    data.token ?? data.accessToken ?? data.access_token;
+  if (token) {
+    await createSession(token);
+    redirect("/");
+  }
+  redirect("/login?registered=true");
 }
 
 export async function logout() {
