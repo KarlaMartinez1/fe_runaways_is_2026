@@ -17,3 +17,7 @@ export const catalogMessages = {
   empty: "No hay bienes disponibles por el momento",
   loadError: "No se pudo cargar el catálogo. Intente de nuevo.",
 };
+export const homeMessages = {
+  recentTitle: "Recién publicados",
+  viewAll: "Ver catálogo completo",
+};
