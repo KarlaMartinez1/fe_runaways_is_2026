@@ -13,3 +13,7 @@ export const propertyMessages = {
 export function formatPrice(value: string) {
   return `$${Number(value).toFixed(2)}`;
 }
+export const catalogMessages = {
+  empty: "No hay bienes disponibles por el momento",
+  loadError: "No se pudo cargar el catálogo. Intente de nuevo.",
+};
