@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { Navbar } from '@/components/layout/navbar';
 import { PaymentPageBody } from '@/components/payment/payment-page-body';
 
 export const metadata: Metadata = {
@@ -7,5 +8,11 @@ export const metadata: Metadata = {
 };
 
 export default function PaymentPage() {
-  return <PaymentPageBody />;
+  return (
+    <>
+      <Navbar />
+      <PaymentPageBody />
+    </>
+  );
 }
+
