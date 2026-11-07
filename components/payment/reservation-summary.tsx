@@ -84,7 +84,7 @@ export function ReservationSummary({
           </div>
         </div>
 
-        <div className="pt-2 flex justify-between items-baseline">
+        <div className="border-t border-gray-100 pt-3 flex justify-between items-baseline">
           <span className="text-xl sm:text-2xl font-bold text-gray-950">Total a pagar</span>
           <span className="text-2xl sm:text-3xl font-extrabold text-gray-950">
             {formatCurrency(reservation.total)}
