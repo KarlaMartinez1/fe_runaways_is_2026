@@ -15,22 +15,29 @@ export function PaymentPageBody({
   className,
 }: PaymentPageBodyProps) {
   return (
-    <main className={cn('w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10', className)}>
-      <div className="mb-6 sm:mb-8">
-        <Heading
-          as="h1"
-          size="2xl"
-          subtitle="Acá encontrarás los detalles de tu reserva."
-          className="text-gray-950 font-extrabold tracking-tight text-2xl sm:text-3xl"
-        >
-          Pagar reserva
-        </Heading>
-      </div>
+    <div className="w-full flex-1 bg-[#f9fafb]">
+      <main
+        className={cn(
+          'mx-auto flex w-full max-w-[1320px] flex-col gap-5 px-4 py-6 sm:px-6 sm:py-8 md:px-16',
+          className
+        )}
+      >
+        <div>
+          <Heading
+            as="h1"
+            size="2xl"
+            subtitle="Acá encontrarás los detalles de tu reserva."
+            className="text-gray-950 font-extrabold tracking-tight text-2xl sm:text-3xl"
+          >
+            Pagar reserva
+          </Heading>
+        </div>
 
-      <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-8 items-start">
-        <ReservationSummary reservation={reservation} className="w-full" />
-        <PaymentMethodForm />
-      </div>
-    </main>
+        <div className="flex flex-col lg:grid lg:grid-cols-2 gap-5 lg:gap-8 items-start">
+          <ReservationSummary reservation={reservation} className="w-full" />
+          <PaymentMethodForm className="w-full" />
+        </div>
+      </main>
+    </div>
   );
 }
