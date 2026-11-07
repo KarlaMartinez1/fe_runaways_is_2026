@@ -16,3 +16,28 @@ export interface PaymentSubmissionResult {
   transactionId?: string;
   message?: string;
 }
+
+export type MovementType = 'COBRO' | 'DEVOLUCIÓN' | 'RETENCIÓN';
+
+export interface ReservationMovement {
+  id: string;
+  date: string;
+  type: MovementType;
+  amount: number;
+  reason: string;
+  receiptId?: string;
+}
+
+export interface PaymentReceiptDetail {
+  id?: string;
+  status: 'Pagada' | 'Devuelta' | 'Retenida' | 'Pendiente';
+  itemTitle: string;
+  rentalDateRange: string;
+  daysCount: number;
+  transactionNumber: string;
+  paymentDateTime: string;
+  rentalSubtotal: number;
+  securityDeposit: number;
+  totalPaid: number;
+  paymentMethod: string;
+}
