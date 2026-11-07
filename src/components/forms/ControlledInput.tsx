@@ -7,10 +7,6 @@ import {
 } from 'react-hook-form';
 import { Input, type InputProps } from '@/components/ui/input';
 
-// ---------------------------------------------------------------------------
-// Types & Interfaces (Top of file)
-// ---------------------------------------------------------------------------
-
 export interface ControlledInputProps<
   TFieldValues extends FieldValues = FieldValues,
   TName extends FieldPath<TFieldValues> = FieldPath<TFieldValues>,
@@ -18,10 +14,6 @@ export interface ControlledInputProps<
   name: TName;
   control: Control<TFieldValues>;
 }
-
-// ---------------------------------------------------------------------------
-// Component Implementation
-// ---------------------------------------------------------------------------
 
 export function ControlledInput<
   TFieldValues extends FieldValues = FieldValues,

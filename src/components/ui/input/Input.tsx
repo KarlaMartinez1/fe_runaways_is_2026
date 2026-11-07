@@ -2,10 +2,6 @@ import * as React from 'react';
 import type { FieldError } from 'react-hook-form';
 import { cn } from '@/lib/utils';
 
-// ---------------------------------------------------------------------------
-// Types & Interfaces (Top of file)
-// ---------------------------------------------------------------------------
-
 export type InputSize = 'sm' | 'md' | 'lg';
 
 export interface InputProps
@@ -27,10 +23,6 @@ const sizeStyles: Record<InputSize, string> = {
   lg: 'h-12 px-4 text-base rounded-xl',
 };
 
-// ---------------------------------------------------------------------------
-// Component Implementation
-// ---------------------------------------------------------------------------
-
 export const Input = React.forwardRef<HTMLInputElement, InputProps>(
   (
     {
@@ -50,11 +42,9 @@ export const Input = React.forwardRef<HTMLInputElement, InputProps>(
     },
     ref
   ) => {
-    // Complex logic: Extract error message string whether passed directly or via React Hook Form FieldError
     const errorMessage = typeof error === 'string' ? error : error?.message;
     const isInvalid = Boolean(errorMessage);
 
-    // Complex logic: Generate deterministic fallback IDs for a11y association if none provided
     const generatedId = React.useId();
     const inputId = id || generatedId;
     const errorId = isInvalid ? `${inputId}-error` : undefined;

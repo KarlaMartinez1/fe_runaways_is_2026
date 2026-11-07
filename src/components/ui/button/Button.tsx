@@ -1,10 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
-// ---------------------------------------------------------------------------
-// Types & Interfaces (Top of file)
-// ---------------------------------------------------------------------------
-
 export type ButtonVariant = 'solid' | 'outline' | 'ghost';
 export type ButtonSize = 'sm' | 'md' | 'lg';
 
@@ -18,7 +14,6 @@ export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElemen
   asChild?: boolean;
 }
 
-// Visual variant styling configurations
 const variantStyles: Record<ButtonVariant, string> = {
   solid:
     'bg-[#1d4ed8] text-white hover:bg-[#1e40af] active:bg-[#1e3a8a] shadow-sm focus-visible:ring-2 focus-visible:ring-blue-600 focus-visible:ring-offset-2',
@@ -33,10 +28,6 @@ const sizeStyles: Record<ButtonSize, string> = {
   md: 'h-11 px-5 text-sm rounded-xl gap-2',
   lg: 'h-12 px-6 text-base rounded-xl gap-2.5',
 };
-
-// ---------------------------------------------------------------------------
-// Component Implementation
-// ---------------------------------------------------------------------------
 
 export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   (
@@ -76,7 +67,6 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       className
     );
 
-    // Complex logic: Support polymorphic child rendering (e.g. next/link) when asChild is true
     if (asChild && React.isValidElement(children)) {
       const child = children as React.ReactElement<{
         className?: string;

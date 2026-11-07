@@ -1,10 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
-// ---------------------------------------------------------------------------
-// Types & Interfaces (Top of file)
-// ---------------------------------------------------------------------------
-
 export type CardPadding = 'none' | 'sm' | 'md' | 'lg';
 export type CardVariant = 'default' | 'flat' | 'bordered';
 
@@ -47,10 +43,6 @@ const variantStyles: Record<CardVariant, string> = {
   flat: 'bg-gray-50/80 border-none',
   bordered: 'bg-transparent border border-gray-200',
 };
-
-// ---------------------------------------------------------------------------
-// Component Implementation
-// ---------------------------------------------------------------------------
 
 export const Card = React.forwardRef<HTMLDivElement, CardProps>(
   ({ className, padding = 'md', variant = 'default', children, ...props }, ref) => {

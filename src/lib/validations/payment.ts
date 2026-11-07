@@ -1,9 +1,5 @@
 import { z } from 'zod';
 
-// ---------------------------------------------------------------------------
-// Schemas & Inferred Types (Top of file)
-// ---------------------------------------------------------------------------
-
 export const paymentSchema = z.object({
   cardHolder: z
     .string()

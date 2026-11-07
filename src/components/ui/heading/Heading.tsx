@@ -1,10 +1,6 @@
 import * as React from 'react';
 import { cn } from '@/lib/utils';
 
-// ---------------------------------------------------------------------------
-// Types & Interfaces (Top of file)
-// ---------------------------------------------------------------------------
-
 export type HeadingLevel = 'h1' | 'h2' | 'h3' | 'h4' | 'h5' | 'h6';
 export type HeadingSize = 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl';
 export type HeadingAlign = 'left' | 'center' | 'right';
@@ -27,7 +23,6 @@ const sizeStyles: Record<HeadingSize, string> = {
   '3xl': 'text-4xl font-extrabold tracking-tight',
 };
 
-// Default mapping between HTML semantic level and visual sizing
 const defaultSizeMap: Record<HeadingLevel, HeadingSize> = {
   h1: '2xl',
   h2: 'xl',
@@ -42,10 +37,6 @@ const alignStyles: Record<HeadingAlign, string> = {
   center: 'text-center',
   right: 'text-right',
 };
-
-// ---------------------------------------------------------------------------
-// Component Implementation
-// ---------------------------------------------------------------------------
 
 export const Heading = React.forwardRef<HTMLHeadingElement, HeadingProps>(
   (

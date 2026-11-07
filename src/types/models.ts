@@ -1,7 +1,3 @@
-// ---------------------------------------------------------------------------
-// Types & Domain Models (Top of file)
-// ---------------------------------------------------------------------------
-
 export interface ReservationDetail {
   id?: string;
   itemTitle: string;
