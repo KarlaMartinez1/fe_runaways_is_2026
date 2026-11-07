@@ -10,7 +10,7 @@ export interface TableHeaderItem {
   width?: string | number;
 }
 
-export interface TableColumn<T = unknown> {
+export interface TableColumn<T = Record<string, unknown>> {
   key: string;
   header: React.ReactNode;
   align?: TableAlign;
@@ -19,7 +19,8 @@ export interface TableColumn<T = unknown> {
   cell?: (item: T, rowIndex: number) => React.ReactNode;
 }
 
-export interface TableProps<T = unknown> extends React.TableHTMLAttributes<HTMLTableElement> {
+export interface TableProps<T = Record<string, unknown>>
+  extends React.TableHTMLAttributes<HTMLTableElement> {
   headers?: (React.ReactNode | TableHeaderItem)[];
   rows?: React.ReactNode[][];
   columns?: TableColumn<T>[];
@@ -38,7 +39,7 @@ const alignStyles: Record<TableAlign, string> = {
   right: 'text-right',
 };
 
-export const Table = React.forwardRef<HTMLTableElement, TableProps<any>>(
+export const Table = React.forwardRef<HTMLTableElement, TableProps<Record<string, unknown>>>(
   (
     {
       headers,
@@ -153,9 +154,12 @@ export const Table = React.forwardRef<HTMLTableElement, TableProps<any>>(
               </tr>
             ) : hasTypedData ? (
               data.map((item, rowIndex) => {
+                const itemRecord = item as Record<string, unknown>;
                 const rowKey = keyExtractor
                   ? keyExtractor(item, rowIndex)
-                  : (item as any)?.id ?? rowIndex;
+                  : typeof itemRecord?.id === 'string' || typeof itemRecord?.id === 'number'
+                  ? itemRecord.id
+                  : rowIndex;
 
                 return (
                   <tr
@@ -166,19 +170,27 @@ export const Table = React.forwardRef<HTMLTableElement, TableProps<any>>(
                       hoverable && 'hover:bg-gray-50/80'
                     )}
                   >
-                    {columns.map((col, colIndex) => (
-                      <td
-                        key={col.key || colIndex}
-                        className={cn(
-                          'py-3.5 px-4 text-sm align-middle',
-                          alignStyles[col.align || 'left'],
-                          bordered && 'border-r border-gray-200 last:border-r-0',
-                          col.className
-                        )}
-                      >
-                        {col.cell ? col.cell(item, rowIndex) : (item as any)?.[col.key]}
-                      </td>
-                    ))}
+                    {columns.map((col, colIndex) => {
+                      const fallbackContent =
+                        typeof itemRecord?.[col.key] === 'string' ||
+                        typeof itemRecord?.[col.key] === 'number'
+                          ? String(itemRecord[col.key])
+                          : null;
+
+                      return (
+                        <td
+                          key={col.key || colIndex}
+                          className={cn(
+                            'py-3.5 px-4 text-sm align-middle',
+                            alignStyles[col.align || 'left'],
+                            bordered && 'border-r border-gray-200 last:border-r-0',
+                            col.className
+                          )}
+                        >
+                          {col.cell ? col.cell(item, rowIndex) : fallbackContent}
+                        </td>
+                      );
+                    })}
                   </tr>
                 );
               })

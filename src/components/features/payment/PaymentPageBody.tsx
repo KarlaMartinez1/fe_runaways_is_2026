@@ -1,5 +1,6 @@
 import * as React from 'react';
 import { Heading } from '@/components/ui';
+import { cn } from '@/lib/utils';
 import { ReservationSummary } from './ReservationSummary';
 import { PaymentMethodForm } from './PaymentMethodForm';
 import type { ReservationDetail } from '@/types';
@@ -14,7 +15,7 @@ export function PaymentPageBody({
   className,
 }: PaymentPageBodyProps) {
   return (
-    <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+    <main className={cn("w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10", className)}>
       <div className="mb-6 sm:mb-8">
         <Heading
           as="h1"
