@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import type { ReservationDetail } from '@/types';
 
 export interface ReservationSummaryProps {
@@ -23,12 +23,8 @@ export function ReservationSummary({
   reservation = defaultReservation,
   className,
 }: ReservationSummaryProps) {
-  // Format currency amounts with standard two-decimal precision
-  const formatCurrency = (amount: number) => {
-    return `$${amount.toFixed(2)}`;
-  };
+  const formatCurrency = (amount: number) => `$${amount.toFixed(2)}`;
 
-  // Complex logic: Format date range from separate startDate and endDate
   const formatRentalDateRange = (startDate: string | Date, endDate: string | Date) => {
     const startStr =
       startDate instanceof Date

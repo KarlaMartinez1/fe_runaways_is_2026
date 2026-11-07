@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { PaymentPageBody } from '@/components/features/payment';
+import { PaymentPageBody } from '@/components/payment/payment-page-body';
 
 export const metadata: Metadata = {
   title: 'Pagar reserva | Runaways',

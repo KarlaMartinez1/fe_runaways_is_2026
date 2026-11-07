@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/cn';
 
 export type CardPadding = 'none' | 'sm' | 'md' | 'lg';
 export type CardVariant = 'default' | 'flat' | 'bordered';

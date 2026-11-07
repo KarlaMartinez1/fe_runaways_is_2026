@@ -1,7 +1,8 @@
 import * as React from 'react';
-import { Heading } from '@/components/ui';
-import { ReservationSummary } from './ReservationSummary';
-import { PaymentMethodForm } from './PaymentMethodForm';
+import { Heading } from '@/components/ui/heading';
+import { cn } from '@/lib/utils/cn';
+import { ReservationSummary } from '@/components/payment/reservation-summary';
+import { PaymentMethodForm } from '@/components/payment/payment-method-form';
 import type { ReservationDetail } from '@/types';
 
 export interface PaymentPageBodyProps {
@@ -14,7 +15,7 @@ export function PaymentPageBody({
   className,
 }: PaymentPageBodyProps) {
   return (
-    <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10">
+    <main className={cn('w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-10', className)}>
       <div className="mb-6 sm:mb-8">
         <Heading
           as="h1"
@@ -27,7 +28,7 @@ export function PaymentPageBody({
       </div>
 
       <div className="flex flex-col lg:grid lg:grid-cols-2 gap-6 lg:gap-8 items-start">
-        <ReservationSummary reservation={reservation} className='w-full' />
+        <ReservationSummary reservation={reservation} className="w-full" />
         <PaymentMethodForm />
       </div>
     </main>

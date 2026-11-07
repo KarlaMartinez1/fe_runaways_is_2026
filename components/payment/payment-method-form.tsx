@@ -3,8 +3,10 @@
 import * as React from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Card, CardHeader, CardTitle, CardContent, Input, Button } from '@/components/ui';
-import { paymentSchema, type PaymentFormData } from '@/lib/validations';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { paymentSchema, type PaymentFormData } from '@/lib/validations/payment';
 
 export interface PaymentMethodFormProps {
   onSuccess?: (data: PaymentFormData) => void;
@@ -34,7 +36,6 @@ export function PaymentMethodForm({
     },
   });
 
-  //Handle asynchronous payment gateway submission with latency simulation
   const onSubmit = async (data: PaymentFormData) => {
     setSubmissionFeedback(null);
     try {

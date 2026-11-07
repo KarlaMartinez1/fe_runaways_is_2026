@@ -1,6 +1,6 @@
 import * as React from 'react';
 import type { FieldError } from 'react-hook-form';
-import { cn } from '@/lib/utils';
+import { cn } from '@/lib/utils/cn';
 
 export type InputSize = 'sm' | 'md' | 'lg';
 
