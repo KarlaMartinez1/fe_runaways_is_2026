@@ -48,26 +48,26 @@ export function ReservationReceiptCard({
           <span className="text-gray-950 font-bold text-right">{receipt.itemTitle}</span>
         </div>
 
-        <div className="flex justify-between items-center py-0.5">
+        <div className="flex justify-between items-center ">
           <span className="text-gray-500 font-normal">Fecha de renta</span>
           <span className="text-gray-950 font-bold text-right">{receipt.rentalDateRange}</span>
         </div>
 
-        <div className="flex justify-between items-center py-0.5">
+        <div className="flex justify-between items-center">
           <span className="text-gray-500 font-normal">Cantidad de días</span>
           <span className="text-gray-950 font-bold text-right">
             {receipt.daysCount} {receipt.daysCount === 1 ? 'día' : 'días'}
           </span>
         </div>
 
-        <div className="flex justify-between items-center py-0.5">
+        <div className="flex justify-between items-center">
           <span className="text-gray-500 font-normal">N.º de transacción</span>
           <span className="text-gray-950 font-bold font-mono text-right">
             {receipt.transactionNumber}
           </span>
         </div>
 
-        <div className="flex justify-between items-center py-0.5">
+        <div className="flex justify-between items-center">
           <span className="text-gray-500 font-normal">Fecha y hora de pago</span>
           <span className="text-gray-950 font-bold text-right">{receipt.paymentDateTime}</span>
         </div>

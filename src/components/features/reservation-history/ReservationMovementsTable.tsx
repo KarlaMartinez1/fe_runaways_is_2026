@@ -18,7 +18,6 @@ export function ReservationMovementsTable({
 }: ReservationMovementsTableProps) {
   const formatCurrency = (amount: number) => `$${amount.toFixed(2)}`;
 
-  // Complex logic: Map semantic movement type to custom styled React nodes
   const renderTypeCell = (type: ReservationMovement['type']) => {
     switch (type) {
       case 'COBRO':
