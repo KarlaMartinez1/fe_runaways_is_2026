@@ -20,7 +20,11 @@ export function Navbar() {
       return pathname === "/";
     }
     if (href === "/bookings/mine") {
-      return pathname.startsWith("/bookings") || pathname.startsWith("/payment");
+      return (
+        pathname.startsWith("/bookings") ||
+        pathname.startsWith("/payment") ||
+        pathname.startsWith("/receipt")
+      );
     }
     return pathname === href;
   };
