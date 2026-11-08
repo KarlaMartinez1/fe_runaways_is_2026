@@ -21,3 +21,9 @@ export type Paginated<T> = {
   totalPages: number;
   total: number;
 };
+export type PropertyDetail = Property & {
+  description: string;
+  securityDeposit: string;
+  ownerName: string;
+  reviewCount: number;
+};
