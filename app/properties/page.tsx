@@ -8,6 +8,7 @@ import type { Paginated, Property } from "@/lib/api/types";
 import { filtersToQuery, parseFilters } from "@/lib/filters/property-filters";
 import { catalogMessages } from "@/lib/messages/properties";
 import { propertyRepository } from "@/lib/repositories";
+import { SearchBar } from "@/components/properties/search-bar";
 
 export const metadata: Metadata = {
   title: "Catálogo | Runaways",
@@ -53,7 +54,8 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     <>
       <Navbar />
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-8 px-6 py-12 md:px-16">
-        {!result ? (
+                <SearchBar key={JSON.stringify(query)} filters={filters} />
+                {!result ? (
           <p role="alert" className="py-16 text-center text-zinc-600">
             {catalogMessages.loadError}
           </p>

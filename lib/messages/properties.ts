@@ -45,3 +45,13 @@ export const detailMessages = {
     `★ ${average.toFixed(1)} (${count} ${count === 1 ? "reseña" : "reseñas"})`,
   ownerRole: "Arrendador",
 };
+export const searchMessages = {
+  queryLabel: "Qué buscas",
+  queryPlaceholder: "Casa, cámara, proyector...",
+  departmentLabel: "Departamento",
+  municipalityLabel: "Municipio",
+  all: "Todos",
+  submit: "Buscar",
+  minLength: "Ingrese al menos 2 caracteres.",
+  maxLength: "El término no puede superar 100 caracteres.",
+};
