@@ -36,3 +36,12 @@ export const bookingBoxMessages = {
   verifyAccount: "Verificar mi cuenta",
   askOwner: "Preguntar al arrendador",
 };
+export const detailMessages = {
+  backToCatalog: "Volver al catálogo",
+  notAvailable: "Este bien ya no está disponible",
+  loadError: "No se pudo cargar el bien. Intente de nuevo.",
+  noRatings: "Sin calificaciones",
+  rating: (average: number, count: number) =>
+    `★ ${average.toFixed(1)} (${count} ${count === 1 ? "reseña" : "reseñas"})`,
+  ownerRole: "Arrendador",
+};
