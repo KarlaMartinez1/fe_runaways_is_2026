@@ -10,6 +10,7 @@ export interface DepositOrderInfoCardProps {
   onRefundClick?: () => void;
   onRetainClick?: () => void;
   isRefunding?: boolean;
+  isRetaining?: boolean;
   className?: string;
 }
 
@@ -18,6 +19,7 @@ export function DepositOrderInfoCard({
   onRefundClick,
   onRetainClick,
   isRefunding = false,
+  isRetaining = false,
   className,
 }: DepositOrderInfoCardProps) {
   return (
@@ -100,7 +102,10 @@ export function DepositOrderInfoCard({
             variant="outline"
             size="md"
             onClick={onRetainClick}
-            className="flex-1 border-[#f3b2b2] text-[#c53030] hover:bg-red-50 hover:border-red-400 font-medium transition-colors"
+            className={cn(
+              'flex-1 border-[#f3b2b2] text-[#c53030] hover:bg-red-50 hover:border-red-400 font-medium transition-colors',
+              isRetaining && 'bg-red-50 border-red-400 ring-2 ring-red-200/60'
+            )}
           >
             {depositMessages.retainButton}
           </Button>

@@ -29,6 +29,7 @@ export function DepositPageBody({
   const [currentDeposit, setCurrentDeposit] =
     React.useState<DepositInfo>(depositInfo);
   const [isRefunding, setIsRefunding] = React.useState(false);
+  const [showRetentionForm, setShowRetentionForm] = React.useState(false);
   const [actionNotice, setActionNotice] = React.useState<{
     type: 'success' | 'error';
     text: string;
@@ -37,6 +38,7 @@ export function DepositPageBody({
   const handleRefund = async () => {
     setIsRefunding(true);
     setActionNotice(null);
+    setShowRetentionForm(false);
     try {
       if (onRefundDeposit) {
         await onRefundDeposit();
@@ -154,23 +156,26 @@ export function DepositPageBody({
           </div>
         )}
 
-        {/* Top 2 columns: Order info & Retention form */}
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-5 lg:gap-8 items-start">
           <DepositOrderInfoCard
             depositInfo={currentDeposit}
             onRefundClick={handleRefund}
+            onRetainClick={() => setShowRetentionForm((prev) => !prev)}
             isRefunding={isRefunding}
+            isRetaining={showRetentionForm}
             className="w-full"
           />
 
-          <RetainDepositForm
-            depositAmount={currentDeposit.depositAmount}
-            onSubmitSuccess={handleRetainSubmit}
-            className="w-full"
-          />
+          {showRetentionForm && (
+            <RetainDepositForm
+              depositAmount={currentDeposit.depositAmount}
+              onSubmitSuccess={handleRetainSubmit}
+              onCancel={() => setShowRetentionForm(false)}
+              className="w-full"
+            />
+          )}
         </div>
 
-        {/* Bottom section: Movements history */}
         <div className="space-y-3 pt-2">
           <h2 className="text-base sm:text-lg font-bold text-gray-950 tracking-tight">
             {depositMessages.movementsSectionTitle}
