@@ -21,3 +21,9 @@ export const homeMessages = {
   recentTitle: "Recién publicados",
   viewAll: "Ver catálogo completo",
 };
+export const galleryMessages = {
+  previous: "Foto anterior",
+  next: "Foto siguiente",
+  goTo: (number: number) => `Ver foto ${number}`,
+  photoAlt: (title: string, number: number, total: number) => `${title}, foto ${number} de ${total}`,
+};
