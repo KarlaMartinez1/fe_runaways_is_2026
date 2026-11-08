@@ -23,7 +23,8 @@ export function Navbar() {
       return (
         pathname.startsWith("/bookings") ||
         pathname.startsWith("/payment") ||
-        pathname.startsWith("/receipt")
+        pathname.startsWith("/receipt") ||
+        pathname.startsWith("/deposit")
       );
     }
     return pathname === href;
