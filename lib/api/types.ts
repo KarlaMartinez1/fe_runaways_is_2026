@@ -32,3 +32,10 @@ export type AccountStatus = "SIN_VERIFICAR" | "PENDIENTE" | "VERIFICADA" | "RECH
 export type ProfileDocument = {
   accountStatus: AccountStatus;
 };
+export type PropertyFilters = {
+  q?: string;
+  department?: string;
+  municipality?: string;
+  category?: PropertyCategory;
+  noDeposit?: boolean;
+};

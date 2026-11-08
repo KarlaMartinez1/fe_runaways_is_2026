@@ -5,6 +5,7 @@ import { PropertyCard } from "@/components/properties/property-card";
 import { Pagination } from "@/components/ui/pagination";
 import { ApiError } from "@/lib/api/client";
 import type { Paginated, Property } from "@/lib/api/types";
+import { filtersToQuery, parseFilters } from "@/lib/filters/property-filters";
 import { catalogMessages } from "@/lib/messages/properties";
 import { propertyRepository } from "@/lib/repositories";
 
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 type CatalogPageProps = {
-  searchParams: Promise<{ page?: string | string[] }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 };
 
 function parsePage(value: string | string[] | undefined) {
@@ -22,14 +23,16 @@ function parsePage(value: string | string[] | undefined) {
 }
 
 export default async function CatalogPage({ searchParams }: CatalogPageProps) {
-  const { page: pageParam } = await searchParams;
-  const page = parsePage(pageParam);
+  const params = await searchParams;
+  const page = parsePage(params.page);
+  const filters = parseFilters(params);
+  const query = filtersToQuery(filters);
 
   let result: Paginated<Property> | null = null;
   let unauthorized = false;
 
   try {
-    result = await propertyRepository.listAvailable(page);
+    result = await propertyRepository.listAvailable(page, filters);
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
       unauthorized = true;
@@ -42,7 +45,8 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
     redirect("/login");
   }
   if (result && result.data.length === 0 && page > 1) {
-    redirect("/properties");
+    const params = new URLSearchParams(query);
+    redirect(`/properties${params.size ? `?${params.toString()}` : ""}`);
   }
 
   return (
@@ -66,6 +70,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
               currentPage={result.page}
               totalPages={result.totalPages}
               basePath="/properties"
+              query={query}
             />
           </>
         )}
