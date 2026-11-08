@@ -21,3 +21,14 @@ export type Paginated<T> = {
   totalPages: number;
   total: number;
 };
+export type PropertyDetail = Property & {
+  description: string;
+  securityDeposit: string;
+  ownerName: string;
+  reviewCount: number;
+};
+export type AccountStatus = "SIN_VERIFICAR" | "PENDIENTE" | "VERIFICADA" | "RECHAZADA";
+
+export type ProfileDocument = {
+  accountStatus: AccountStatus;
+};

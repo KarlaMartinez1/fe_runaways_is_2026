@@ -1,5 +1,6 @@
 import { PROPERTIES_PAGE_SIZE, type PropertyRepository } from "../property-repository";
 import { propertyFixtures } from "./fixtures/properties";
+import { defaultDetailExtras, propertyDetailExtras } from "./fixtures/property-details";
 
 export const mockPropertyRepository: PropertyRepository = {
   async listAvailable(page) {
@@ -17,5 +18,19 @@ export const mockPropertyRepository: PropertyRepository = {
       totalPages,
       total,
     };
+  },
+
+  async getById(id) {
+    const property = propertyFixtures.find((item) => item.id === id);
+    if (!property || property.status !== "DISPONIBLE") {
+      return null;
+    }
+
+    const extras = propertyDetailExtras[id] ?? {
+      ...defaultDetailExtras,
+      reviewCount: property.averageRating == null ? 0 : defaultDetailExtras.reviewCount,
+    };
+
+    return { ...property, ...extras };
   },
 };
