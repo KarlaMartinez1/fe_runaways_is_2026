@@ -27,3 +27,8 @@ export type PropertyDetail = Property & {
   ownerName: string;
   reviewCount: number;
 };
+export type AccountStatus = "SIN_VERIFICAR" | "PENDIENTE" | "VERIFICADA" | "RECHAZADA";
+
+export type ProfileDocument = {
+  accountStatus: AccountStatus;
+};
