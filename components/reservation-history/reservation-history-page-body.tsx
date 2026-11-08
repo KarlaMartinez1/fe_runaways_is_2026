@@ -4,6 +4,7 @@ import * as React from 'react';
 import { useRouter } from 'next/navigation';
 import { Heading } from '@/components/ui/heading';
 import { cn } from '@/lib/utils/cn';
+import { receiptMessages } from '@/lib/messages/receipt';
 import { ReservationMovementsTable } from './reservation-movements-table';
 import { ReservationReceiptCard } from './reservation-receipt-card';
 import type { PaymentReceiptDetail, ReservationMovement } from '@/types';
@@ -11,88 +12,44 @@ import type { PaymentReceiptDetail, ReservationMovement } from '@/types';
 export interface ReservationHistoryPageBodyProps {
   initialMovements?: ReservationMovement[];
   initialReceipt?: PaymentReceiptDetail;
+  receiptsMap?: Record<string, PaymentReceiptDetail>;
   className?: string;
 }
 
-const defaultMovements: ReservationMovement[] = [
-  {
-    id: 'mov-1',
-    date: '10/11/2026 10:05 AM',
-    type: 'COBRO',
-    amount: 95.0,
-    reason: 'Pago de reserva exitoso',
-    receiptId: 'trx-1',
-  },
-  {
-    id: 'mov-2',
-    date: '12/11/2026 11:30 AM',
-    type: 'DEVOLUCIÓN',
-    amount: 50.0,
-    reason: 'Devolución automática de depósito',
-    receiptId: 'trx-2',
-  },
-];
-
-const defaultReceipts: Record<string, PaymentReceiptDetail> = {
-  'trx-1': {
-    id: 'trx-1',
-    status: 'Pagada',
-    itemTitle: 'Alquiler de espacio de oficina',
-    rentalDateRange: 'Del 10/11/2026 al 12/11/2026',
-    daysCount: 3,
-    transactionNumber: 'TRX-8f9a2b1c',
-    paymentDateTime: '10/11/2026 10:05 AM',
-    rentalSubtotal: 45.0,
-    securityDeposit: 50.0,
-    totalPaid: 95.0,
-    paymentMethod: 'Visa terminada en 4242',
-  },
-  'trx-2': {
-    id: 'trx-2',
-    status: 'Devuelta',
-    itemTitle: 'Alquiler de espacio de oficina',
-    rentalDateRange: 'Del 10/11/2026 al 12/11/2026',
-    daysCount: 3,
-    transactionNumber: 'TRX-4a2b6e8f',
-    paymentDateTime: '12/11/2026 11:30 AM',
-    rentalSubtotal: 0.0,
-    securityDeposit: 50.0,
-    totalPaid: 50.0,
-    paymentMethod: 'Visa terminada en 4242',
-  },
-};
-
 export function ReservationHistoryPageBody({
-  initialMovements = defaultMovements,
-  initialReceipt = defaultReceipts['trx-1'],
+  initialMovements = [],
+  initialReceipt,
+  receiptsMap = {},
   className,
 }: ReservationHistoryPageBodyProps) {
   const router = useRouter();
   const [selectedReceipt, setSelectedReceipt] =
-    React.useState<PaymentReceiptDetail>(initialReceipt);
+    React.useState<PaymentReceiptDetail | null>(initialReceipt ?? null);
 
   const handleSelectMovement = (movement: ReservationMovement) => {
-    const matchedReceipt = movement.receiptId ? defaultReceipts[movement.receiptId] : null;
-    if (matchedReceipt) {
-      setSelectedReceipt(matchedReceipt);
+    if (movement.receiptId && receiptsMap[movement.receiptId]) {
+      setSelectedReceipt(receiptsMap[movement.receiptId]);
+    } else if (movement.receiptId && selectedReceipt?.id === movement.receiptId) {
+      // ya está seleccionado
     } else {
       setSelectedReceipt({
+        id: movement.receiptId || `trx-${movement.id}`,
         status: movement.type === 'COBRO' ? 'Pagada' : 'Devuelta',
-        itemTitle: 'Alquiler de espacio de oficina',
-        rentalDateRange: 'Del 10/11/2026 al 12/11/2026',
-        daysCount: 3,
+        itemTitle: selectedReceipt?.itemTitle || 'Reserva de bien',
+        rentalDateRange: selectedReceipt?.rentalDateRange || '',
+        daysCount: selectedReceipt?.daysCount || 1,
         transactionNumber: `TRX-${movement.id.toUpperCase()}`,
         paymentDateTime: movement.date,
-        rentalSubtotal: movement.type === 'COBRO' ? 45.0 : 0.0,
-        securityDeposit: movement.type === 'COBRO' ? 50.0 : movement.amount,
+        rentalSubtotal: movement.type === 'COBRO' ? movement.amount : 0.0,
+        securityDeposit: 0.0,
         totalPaid: movement.amount,
-        paymentMethod: 'Visa terminada en 4242',
+        paymentMethod: selectedReceipt?.paymentMethod || 'Tarjeta registrada',
       });
     }
   };
 
   const handleBackToReservations = () => {
-    router.push('/');
+    router.push('/properties');
   };
 
   return (
@@ -107,10 +64,10 @@ export function ReservationHistoryPageBody({
           <Heading
             as="h1"
             size="2xl"
-            subtitle="Acá encontrarás el comprobante de tu transacción y el registro de tu historial."
+            subtitle={receiptMessages.pageSubtitle}
             className="text-gray-950 font-extrabold tracking-tight text-2xl sm:text-3xl"
           >
-            Historial y recibos de pago
+            {receiptMessages.pageTitle}
           </Heading>
         </div>
 
@@ -121,7 +78,7 @@ export function ReservationHistoryPageBody({
               id="movements-heading"
               className="text-base sm:text-lg font-bold text-gray-950 tracking-tight"
             >
-              Historial de movimientos de la reserva
+              {receiptMessages.movementsTitle}
             </h2>
           </div>
 
@@ -135,7 +92,7 @@ export function ReservationHistoryPageBody({
           >
             <ReservationMovementsTable
               movements={initialMovements}
-              selectedReceiptId={selectedReceipt.id}
+              selectedReceiptId={selectedReceipt?.id}
               onSelectReceipt={handleSelectMovement}
             />
           </section>
@@ -145,10 +102,12 @@ export function ReservationHistoryPageBody({
             aria-label="Comprobante de pago seleccionado"
             className="w-full lg:col-span-5"
           >
-            <ReservationReceiptCard
-              receipt={selectedReceipt}
-              onBackToReservations={handleBackToReservations}
-            />
+            {selectedReceipt && (
+              <ReservationReceiptCard
+                receipt={selectedReceipt}
+                onBackToReservations={handleBackToReservations}
+              />
+            )}
           </section>
         </div>
       </main>
