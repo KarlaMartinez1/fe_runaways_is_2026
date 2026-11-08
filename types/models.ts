@@ -41,3 +41,36 @@ export interface PaymentReceiptDetail {
   totalPaid: number;
   paymentMethod: string;
 }
+
+export type DepositDecisionStatus =
+  | 'Pendiente de decisión'
+  | 'Devuelto'
+  | 'Retenido'
+  | 'Retenido parcialmente';
+
+export interface DepositInfo {
+  id: string;
+  reservationId: string;
+  itemTitle: string;
+  rentalPeriod: string;
+  depositAmount: number;
+  status: DepositDecisionStatus;
+  paymentStatus: 'Pagada' | 'Pendiente';
+  decisionDeadline: string;
+  daysRemaining: number;
+}
+
+export interface DepositMovement {
+  id: string;
+  date: string;
+  type: MovementType;
+  amount: number;
+  reason: string;
+  details: string;
+}
+
+export interface RetainDepositFormData {
+  amount: number;
+  reason: string;
+}
+
