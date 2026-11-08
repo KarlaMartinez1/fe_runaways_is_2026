@@ -27,3 +27,12 @@ export const galleryMessages = {
   goTo: (number: number) => `Ver foto ${number}`,
   photoAlt: (title: string, number: number, total: number) => `${title}, foto ${number} de ${total}`,
 };
+export const bookingBoxMessages = {
+  depositLabel: "Depósito de garantía",
+  noDeposit: "Sin depósito",
+  requiresVerification: "Requiere cuenta verificada",
+  reserve: "Reservar",
+  verificationRequired: "Debes verificar tu cuenta para rentar.",
+  verifyAccount: "Verificar mi cuenta",
+  askOwner: "Preguntar al arrendador",
+};
