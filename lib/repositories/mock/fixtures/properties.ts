@@ -5,7 +5,7 @@ function photo(seed: string) {
 }
 
 export const propertyFixtures: Property[] = [
-  { id: "p-01", title: "Quinta Las Cascadas", category: "PROPIEDAD", department: "La Libertad", municipality: "Santa Tecla", pricePerDay: "45.00", images: [photo("quinta")], status: "DISPONIBLE", createdAt: "2026-11-05T10:00:00Z", averageRating: 4.8 },
+  { id: "p-01", title: "Quinta Las Cascadas", category: "PROPIEDAD", department: "La Libertad", municipality: "Santa Tecla", pricePerDay: "45.00", images: [photo("quinta"), photo("quinta-2"), photo("quinta-3"), photo("quinta-4"), photo("quinta-5")], status: "DISPONIBLE", createdAt: "2026-11-05T10:00:00Z", averageRating: 4.8 },
   { id: "p-02", title: "Cámara mirrorless", category: "EQUIPO", department: "La Libertad", municipality: "Santa Tecla", pricePerDay: "25.00", images: [photo("camara")], status: "DISPONIBLE", createdAt: "2026-11-04T10:00:00Z", averageRating: 4.6 },
   { id: "p-03", title: "Casa de playa El Tunco", category: "PROPIEDAD", department: "La Libertad", municipality: "Tamanique", pricePerDay: "90.00", images: [photo("playa")], status: "DISPONIBLE", createdAt: "2026-11-03T10:00:00Z", averageRating: null },
   { id: "p-04", title: "Proyector 4K", category: "EQUIPO", department: "San Salvador", municipality: "San Salvador", pricePerDay: "18.00", images: [photo("proyector")], status: "DISPONIBLE", createdAt: "2026-11-02T10:00:00Z", averageRating: null },

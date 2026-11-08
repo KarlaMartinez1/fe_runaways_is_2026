@@ -1,6 +1,8 @@
 import { httpPropertyRepository } from "./http/property-repository.http";
-import { mockPropertyRepository } from "./mock/property-repository.mock";
+import { httpProfileRepository } from "./http/profile-repository.http";
 import { httpReservationRepository } from "./http/reservation-repository.http";
+import { mockPropertyRepository } from "./mock/property-repository.mock";
+import { mockProfileRepository } from "./mock/profile-repository.mock";
 import { mockReservationRepository } from "./mock/reservation-repository.mock";
 import { httpDepositRepository } from "./http/deposit-repository.http";
 import { mockDepositRepository } from "./mock/deposit-repository.mock";
@@ -14,6 +16,10 @@ const useMocks =
 export const propertyRepository = useMocks
   ? mockPropertyRepository
   : httpPropertyRepository;
+
+export const profileRepository = useMocks
+  ? mockProfileRepository
+  : httpProfileRepository;
 
 export const reservationRepository = useMocks
   ? mockReservationRepository
