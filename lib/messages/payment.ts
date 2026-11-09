@@ -46,7 +46,7 @@ export const paymentFormMessages = {
   cardNumberLabel: "Número de tarjeta",
   cardNumberPlaceholder: "Número de tarjeta de 16 dígitos",
   expiryDateLabel: "Vencimiento",
-  expiryDatePlaceholder: "MM/AA",
+  expiryDatePlaceholder: "MM/YY",
   cvcLabel: "CVC",
   cvcPlaceholder: "CVC",
   cancelButton: "Cancelar",
@@ -54,6 +54,17 @@ export const paymentFormMessages = {
   submittingButton: "Procesando pago...",
   successFeedback: "¡Pago realizado con éxito! Redirigiendo a tu reserva...",
   errorFeedback: "Ocurrió un error al procesar el pago. Por favor, intenta nuevamente.",
+
+  // Validation messages
+  cardHolderMinError: "El nombre del titular debe tener al menos 3 caracteres",
+  cardHolderMaxError: "El nombre del titular es demasiado largo",
+  cardNumberRequiredError: "El número de tarjeta es obligatorio",
+  cardNumberRegexError: "El número de tarjeta debe contener 16 dígitos numéricos",
+  expiryDateRequiredError: "La fecha de vencimiento es obligatoria",
+  expiryDateFormatError: "Formato inválido. Utilice MM/YY",
+  expiryDateExpiredError: "La tarjeta está vencida",
+  cvcRequiredError: "El CVC es obligatorio",
+  cvcRegexError: "El CVC debe tener 3 o 4 dígitos",
 } as const;
 
 export const paymentStatusLabels: Record<PaymentReceiptDetail["status"], string> = {
