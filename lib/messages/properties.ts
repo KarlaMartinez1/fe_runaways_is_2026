@@ -65,6 +65,13 @@ export const searchMessages = {
   selectDepartmentFirst: "Seleccione primero un departamento.",
   activeFilters: "Filtros activos",
   removeFilter: (label: string) => `Quitar filtro ${label}`,
+  priceLabel: "Precio por día (USD)",
+  priceMin: "Mínimo",
+  priceMax: "Máximo",
+  priceInvalid: "Ingrese un valor numérico mayor a 0.",
+  priceDecimals: "Máximo 2 decimales.",
+  priceTooHigh: "El precio no puede superar $9999.99.",
+  priceRange: "El precio mínimo no puede ser mayor que el precio máximo.",
 };
 export const filterMessages = {
   categoryChips: { PROPIEDAD: "Propiedades", EQUIPO: "Equipo" },
@@ -75,6 +82,12 @@ export const filterMessages = {
   resultsCount: (total: number) => (total === 1 ? "1 resultado" : `${total} resultados`),
   searchTag: (term: string) => `"${term}"`,
   removeFilter: (label: string) => `Quitar filtro ${label}`,
+  priceChip: (min: number | undefined, max: number | undefined) => {
+    const format = (value: number) => `$${value.toFixed(2)}`;
+    if (min !== undefined && max !== undefined) return `${format(min)} – ${format(max)}`;
+    if (min !== undefined) return `Desde ${format(min)}`;
+    return `Hasta ${format(max ?? 0)}`;
+  },
 };
 export const availabilityMessages = {
   label: "Fechas",

@@ -11,12 +11,14 @@ import { departments, getMunicipalities } from "@/lib/locations/el-salvador";
 import { filterMessages, searchMessages } from "@/lib/messages/properties";
 import { cn } from "@/lib/utils/cn";
 import {
+  getPriceRangeError,
   propertySearchSchema,
   type PropertySearchFormData,
 } from "@/lib/validations/property-search";
 
 type SearchBarProps = {
   filters: PropertyFilters;
+  showPrice?: boolean;
 };
 
 const categoryOptions = ["PROPIEDAD", "EQUIPO"] as const;
@@ -31,7 +33,7 @@ function chipClass(active: boolean) {
   );
 }
 
-export function SearchBar({ filters }: SearchBarProps) {
+export function SearchBar({ filters, showPrice = true }: SearchBarProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const {
@@ -49,15 +51,25 @@ export function SearchBar({ filters }: SearchBarProps) {
       municipality: filters.municipality ?? "",
       category: filters.category ?? "",
       noDeposit: filters.noDeposit ?? false,
+      minPrice: filters.minPrice !== undefined ? String(filters.minPrice) : "",
+      maxPrice: filters.maxPrice !== undefined ? String(filters.maxPrice) : "",
     },
   });
 
   const department = useWatch({ control, name: "department" });
   const category = useWatch({ control, name: "category" });
   const noDeposit = useWatch({ control, name: "noDeposit" });
+  const minPrice = useWatch({ control, name: "minPrice" });
+  const maxPrice = useWatch({ control, name: "maxPrice" });
   const municipalities = getMunicipalities(department);
 
+  const priceRangeError = getPriceRangeError(minPrice ?? "", maxPrice ?? "");
+  const priceError = errors.minPrice?.message ?? errors.maxPrice?.message ?? priceRangeError;
+  const hasErrors = Boolean(errors.q || errors.minPrice || errors.maxPrice || priceRangeError);
+
   const onSubmit = (values: PropertySearchFormData) => {
+    if (getPriceRangeError(values.minPrice, values.maxPrice)) return;
+
     const href = buildPropertiesHref({
       ...filters,
       q: values.q || undefined,
@@ -65,6 +77,8 @@ export function SearchBar({ filters }: SearchBarProps) {
       municipality: values.department && values.municipality ? values.municipality : undefined,
       category: values.category || undefined,
       noDeposit: values.noDeposit || undefined,
+      minPrice: values.minPrice ? Number(values.minPrice) : undefined,
+      maxPrice: values.maxPrice ? Number(values.maxPrice) : undefined,
     });
     startTransition(() => router.push(href));
   };
@@ -126,7 +140,7 @@ export function SearchBar({ filters }: SearchBarProps) {
             type="submit"
             size="md"
             isLoading={isPending}
-            disabled={Boolean(errors.q)}
+            disabled={hasErrors}
             fullWidth
             className="md:w-auto md:px-6"
             leftIcon={
@@ -141,26 +155,60 @@ export function SearchBar({ filters }: SearchBarProps) {
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-3">
-        {categoryOptions.map((value) => (
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="flex flex-wrap gap-3">
+          {categoryOptions.map((value) => (
+            <button
+              key={value}
+              type="button"
+              aria-pressed={category === value}
+              onClick={() => setValue("category", category === value ? "" : value)}
+              className={chipClass(category === value)}
+            >
+              {filterMessages.categoryChips[value]}
+            </button>
+          ))}
           <button
-            key={value}
             type="button"
-            aria-pressed={category === value}
-            onClick={() => setValue("category", category === value ? "" : value)}
-            className={chipClass(category === value)}
+            aria-pressed={noDeposit}
+            onClick={() => setValue("noDeposit", !noDeposit)}
+            className={chipClass(noDeposit)}
           >
-            {filterMessages.categoryChips[value]}
+            {filterMessages.noDeposit}
           </button>
-        ))}
-        <button
-          type="button"
-          aria-pressed={noDeposit}
-          onClick={() => setValue("noDeposit", !noDeposit)}
-          className={chipClass(noDeposit)}
-        >
-          {filterMessages.noDeposit}
-        </button>
+        </div>
+
+        {showPrice && (
+          <div role="group" aria-label={searchMessages.priceLabel} className="flex flex-col gap-1.5 md:items-end">
+            <div className="flex items-center gap-3">
+              <span className="text-sm text-zinc-500">{searchMessages.priceLabel}</span>
+              <Input
+                aria-label={searchMessages.priceMin}
+                placeholder={searchMessages.priceMin}
+                inputMode="decimal"
+                autoComplete="off"
+                containerClassName="w-32"
+                {...register("minPrice")}
+              />
+              <span aria-hidden="true" className="text-zinc-400">
+                –
+              </span>
+              <Input
+                aria-label={searchMessages.priceMax}
+                placeholder={searchMessages.priceMax}
+                inputMode="decimal"
+                autoComplete="off"
+                containerClassName="w-32"
+                {...register("maxPrice")}
+              />
+            </div>
+            {priceError && (
+              <p role="alert" className="text-xs font-medium text-red-600">
+                {priceError}
+              </p>
+            )}
+          </div>
+        )}
       </div>
     </form>
   );

@@ -39,7 +39,7 @@ export default async function Home() {
     <>
       <Navbar />
       <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-10 px-6 py-12 md:px-16">
-        <SearchBar filters={{}} />
+        <SearchBar filters={{}} showPrice={false} />
 
         <section className="flex flex-col gap-6">
           <div className="flex flex-wrap items-center justify-between gap-4">
