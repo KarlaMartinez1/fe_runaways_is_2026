@@ -14,6 +14,7 @@ import {
 type AvailabilityCalendarProps = {
   from: string;
   to: string;
+  selectionLabel?: string;
   occupiedDates: string[];
   selectedStart?: string | null;
   selectedEnd?: string | null;
@@ -59,6 +60,7 @@ export function AvailabilityCalendar({
   selectedStart = null,
   selectedEnd = null,
   onSelectDate,
+  selectionLabel = "Tu reserva",
 }: AvailabilityCalendarProps) {
   const [visibleMonth, setVisibleMonth] = useState(() => toMonthKey(from));
 
@@ -156,7 +158,7 @@ export function AvailabilityCalendar({
         </li>
         <li className="flex items-center gap-1.5">
           <span aria-hidden="true" className="h-3 w-3 rounded-sm bg-[#1f4fb8]" />
-          Tu reserva
+          {selectionLabel}
         </li>
       </ul>
     </div>
