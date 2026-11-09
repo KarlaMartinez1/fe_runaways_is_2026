@@ -54,20 +54,16 @@ export function ActiveFilters({ filters, total }: ActiveFiltersProps) {
 
   return (
     <div className="flex flex-wrap items-center gap-3">
-      <p aria-live="polite" className="text-sm font-semibold text-zinc-900">
-        {catalogMessages.resultCount(total)}
-      </p>
-
       {chips.length > 0 && (
         <ul aria-label={searchMessages.activeFilters} className="flex flex-wrap gap-2">
           {chips.map((chip) => (
             <li key={chip.key}>
-              <span className="inline-flex items-center gap-1.5 rounded-full bg-[#E5EBFB] py-1 pl-3 pr-1.5 text-sm text-[#2449c6]">
+              <span className="inline-flex items-center gap-1.5 rounded-md bg-[#E5EBFB] px-2 py-1 text-xs font-semibold text-[#2449c6]">
                 {chip.label}
                 <Link
                   href={buildPropertiesHref(chip.next)}
                   aria-label={searchMessages.removeFilter(chip.label)}
-                  className="flex h-5 w-5 items-center justify-center rounded-full hover:bg-[#cdd8f7]"
+                  className="leading-none hover:text-[#1a3699]"
                 >
                   ×
                 </Link>
@@ -76,6 +72,10 @@ export function ActiveFilters({ filters, total }: ActiveFiltersProps) {
           ))}
         </ul>
       )}
+
+      <p aria-live="polite" className="ml-auto text-sm text-zinc-500">
+        {catalogMessages.resultCount(total)}
+      </p>
     </div>
   );
 }
