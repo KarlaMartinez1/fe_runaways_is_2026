@@ -11,14 +11,6 @@ const useMocks =
   process.env.USE_MOCKS === "true" ||
   (process.env.USE_MOCKS !== "false" && !process.env.API_URL);
 
-export const propertyRepository = useMocks
-  ? mockPropertyRepository
-  : httpPropertyRepository;
-
-export const profileRepository = useMocks
-  ? mockProfileRepository
-  : httpProfileRepository;
-
-export const reservationRepository = useMocks
-  ? mockReservationRepository
-  : httpReservationRepository;
+export const propertyRepository = useMocks ? mockPropertyRepository : httpPropertyRepository;
+export const profileRepository = useMocks ? mockProfileRepository : httpProfileRepository;
+export const reservationRepository = useMocks ? mockReservationRepository : httpReservationRepository;
