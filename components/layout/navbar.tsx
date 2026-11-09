@@ -29,6 +29,8 @@ export function Navbar() {
     return pathname === href;
   };
 
+  const isProfileActive = pathname.startsWith("/profile");
+
   return (
     <header className="flex items-center justify-between border-b border-zinc-200 bg-white px-6 sm:px-10 lg:px-16 py-3.5 md:py-4">
       <Link href="/" className="flex items-center gap-6">
@@ -89,7 +91,10 @@ export function Navbar() {
         <details className="relative hidden md:block">
           <summary
             aria-label="Mi cuenta"
-            className="cursor-pointer list-none p-1.5 text-zinc-800 hover:text-[#1E4DB7] transition-colors"
+            className={cn(
+              "cursor-pointer list-none p-1.5 transition-colors",
+              isProfileActive ? "text-[#1E4DB7]" : "text-zinc-800 hover:text-[#1E4DB7]"
+            )}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
               <circle cx="12" cy="12" r="9" />
@@ -98,6 +103,17 @@ export function Navbar() {
             </svg>
           </summary>
           <div className="absolute right-0 z-20 mt-2 w-44 rounded-lg border border-zinc-200 bg-white p-1 shadow-md">
+            <Link
+              href="/profile"
+              className={cn(
+                "block w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
+                isProfileActive
+                  ? "bg-blue-50 font-semibold text-[#1E4DB7]"
+                  : "text-zinc-800 hover:bg-zinc-100"
+              )}
+            >
+              Mi perfil
+            </Link>
             <form action={logout}>
               <button
                 type="submit"
@@ -113,7 +129,10 @@ export function Navbar() {
         <details className="relative md:hidden">
           <summary
             aria-label="Menú principal"
-            className="cursor-pointer list-none p-1.5 text-zinc-800 hover:text-[#1E4DB7] transition-colors"
+            className={cn(
+              "cursor-pointer list-none p-1.5 transition-colors",
+              isProfileActive ? "text-[#1E4DB7]" : "text-zinc-800 hover:text-[#1E4DB7]"
+            )}
           >
             <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
               <line x1="4" y1="6" x2="20" y2="6" />
@@ -141,7 +160,18 @@ export function Navbar() {
                 );
               })}
             </div>
-            <div className="pt-1">
+            <div className="pt-2 flex flex-col gap-1">
+              <Link
+                href="/profile"
+                className={cn(
+                  "block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                  isProfileActive
+                    ? "bg-blue-50 font-semibold text-[#1E4DB7]"
+                    : "text-zinc-800 hover:bg-zinc-100"
+                )}
+              >
+                Mi perfil
+              </Link>
               <form action={logout}>
                 <button
                   type="submit"

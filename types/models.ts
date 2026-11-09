@@ -41,3 +41,55 @@ export interface PaymentReceiptDetail {
   totalPaid: number;
   paymentMethod: string;
 }
+
+export type UserRole = 'TENANT' | 'OWNER' | 'ADMIN';
+
+export type AccountStatus = 'SIN_VERIFICAR' | 'PENDIENTE' | 'VERIFICADA' | 'RECHAZADA';
+
+export interface UserProfile {
+  id: string;
+  fullName: string;
+  email: string;
+  role: UserRole;
+  accountStatus: AccountStatus;
+  rating: number;
+  ratingCount: number;
+  documentType: string;
+  documentNumber: string;
+  memberSince: string;
+  avatarInitials?: string;
+}
+
+export interface RoleRequirementItem {
+  id: 'verifiedAccount' | 'noPendingPayments' | 'noPendingDeposits';
+  label: string;
+  met: boolean;
+  unmetLabel?: string;
+  itemTitle?: string;
+  itemDetail?: string;
+}
+
+export interface RoleRequirements {
+  canSwitch: boolean;
+  requirements: RoleRequirementItem[];
+  reasonIfNotMet?: string;
+  hasPendingPayments?: boolean;
+  pendingPaymentDetail?: {
+    itemTitle: string;
+    amount: string;
+    dueDate: string;
+  };
+  hasPendingDeposits?: boolean;
+  pendingDepositDetail?: {
+    itemTitle: string;
+    amount: string;
+    dueDate: string;
+  };
+}
+
+export interface RoleChangeResult {
+  success: boolean;
+  newRole?: UserRole;
+  message?: string;
+  token?: string;
+}
