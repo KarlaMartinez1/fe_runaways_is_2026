@@ -2,16 +2,19 @@
 
 import Link from "next/link";
 import { useState } from "react";
+import { AvailabilitySection } from "@/components/availability/availability-section";
 import { Button, Card } from "@/components/ui";
+import type { PropertyAvailabilityState } from "@/lib/api/types";
 import { bookingBoxMessages, formatPrice, propertyMessages } from "@/lib/messages/properties";
 
 type BookingBoxProps = {
   pricePerDay: string;
   securityDeposit: string;
   isVerified: boolean;
+  availability: PropertyAvailabilityState;
 };
 
-export function BookingBox({ pricePerDay, securityDeposit, isVerified }: BookingBoxProps) {
+export function BookingBox({ pricePerDay, securityDeposit, isVerified, availability }: BookingBoxProps) {
   const [showVerificationError, setShowVerificationError] = useState(false);
   const hasDeposit = Number(securityDeposit) > 0;
 
@@ -36,6 +39,8 @@ export function BookingBox({ pricePerDay, securityDeposit, isVerified }: Booking
           {hasDeposit ? formatPrice(securityDeposit) : bookingBoxMessages.noDeposit}
         </span>
       </div>
+
+      <AvailabilitySection state={availability} />
 
       <p className="rounded-lg bg-[#EEF0E2] px-3 py-2 text-sm text-zinc-800">
         {bookingBoxMessages.requiresVerification}
