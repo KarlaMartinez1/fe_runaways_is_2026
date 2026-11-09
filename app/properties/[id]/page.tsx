@@ -140,12 +140,12 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               </div>
             </div>
 
-            {/* H9 y H10 (Módulo 3): aquí van el calendario de disponibilidad y la reserva */}
             <section id="reservar" aria-label="Disponibilidad y reserva" />
           </section>
 
           <aside className="w-full lg:sticky lg:top-8 lg:w-[400px]">
             <BookingBox
+              propertyId={property.id}
               pricePerDay={property.pricePerDay}
               securityDeposit={property.securityDeposit}
               isVerified={isVerified}
