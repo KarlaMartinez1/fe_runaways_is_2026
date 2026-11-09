@@ -80,3 +80,11 @@ export type BookingListItem = {
 };
 
 export type BookingListResult = Paginated<BookingListItem>;
+
+export type NoAvailabilityBlock = {
+  id: string;
+  propertyId: string;
+  startDate: string;
+  endDate: string;
+  createdAt: string;
+};
