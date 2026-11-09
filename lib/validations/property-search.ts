@@ -9,6 +9,8 @@ export const propertySearchSchema = z.object({
     .refine((value) => value.length <= 100, searchMessages.maxLength),
   department: z.string(),
   municipality: z.string(),
+  category: z.enum(["", "PROPIEDAD", "EQUIPO"]),
+  noDeposit: z.boolean(),
 });
 
 export type PropertySearchFormData = z.infer<typeof propertySearchSchema>;

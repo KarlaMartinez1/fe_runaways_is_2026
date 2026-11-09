@@ -39,3 +39,7 @@ export function normalizeText(value: string) {
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase();
 }
+export function buildPropertiesHref(filters: PropertyFilters) {
+  const query = new URLSearchParams(filtersToQuery(filters)).toString();
+  return query ? `/properties?${query}` : "/properties";
+} 
