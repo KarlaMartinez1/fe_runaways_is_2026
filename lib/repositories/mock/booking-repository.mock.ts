@@ -12,6 +12,7 @@ import { addDaysIso } from "@/lib/utils/dates";
 import type { BookingRepository, CreateBookingInput, ListBookingsParams } from "../booking-repository";
 import { buildMockAvailability } from "./fixtures/availability";
 import { propertyFixtures } from "./fixtures/properties";
+import { getMockBlockedDates } from "./block-store";
 
 const PAGE_SIZE = 10;
 
@@ -63,7 +64,13 @@ export function getMockBookedDates(propertyId: string): string[] {
 
 export function getMockOccupiedDates(propertyId: string): string[] {
   const { occupiedDates } = buildMockAvailability(propertyId);
-  return [...new Set([...occupiedDates, ...getMockBookedDates(propertyId)])].sort();
+  return [
+    ...new Set([
+      ...occupiedDates,
+      ...getMockBookedDates(propertyId),
+      ...getMockBlockedDates(propertyId),
+    ]),
+  ].sort();
 }
 
 function toListItem(booking: StoredBooking): BookingListItem {
