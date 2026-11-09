@@ -1,6 +1,7 @@
 import { PROPERTIES_PAGE_SIZE, type PropertyRepository } from "../property-repository";
 import { propertyFixtures } from "./fixtures/properties";
 import { defaultDetailExtras, propertyDetailExtras } from "./fixtures/property-details";
+import { buildMockAvailability } from "./fixtures/availability";
 
 export const mockPropertyRepository: PropertyRepository = {
   async listAvailable(page) {
@@ -32,5 +33,13 @@ export const mockPropertyRepository: PropertyRepository = {
     };
 
     return { ...property, ...extras };
+  },
+  async getAvailability(id) {
+    const property = propertyFixtures.find((item) => item.id === id);
+    if (!property || property.status !== "DISPONIBLE") {
+      return null;
+    }
+
+    return { propertyId: id, ...buildMockAvailability(id) };
   },
 };
