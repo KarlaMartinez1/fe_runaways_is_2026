@@ -27,6 +27,20 @@ export type PropertyDetail = Property & {
   ownerName: string;
   reviewCount: number;
 };
+
+export type PropertyAvailability = {
+  propertyId: string;
+  from: string;
+  to: string;
+  occupiedDates: string[];
+};
+
+export type PropertyAvailabilityState =
+  | { status: "ready"; from: string; to: string; occupiedDates: string[] }
+  | { status: "unavailable" }
+  | { status: "error" }
+  | { status: "hidden" };
+  
 export type AccountStatus = "SIN_VERIFICAR" | "PENDIENTE" | "VERIFICADA" | "RECHAZADA";
 
 export type ProfileDocument = {

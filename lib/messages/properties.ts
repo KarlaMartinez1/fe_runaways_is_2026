@@ -76,3 +76,17 @@ export const filterMessages = {
   searchTag: (term: string) => `"${term}"`,
   removeFilter: (label: string) => `Quitar filtro ${label}`,
 };
+export const availabilityMessages = {
+  label: "Fechas",
+  openCalendar: "Ver disponibilidad",
+  hideCalendar: "Ocultar calendario",
+  loadError: "No se pudo cargar la disponibilidad. Intente de nuevo.",
+  retry: "Reintentar",
+  free: "Libre",
+  occupied: "No disponible",
+  outOfRange: "Fuera del periodo de reserva",
+  previousMonth: "Mes anterior",
+  nextMonth: "Mes siguiente",
+  calendarLabel: "Calendario de disponibilidad",
+  weekdays: ["L", "M", "M", "J", "V", "S", "D"],
+};

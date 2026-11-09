@@ -3,6 +3,7 @@ import { normalizeText } from "@/lib/filters/property-filters";
 import { PROPERTIES_PAGE_SIZE, type PropertyRepository } from "../property-repository";
 import { propertyFixtures } from "./fixtures/properties";
 import { defaultDetailExtras, propertyDetailExtras } from "./fixtures/property-details";
+import { buildMockAvailability } from "./fixtures/availability";
 
 function toDetail(property: Property): PropertyDetail {
   const extras = propertyDetailExtras[property.id] ?? {
@@ -53,5 +54,13 @@ export const mockPropertyRepository: PropertyRepository = {
       return null;
     }
     return toDetail(property);
+  },
+  async getAvailability(id) {
+    const property = propertyFixtures.find((item) => item.id === id);
+    if (!property || property.status !== "DISPONIBLE") {
+      return null;
+    }
+
+    return { propertyId: id, ...buildMockAvailability(id) };
   },
 };
