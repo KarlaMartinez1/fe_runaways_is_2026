@@ -10,46 +10,55 @@ export class ApiError extends Error {
   }
 }
 
-function resolveApiUrl(path: string): URL {
+async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
   const apiUrl = process.env.API_URL;
   if (!apiUrl) {
     throw new Error("Falta la variable de entorno API_URL.");
   }
-  return new URL(path, apiUrl.replace(/\/?$/, "/"));
-}
 
-export async function apiGet<T>(path: string): Promise<T> {
   const token = await getSession();
-  const res = await fetch(resolveApiUrl(path), {
-    headers: token ? { Authorization: `Bearer ${token}` } : {},
+  const headers = new Headers(init.headers);
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const res = await fetch(new URL(path, apiUrl.replace(/\/?$/, "/")), {
+    ...init,
+    headers,
     cache: "no-store",
   });
 
   if (!res.ok) {
     const body = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, body.code, body.message);
+    const message = Array.isArray(body.message) ? body.message.join(", ") : body.message;
+    throw new ApiError(res.status, body.code, message);
+  }
+
+  if (res.status === 204) {
+    return undefined as T;
   }
 
   return res.json() as Promise<T>;
 }
 
-export async function apiPatch<T, B = unknown>(path: string, body: B): Promise<T> {
-  const token = await getSession();
-  const res = await fetch(resolveApiUrl(path), {
-    method: "PATCH",
-    headers: {
-      "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {}),
-    },
+export function apiGet<T>(path: string): Promise<T> {
+  return request<T>(path);
+}
+
+export function apiPost<T>(path: string, body: unknown): Promise<T> {
+  return request<T>(path, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify(body),
   });
+}
 
-  if (!res.ok) {
-    const responseBody = await res.json().catch(() => ({}));
-    throw new ApiError(res.status, responseBody.code, responseBody.message);
-  }
-
-  return res.json() as Promise<T>;
+export function apiPatch<T, TBody>(path: string, body: TBody): Promise<T> {
+  return request<T>(path, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(body),
+  });
 }
 
 export async function apiPost<T, B = unknown>(path: string, body: B): Promise<T> {
