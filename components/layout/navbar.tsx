@@ -37,10 +37,10 @@ export function Navbar() {
         <Image
           src="/logo-runaways.svg"
           alt="Runaways Logo"
-          width={120}
-          height={32}
+          width={240}
+          height={64}
           unoptimized
-          className="h-7 sm:h-8 md:h-[30px] w-auto"
+          className="h-12 sm:h-14 md:h-16 lg:h-[68px] w-auto"
         />
       </Link>
 
