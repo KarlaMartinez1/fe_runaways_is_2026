@@ -6,6 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
+import { paymentFormMessages } from '@/lib/messages/payment';
 import { paymentSchema, type PaymentFormData } from '@/lib/validations/payment';
 
 export interface PaymentMethodFormProps {
@@ -29,7 +30,7 @@ export function PaymentMethodForm({
   } = useForm<PaymentFormData>({
     resolver: zodResolver(paymentSchema),
     defaultValues: {
-      cardHolder: 'Jose Escamilla',
+      cardHolder: '',
       cardNumber: '',
       expiryDate: '',
       cvc: '',
@@ -39,11 +40,11 @@ export function PaymentMethodForm({
   const onSubmit = async (data: PaymentFormData) => {
     setSubmissionFeedback(null);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1200));
-      setSubmissionFeedback('¡Pago realizado con éxito! Redirigiendo a tu reserva...');
+      await new Promise((resolve) => setTimeout(resolve, 800));
+      setSubmissionFeedback(paymentFormMessages.successFeedback);
       onSuccess?.(data);
     } catch {
-      setSubmissionFeedback('Ocurrió un error al procesar el pago. Por favor, intenta nuevamente.');
+      setSubmissionFeedback(paymentFormMessages.errorFeedback);
     }
   };
 
@@ -57,7 +58,7 @@ export function PaymentMethodForm({
     <Card padding="md" className={className}>
       <CardHeader>
         <CardTitle as="h2" className="text-lg sm:text-xl font-bold">
-          Método de pago
+          {paymentFormMessages.formTitle}
         </CardTitle>
       </CardHeader>
 
@@ -70,15 +71,15 @@ export function PaymentMethodForm({
 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <Input
-            label="Nombre del titular"
-            placeholder="Jose Escamilla"
+            label={paymentFormMessages.cardHolderLabel}
+            placeholder={paymentFormMessages.cardHolderPlaceholder}
             {...register('cardHolder')}
             error={errors.cardHolder}
           />
 
           <Input
-            label="Número de tarjeta"
-            placeholder="Número de tarjeta de 16 dígitos"
+            label={paymentFormMessages.cardNumberLabel}
+            placeholder={paymentFormMessages.cardNumberPlaceholder}
             maxLength={16}
             {...register('cardNumber')}
             error={errors.cardNumber}
@@ -86,15 +87,15 @@ export function PaymentMethodForm({
 
           <div className="grid grid-cols-2 gap-3 sm:gap-4">
             <Input
-              label="Vencimiento"
-              placeholder="MM/AA"
+              label={paymentFormMessages.expiryDateLabel}
+              placeholder={paymentFormMessages.expiryDatePlaceholder}
               maxLength={5}
               {...register('expiryDate')}
               error={errors.expiryDate}
             />
             <Input
-              label="CVC"
-              placeholder="CVC"
+              label={paymentFormMessages.cvcLabel}
+              placeholder={paymentFormMessages.cvcPlaceholder}
               maxLength={4}
               {...register('cvc')}
               error={errors.cvc}
@@ -109,7 +110,9 @@ export function PaymentMethodForm({
               fullWidth
               isLoading={isSubmitting}
             >
-              Pagar y confirmar
+              {isSubmitting
+                ? paymentFormMessages.submittingButton
+                : paymentFormMessages.submitButton}
             </Button>
 
             <Button
@@ -119,7 +122,7 @@ export function PaymentMethodForm({
               fullWidth
               onClick={handleCancelClick}
             >
-              Cancelar
+              {paymentFormMessages.cancelButton}
             </Button>
           </div>
         </form>
