@@ -21,6 +21,7 @@ export type Paginated<T> = {
   totalPages: number;
   total: number;
 };
+
 export type PropertyDetail = Property & {
   description: string;
   securityDeposit: string;
@@ -40,11 +41,19 @@ export type PropertyAvailabilityState =
   | { status: "unavailable" }
   | { status: "error" }
   | { status: "hidden" };
-  
+
 export type AccountStatus = "SIN_VERIFICAR" | "PENDIENTE" | "VERIFICADA" | "RECHAZADA";
 
 export type ProfileDocument = {
   accountStatus: AccountStatus;
+};
+
+export type PropertyFilters = {
+  q?: string;
+  department?: string;
+  municipality?: string;
+  category?: PropertyCategory;
+  noDeposit?: boolean;
 };
 
 export type BookingStatus = "PENDIENTE" | "PAGADA" | "FINALIZADA" | "CANCELADA";
