@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { PropertyGallery } from "@/components/properties/property-gallery";
 import { ApiError } from "@/lib/api/client";
-import type { PropertyDetail } from "@/lib/api/types";
+import type { PropertyAvailabilityState, PropertyDetail } from "@/lib/api/types";
 import { categoryLabels, detailMessages } from "@/lib/messages/properties";
 import { profileRepository, propertyRepository } from "@/lib/repositories";
 import { BookingBox } from "./booking-box";
@@ -31,6 +31,27 @@ async function loadIsVerified() {
     return (await profileRepository.getAccountStatus()) === "VERIFICADA";
   } catch {
     return false;
+  }
+}
+
+async function loadAvailability(id: string): Promise<PropertyAvailabilityState> {
+  try {
+    const availability = await propertyRepository.getAvailability(id);
+    if (!availability) {
+      return { status: "unavailable" };
+    }
+    return {
+      status: "ready",
+      from: availability.from,
+      to: availability.to,
+      occupiedDates: availability.occupiedDates,
+    };
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 403) {
+      return { status: "hidden" };
+    }
+    console.error("Error al cargar la disponibilidad:", error);
+    return { status: "error" };
   }
 }
 
@@ -80,8 +101,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     );
   }
 
-  const isVerified = await loadIsVerified();
-  const rating = property.averageRating;
+  const [isVerified, availability] = await Promise.all([loadIsVerified(), loadAvailability(id)]);  const rating = property.averageRating;
   const categoryStyle =
     property.category === "PROPIEDAD" ? "bg-[#E5EBFB] text-[#2449c6]" : "bg-[#EEF0E2] text-zinc-800";
 
@@ -120,15 +140,16 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               </div>
             </div>
 
-            {/* H9 y H10 (Módulo 3): aquí van el calendario de disponibilidad y la reserva */}
             <section id="reservar" aria-label="Disponibilidad y reserva" />
           </section>
 
           <aside className="w-full lg:sticky lg:top-8 lg:w-[400px]">
             <BookingBox
+              propertyId={property.id}
               pricePerDay={property.pricePerDay}
               securityDeposit={property.securityDeposit}
               isVerified={isVerified}
+              availability={availability}
             />
           </aside>
         </div>

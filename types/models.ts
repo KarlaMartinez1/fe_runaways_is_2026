@@ -10,7 +10,6 @@ export interface ReservationDetail {
   dueDate: string;
   isReadOnly?: boolean;
 }
-
 export interface PaymentSubmissionResult {
   success: boolean;
   transactionId?: string;
@@ -18,7 +17,6 @@ export interface PaymentSubmissionResult {
 }
 
 export type MovementType = 'COBRO' | 'DEVOLUCIÓN' | 'RETENCIÓN';
-
 export interface ReservationMovement {
   id: string;
   date: string;
@@ -27,7 +25,6 @@ export interface ReservationMovement {
   reason: string;
   receiptId?: string;
 }
-
 export interface PaymentReceiptDetail {
   id?: string;
   status: 'Pagada' | 'Devuelta' | 'Retenida' | 'Pendiente';
@@ -42,12 +39,59 @@ export interface PaymentReceiptDetail {
   paymentMethod: string;
 }
 
+export type UserRole = 'TENANT' | 'OWNER' | 'ADMIN';
+
+export type AccountStatus = 'SIN_VERIFICAR' | 'PENDIENTE' | 'VERIFICADA' | 'RECHAZADA';
+export interface UserProfile {
+  id: string;
+  fullName: string;
+  email: string;
+  role: UserRole;
+  accountStatus: AccountStatus;
+  rating: number;
+  ratingCount: number;
+  documentType: string;
+  documentNumber: string;
+  memberSince: string;
+  avatarInitials?: string;
+}
+export interface RoleRequirementItem {
+  id: 'verifiedAccount' | 'noPendingPayments' | 'noPendingDeposits';
+  label: string;
+  met: boolean;
+  unmetLabel?: string;
+  itemTitle?: string;
+  itemDetail?: string;
+}
+export interface RoleRequirements {
+  canSwitch: boolean;
+  requirements: RoleRequirementItem[];
+  reasonIfNotMet?: string;
+  hasPendingPayments?: boolean;
+  pendingPaymentDetail?: {
+    itemTitle: string;
+    amount: string;
+    dueDate: string;
+  };
+  hasPendingDeposits?: boolean;
+  pendingDepositDetail?: {
+    itemTitle: string;
+    amount: string;
+    dueDate: string;
+  };
+}
+export interface RoleChangeResult {
+  success: boolean;
+  newRole?: UserRole;
+  message?: string;
+  token?: string;
+}
+
 export type DepositDecisionStatus =
   | 'Pendiente de decisión'
   | 'Devuelto'
   | 'Retenido'
   | 'Retenido parcialmente';
-
 export interface DepositInfo {
   id: string;
   reservationId: string;
@@ -59,7 +103,6 @@ export interface DepositInfo {
   decisionDeadline: string;
   daysRemaining: number;
 }
-
 export interface DepositMovement {
   id: string;
   date: string;
@@ -68,7 +111,6 @@ export interface DepositMovement {
   reason: string;
   details: string;
 }
-
 export interface RetainDepositFormData {
   amount: number;
   reason: string;

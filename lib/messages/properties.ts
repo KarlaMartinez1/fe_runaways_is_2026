@@ -16,6 +16,11 @@ export function formatPrice(value: string) {
 export const catalogMessages = {
   empty: "No hay bienes disponibles por el momento",
   loadError: "No se pudo cargar el catálogo. Intente de nuevo.",
+  searchError: "No se pudo realizar la búsqueda. Intente de nuevo.",
+  noResults: "No se encontraron resultados",
+  clearFilters: "Limpiar filtros",
+  resultCount: (total: number) =>
+    total === 1 ? "1 resultado" : `${total} resultados`,
 };
 export const homeMessages = {
   recentTitle: "Recién publicados",
@@ -44,4 +49,44 @@ export const detailMessages = {
   rating: (average: number, count: number) =>
     `★ ${average.toFixed(1)} (${count} ${count === 1 ? "reseña" : "reseñas"})`,
   ownerRole: "Arrendador",
+};
+export const searchMessages = {
+  queryLabel: "Qué buscas",
+  queryPlaceholder: "Casa, cámara, proyector...",
+  departmentLabel: "Departamento",
+  municipalityLabel: "Municipio",
+  categoryLabel: "Categoría",
+  noDepositLabel: "Sin depósito",
+  all: "Todos",
+  allFeminine: "Todas",
+  submit: "Buscar",
+  minLength: "Ingrese al menos 2 caracteres.",
+  maxLength: "El término no puede superar 100 caracteres.",
+  selectDepartmentFirst: "Seleccione primero un departamento.",
+  activeFilters: "Filtros activos",
+  removeFilter: (label: string) => `Quitar filtro ${label}`,
+};
+export const filterMessages = {
+  categoryChips: { PROPIEDAD: "Propiedades", EQUIPO: "Equipo" },
+  noDeposit: "Sin depósito",
+  noResults: "No se encontraron resultados",
+  clearFilters: "Limpiar filtros",
+  searchError: "No se pudo realizar la búsqueda. Intente de nuevo.",
+  resultsCount: (total: number) => (total === 1 ? "1 resultado" : `${total} resultados`),
+  searchTag: (term: string) => `"${term}"`,
+  removeFilter: (label: string) => `Quitar filtro ${label}`,
+};
+export const availabilityMessages = {
+  label: "Fechas",
+  openCalendar: "Ver disponibilidad",
+  hideCalendar: "Ocultar calendario",
+  loadError: "No se pudo cargar la disponibilidad. Intente de nuevo.",
+  retry: "Reintentar",
+  free: "Libre",
+  occupied: "No disponible",
+  outOfRange: "Fuera del periodo de reserva",
+  previousMonth: "Mes anterior",
+  nextMonth: "Mes siguiente",
+  calendarLabel: "Calendario de disponibilidad",
+  weekdays: ["L", "M", "M", "J", "V", "S", "D"],
 };
