@@ -5,37 +5,53 @@ import { useRouter } from "next/navigation";
 import { cn } from "@/lib/utils/cn";
 import { reportMessages } from "@/lib/messages/reports";
 import { fetchReportsDataAction } from "@/app/actions/reports";
-import type { IncomeSummary } from "@/lib/repositories/report-repository";
+import type {
+  IncomeSummary,
+  PropertyIncomeListResult,
+} from "@/lib/repositories/report-repository";
 import { ReportsNav } from "./reports-nav";
 import { ReportsDateFilter } from "./reports-date-filter";
 import { IncomeSummaryCard } from "./income-summary-card";
+import { PropertyIncomeTable } from "./property-income-table";
 
 export interface ReportsPageBodyProps {
   initialSummary: IncomeSummary;
+  initialPropertyIncome: PropertyIncomeListResult;
   initialFrom?: string;
   initialTo?: string;
+  initialOrder?: "asc" | "desc";
   className?: string;
 }
 
 export function ReportsPageBody({
   initialSummary,
+  initialPropertyIncome,
   initialFrom = "",
   initialTo = "",
+  initialOrder = "desc",
   className,
 }: ReportsPageBodyProps) {
   const router = useRouter();
 
   const [from, setFrom] = React.useState<string>(initialFrom);
   const [to, setTo] = React.useState<string>(initialTo);
+  const [order, setOrder] = React.useState<"asc" | "desc">(initialOrder);
+  const [page, setPage] = React.useState<number>(initialPropertyIncome.page || 1);
+
   const [summary, setSummary] = React.useState<IncomeSummary>(initialSummary);
+  const [propertyIncome, setPropertyIncome] =
+    React.useState<PropertyIncomeListResult>(initialPropertyIncome);
+
   const [isLoading, setIsLoading] = React.useState<boolean>(false);
   const [error, setError] = React.useState<string | null>(null);
 
   const syncUrl = React.useCallback(
-    (newFrom: string, newTo: string) => {
+    (newFrom: string, newTo: string, newOrder: "asc" | "desc", newPage: number) => {
       const params = new URLSearchParams();
       if (newFrom) params.set("from", newFrom);
       if (newTo) params.set("to", newTo);
+      if (newOrder !== "desc") params.set("order", newOrder);
+      if (newPage > 1) params.set("page", String(newPage));
 
       const query = params.toString();
       const newUrl = query ? `/lessor/reports?${query}` : "/lessor/reports";
@@ -45,17 +61,26 @@ export function ReportsPageBody({
   );
 
   const fetchData = React.useCallback(
-    async (newFrom: string, newTo: string) => {
+    async (
+      newFrom: string,
+      newTo: string,
+      newOrder: "asc" | "desc",
+      newPage: number
+    ) => {
       setIsLoading(true);
       setError(null);
       try {
         const result = await fetchReportsDataAction({
           from: newFrom || undefined,
           to: newTo || undefined,
+          order: newOrder,
+          page: newPage,
+          pageSize: 10,
         });
 
         setSummary(result.summary);
-        syncUrl(newFrom, newTo);
+        setPropertyIncome(result.propertyIncome);
+        syncUrl(newFrom, newTo, newOrder, newPage);
       } catch (err) {
         console.error("Error fetching reports:", err);
         setError(reportMessages.errors.loadError);
@@ -71,17 +96,30 @@ export function ReportsPageBody({
     const nextTo = values.to ?? "";
     setFrom(nextFrom);
     setTo(nextTo);
-    fetchData(nextFrom, nextTo);
+    setPage(1);
+    fetchData(nextFrom, nextTo, order, 1);
   };
 
   const handleClearFilter = () => {
     setFrom("");
     setTo("");
-    fetchData("", "");
+    setPage(1);
+    fetchData("", "", order, 1);
+  };
+
+  const handleOrderChange = (newOrder: "asc" | "desc") => {
+    setOrder(newOrder);
+    setPage(1);
+    fetchData(from, to, newOrder, 1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+    fetchData(from, to, order, newPage);
   };
 
   const handleRetry = () => {
-    fetchData(from, to);
+    fetchData(from, to, order, page);
   };
 
   return (
@@ -114,6 +152,17 @@ export function ReportsPageBody({
         isLoading={isLoading}
         error={error}
         onRetry={handleRetry}
+      />
+
+      <PropertyIncomeTable
+        items={propertyIncome.data}
+        totalPeriodIncome={propertyIncome.totalIncome}
+        order={order}
+        onOrderChange={handleOrderChange}
+        currentPage={propertyIncome.page}
+        totalPages={propertyIncome.totalPages}
+        onPageChange={handlePageChange}
+        isLoading={isLoading}
       />
     </main>
   );
