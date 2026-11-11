@@ -1,20 +1,36 @@
 "use server";
 
 import { reportRepository } from "@/lib/repositories";
-import type { IncomeSummary } from "@/lib/repositories/report-repository";
+import type {
+  IncomeSummary,
+  PropertyIncomeListResult,
+} from "@/lib/repositories/report-repository";
 
 export interface FetchReportsParams {
   from?: string;
   to?: string;
+  order?: "asc" | "desc";
+  page?: number;
+  pageSize?: number;
 }
 
 export async function fetchReportsDataAction(params: FetchReportsParams): Promise<{
   summary: IncomeSummary;
+  propertyIncome: PropertyIncomeListResult;
 }> {
-  const summary = await reportRepository.getIncomeSummary({
-    from: params.from,
-    to: params.to,
-  });
+  const [summary, propertyIncome] = await Promise.all([
+    reportRepository.getIncomeSummary({
+      from: params.from,
+      to: params.to,
+    }),
+    reportRepository.getIncomeByProperty({
+      from: params.from,
+      to: params.to,
+      order: params.order,
+      page: params.page,
+      pageSize: params.pageSize,
+    }),
+  ]);
 
-  return { summary };
+  return { summary, propertyIncome };
 }
