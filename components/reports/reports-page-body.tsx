@@ -105,8 +105,6 @@ export function ReportsPageBody({
         isLoading={isLoading}
       />
 
-      <ReportsNav />
-
       <IncomeSummaryCard
         rentalIncome={summary.rentalIncome}
         retainedDepositIncome={summary.retainedDepositIncome}
@@ -115,6 +113,8 @@ export function ReportsPageBody({
         error={error}
         onRetry={handleRetry}
       />
+
+      <ReportsNav />
     </main>
   );
 }
