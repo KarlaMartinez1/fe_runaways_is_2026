@@ -54,7 +54,7 @@ export function ReportsPageBody({
       if (newPage > 1) params.set("page", String(newPage));
 
       const query = params.toString();
-      const newUrl = query ? `/lessor/reports?${query}` : "/lessor/reports";
+      const newUrl = query ? `/owner/reports?${query}` : "/owner/reports";
       router.replace(newUrl);
     },
     [router]
