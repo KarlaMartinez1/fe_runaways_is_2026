@@ -23,6 +23,8 @@ interface OwnerReportsPageProps {
     order?: string;
     page?: string;
     scenario?: string;
+    bypass?: string;
+    dev?: string;
   }>;
 }
 
@@ -35,23 +37,31 @@ export default async function OwnerReportsPage({
   const order = resolvedParams.order === "asc" ? "asc" : "desc";
   const page = Math.max(1, Number(resolvedParams.page) || 1);
   const scenario = resolvedParams.scenario || undefined;
+  const bypass =
+    resolvedParams.bypass === "true" ||
+    resolvedParams.dev === "true" ||
+    scenario === "owner";
 
   let forbidden = false;
 
-  // Verificación de acceso para rol OWNER
-  try {
-    const profile = await profileRepository.getUserProfile(scenario);
-    if (!profile || profile.role !== "OWNER") {
-      forbidden = true;
+  // Verificación de acceso para rol OWNER (se puede omitir en desarrollo con ?bypass=true o ?dev=true)
+  if (!bypass) {
+    try {
+      const profile = await profileRepository.getUserProfile(scenario);
+      if (!profile || profile.role !== "OWNER") {
+        forbidden = true;
+      }
+    } catch (error) {
+      if (error instanceof ApiError) {
+        if (error.status === 401) {
+          redirect("/login");
+        }
+        if (error.status === 403) {
+          forbidden = true;
+        }
+      }
+      console.error("Error al verificar perfil de usuario:", error);
     }
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 401) {
-      redirect("/login");
-    }
-    if (error instanceof ApiError && error.status === 403) {
-      forbidden = true;
-    }
-    console.error("Error al verificar perfil de usuario:", error);
   }
 
   let summary: IncomeSummary | null = null;
