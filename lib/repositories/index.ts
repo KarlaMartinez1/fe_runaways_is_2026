@@ -10,6 +10,8 @@ import { mockProfileRepository } from "./mock/profile-repository.mock";
 import { mockReservationRepository } from "./mock/reservation-repository.mock";
 import { httpDepositRepository } from "./http/deposit-repository.http";
 import { mockDepositRepository } from "./mock/deposit-repository.mock";
+import { httpReportRepository } from "./http/report-repository.http";
+import { mockReportRepository } from "./mock/report-repository.mock";
 
 const useMocks = process.env.USE_MOCKS === "true";
 
@@ -36,4 +38,9 @@ export const bookingRepository = useMocks
 export const blockRepository = useMocks 
   ? mockBlockRepository 
   : httpBlockRepository;
+
+export const reportRepository = useMocks
+  ? mockReportRepository
+  : httpReportRepository;
+
 
