@@ -71,7 +71,10 @@ export const propertyFormSchema = z.object({
   securityDeposit: depositField,
 });
 
-export type PropertyFormData = z.infer<typeof propertyFormSchema>;
+// Lo que se escribe en el formulario (la categoría puede estar vacía: "Seleccione categoría").
+export type PropertyFormInput = z.input<typeof propertyFormSchema>;
+// Lo que sale después de validar (la categoría ya es PROPIEDAD o EQUIPO).
+export type PropertyFormData = z.output<typeof propertyFormSchema>;
 
 // Revisa una foto al elegirla. Devuelve el mensaje de error o undefined si es valida.
 export function getPhotoFileError(file: File) {
