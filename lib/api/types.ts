@@ -56,7 +56,10 @@ export type PropertyFilters = {
   noDeposit?: boolean;
   minPrice?: number;
   maxPrice?: number;
+  startDate?: string;
+  endDate?: string;
 };
+
 export type BookingStatus = "PENDIENTE" | "PAGADA" | "FINALIZADA" | "CANCELADA";
 
 export type CreatedBooking = {
