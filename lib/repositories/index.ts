@@ -8,11 +8,39 @@ import { mockBookingRepository } from "./mock/booking-repository.mock";
 import { mockPropertyRepository } from "./mock/property-repository.mock";
 import { mockProfileRepository } from "./mock/profile-repository.mock";
 import { mockReservationRepository } from "./mock/reservation-repository.mock";
+import { httpDepositRepository } from "./http/deposit-repository.http";
+import { mockDepositRepository } from "./mock/deposit-repository.mock";
+import { httpReportRepository } from "./http/report-repository.http";
+import { mockReportRepository } from "./mock/report-repository.mock";
 
 const useMocks = process.env.USE_MOCKS === "true";
 
-export const propertyRepository = useMocks ? mockPropertyRepository : httpPropertyRepository;
-export const profileRepository = useMocks ? mockProfileRepository : httpProfileRepository;
-export const bookingRepository = useMocks ? mockBookingRepository : httpBookingRepository;
-export const blockRepository = useMocks ? mockBlockRepository : httpBlockRepository;
-export const reservationRepository = useMocks ? mockReservationRepository : httpReservationRepository;
+export const propertyRepository = useMocks
+  ? mockPropertyRepository
+  : httpPropertyRepository;
+
+export const profileRepository = useMocks
+  ? mockProfileRepository
+  : httpProfileRepository;
+
+export const reservationRepository = useMocks
+  ? mockReservationRepository
+  : httpReservationRepository;
+
+export const depositRepository = useMocks
+  ? mockDepositRepository
+  : httpDepositRepository;
+
+export const bookingRepository = useMocks 
+  ? mockBookingRepository 
+  : httpBookingRepository;
+
+export const blockRepository = useMocks 
+  ? mockBlockRepository 
+  : httpBlockRepository;
+
+export const reportRepository = useMocks
+  ? mockReportRepository
+  : httpReportRepository;
+
+

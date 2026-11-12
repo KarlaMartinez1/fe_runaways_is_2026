@@ -82,10 +82,8 @@ export function ReservationHistoryPageBody({
             </h2>
           </div>
 
-          {/* Spacer to align left and right cards on the same horizontal line in desktop */}
           <div className="hidden lg:block lg:col-span-5" aria-hidden="true" />
 
-          {/* Left card: movements table (desktop) / cards (mobile) */}
           <section
             aria-labelledby="movements-heading"
             className="w-full lg:col-span-7"
