@@ -41,6 +41,8 @@ export const propertySearchSchema = z.object({
   noDeposit: z.boolean(),
   minPrice: priceField(),
   maxPrice: priceField(),
+  startDate: z.string(),
+  endDate: z.string(),
 });
 
 export type PropertySearchFormData = z.infer<typeof propertySearchSchema>;
