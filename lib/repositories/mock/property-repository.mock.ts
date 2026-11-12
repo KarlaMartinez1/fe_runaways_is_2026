@@ -5,6 +5,7 @@ import { propertyFixtures } from "./fixtures/properties";
 import { defaultDetailExtras, propertyDetailExtras } from "./fixtures/property-details";
 import { getMockOccupiedDates } from "./booking-repository.mock";
 import { buildMockAvailability } from "./fixtures/availability";
+import { rangeOverlapsOccupied } from "@/lib/bookings/rules";
 
 function toDetail(property: Property): PropertyDetail {
   const extras = propertyDetailExtras[property.id] ?? {
@@ -30,7 +31,10 @@ function matchesFilters(property: PropertyDetail, filters: PropertyFilters) {
   const price = Number(property.pricePerDay);
   if (filters.minPrice !== undefined && price < filters.minPrice) return false;
   if (filters.maxPrice !== undefined && price > filters.maxPrice) return false;
-
+  if (filters.startDate && filters.endDate) {
+    const occupied = getMockOccupiedDates(property.id);
+    if (rangeOverlapsOccupied(filters.startDate, filters.endDate, occupied)) return false;
+  }
   return true;
 }
 
