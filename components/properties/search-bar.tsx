@@ -5,11 +5,18 @@ import { useRouter } from "next/navigation";
 import { useTransition } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Button, Input } from "@/components/ui";
+import { DateRangeField } from "@/components/properties/date-range-field";
 import type { PropertyFilters } from "@/lib/api/types";
-import { buildPropertiesHref } from "@/lib/filters/property-filters";
+import {
+  buildPropertiesHref,
+  DATE_FILTER_MAX_DAYS,
+  DATE_FILTER_WINDOW_DAYS,
+  getDateRangeError,
+} from "@/lib/filters/property-filters";
 import { departments, getMunicipalities } from "@/lib/locations/el-salvador";
 import { filterMessages, searchMessages } from "@/lib/messages/properties";
 import { cn } from "@/lib/utils/cn";
+import { addDaysIso, todayInElSalvador } from "@/lib/utils/dates";
 import {
   getPriceRangeError,
   propertySearchSchema,
@@ -53,6 +60,8 @@ export function SearchBar({ filters, showPrice = true }: SearchBarProps) {
       noDeposit: filters.noDeposit ?? false,
       minPrice: filters.minPrice !== undefined ? String(filters.minPrice) : "",
       maxPrice: filters.maxPrice !== undefined ? String(filters.maxPrice) : "",
+      startDate: filters.startDate ?? "",
+      endDate: filters.endDate ?? "",
     },
   });
 
@@ -61,14 +70,25 @@ export function SearchBar({ filters, showPrice = true }: SearchBarProps) {
   const noDeposit = useWatch({ control, name: "noDeposit" });
   const minPrice = useWatch({ control, name: "minPrice" });
   const maxPrice = useWatch({ control, name: "maxPrice" });
+  const startDate = useWatch({ control, name: "startDate" });
+  const endDate = useWatch({ control, name: "endDate" });
   const municipalities = getMunicipalities(department);
+
+  // H8: de hoy a hoy + 89 días, y el fin a máximo 30 días del inicio (contando ambos).
+  const today = todayInElSalvador();
+  const lastDay = addDaysIso(today, DATE_FILTER_WINDOW_DAYS - 1);
+  const dateError = getDateRangeError(startDate ?? "", endDate ?? "", today);
 
   const priceRangeError = getPriceRangeError(minPrice ?? "", maxPrice ?? "");
   const priceError = errors.minPrice?.message ?? errors.maxPrice?.message ?? priceRangeError;
-  const hasErrors = Boolean(errors.q || errors.minPrice || errors.maxPrice || priceRangeError);
+  const hasErrors = Boolean(
+    errors.q || errors.minPrice || errors.maxPrice || priceRangeError || dateError,
+  );
 
   const onSubmit = (values: PropertySearchFormData) => {
     if (getPriceRangeError(values.minPrice, values.maxPrice)) return;
+    if (getDateRangeError(values.startDate, values.endDate)) return;
+    const hasDates = Boolean(values.startDate && values.endDate);
 
     const href = buildPropertiesHref({
       ...filters,
@@ -79,6 +99,8 @@ export function SearchBar({ filters, showPrice = true }: SearchBarProps) {
       noDeposit: values.noDeposit || undefined,
       minPrice: values.minPrice ? Number(values.minPrice) : undefined,
       maxPrice: values.maxPrice ? Number(values.maxPrice) : undefined,
+      startDate: hasDates ? values.startDate : undefined,
+      endDate: hasDates ? values.endDate : undefined,
     });
     startTransition(() => router.push(href));
   };
@@ -86,7 +108,7 @@ export function SearchBar({ filters, showPrice = true }: SearchBarProps) {
   return (
     <form role="search" onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-5">
       <div className="flex flex-col gap-4 rounded-2xl border border-zinc-300 bg-white p-4 md:flex-row md:items-start">
-        <div className="grid flex-1 gap-4 sm:grid-cols-3">
+        <div className="grid flex-1 gap-4 sm:grid-cols-2 lg:grid-cols-[1.2fr_1fr_1fr_1.6fr]">
           <Input
             label={searchMessages.queryLabel}
             placeholder={searchMessages.queryPlaceholder}
@@ -131,6 +153,29 @@ export function SearchBar({ filters, showPrice = true }: SearchBarProps) {
             </select>
             {!department && (
               <p className="mt-1 text-xs text-zinc-500">{searchMessages.selectDepartmentFirst}</p>
+            )}
+          </div>
+
+          <div role="group" aria-labelledby="search-dates-label" className="flex flex-col">
+            <span id="search-dates-label" className="mb-1.5 text-sm font-semibold text-gray-900">
+              {searchMessages.datesLabel}
+            </span>
+            <DateRangeField
+              labelledBy="search-dates-label"
+              startDate={startDate ?? ""}
+              endDate={endDate ?? ""}
+              minDate={today}
+              maxDate={lastDay}
+              maxDays={DATE_FILTER_MAX_DAYS}
+              onChange={(start, end) => {
+                setValue("startDate", start, { shouldValidate: true });
+                setValue("endDate", end, { shouldValidate: true });
+              }}
+            />
+            {dateError && (
+              <p role="alert" className="mt-1.5 text-xs font-medium text-red-600">
+                {dateError}
+              </p>
             )}
           </div>
         </div>
