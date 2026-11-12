@@ -26,6 +26,11 @@ function matchesFilters(property: PropertyDetail, filters: PropertyFilters) {
   if (filters.municipality && property.municipality !== filters.municipality) return false;
   if (filters.category && property.category !== filters.category) return false;
   if (filters.noDeposit && Number(property.securityDeposit) > 0) return false;
+
+  const price = Number(property.pricePerDay);
+  if (filters.minPrice !== undefined && price < filters.minPrice) return false;
+  if (filters.maxPrice !== undefined && price > filters.maxPrice) return false;
+
   return true;
 }
 
