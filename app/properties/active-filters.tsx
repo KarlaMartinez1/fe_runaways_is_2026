@@ -40,6 +40,13 @@ function getChips(filters: PropertyFilters): Chip[] {
       next: { ...filters, noDeposit: undefined },
     });
   }
+  if (filters.minPrice !== undefined || filters.maxPrice !== undefined) {
+    chips.push({
+      key: "price",
+      label: filterMessages.priceChip(filters.minPrice, filters.maxPrice),
+      next: { ...filters, minPrice: undefined, maxPrice: undefined },
+    });
+  }
 
   return chips;
 }

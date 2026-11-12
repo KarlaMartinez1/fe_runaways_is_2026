@@ -54,8 +54,9 @@ export type PropertyFilters = {
   municipality?: string;
   category?: PropertyCategory;
   noDeposit?: boolean;
+  minPrice?: number;
+  maxPrice?: number;
 };
-
 export type BookingStatus = "PENDIENTE" | "PAGADA" | "FINALIZADA" | "CANCELADA";
 
 export type CreatedBooking = {
