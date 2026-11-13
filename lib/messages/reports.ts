@@ -49,11 +49,13 @@ export const reportMessages = {
     orderAsc: "Orden: Menor a mayor",
     headers: {
       property: "Bien",
+      reviewDate: "Fecha",
       status: "Estado",
       averageRating: "Calificación promedio",
     },
     cardRatingLabel: "Calificación",
     noRatings: "Sin calificaciones",
+    noReviewsDate: "Sin reseñas",
     readOnlyNotice:
       "Solo lectura: las reseñas no se pueden editar, ocultar ni eliminar desde el panel.",
     formatRatingWithReviews: (rating: number | null, reviewCount: number): string => {
