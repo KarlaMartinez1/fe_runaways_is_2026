@@ -111,8 +111,8 @@ export function PropertyRatingsTable({
 
             return (
               <div
-                key={`${item.propertyId}-${index}`}
-                className="rounded-2xl bg-[#F9FAFB] p-4 sm:p-5 space-y-2 transition-shadow"
+                key={`${item.propertyId}-${item.lastReviewDate ?? "sin-fecha"}-${index}`}
+                className="rounded-2xl bg-[#F9FAFB] p-4 sm:p-5 space-y-2.5 transition-shadow"
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold text-sm sm:text-base text-zinc-900">
@@ -121,6 +121,15 @@ export function PropertyRatingsTable({
                   <Badge variant={badgeInfo.variant} size="sm">
                     {badgeInfo.label}
                   </Badge>
+                </div>
+
+                <div className="flex items-center justify-between text-xs sm:text-sm">
+                  <span className="text-zinc-500 font-medium">
+                    {reportMessages.ratings.headers.reviewDate}
+                  </span>
+                  <span className="text-zinc-600 font-medium">
+                    {item.lastReviewDate ?? reportMessages.ratings.noReviewsDate}
+                  </span>
                 </div>
 
                 <div className="flex items-center justify-between text-xs sm:text-sm">
@@ -148,6 +157,9 @@ export function PropertyRatingsTable({
                 {reportMessages.ratings.headers.property}
               </th>
               <th scope="col" className="py-3 px-4 font-semibold text-center">
+                {reportMessages.ratings.headers.reviewDate}
+              </th>
+              <th scope="col" className="py-3 px-4 font-semibold text-center">
                 {reportMessages.ratings.headers.status}
               </th>
               <th scope="col" className="py-3 px-4 sm:px-2 font-semibold text-right">
@@ -159,13 +171,13 @@ export function PropertyRatingsTable({
           <tbody className="divide-y divide-zinc-100">
             {isLoading ? (
               <tr>
-                <td colSpan={3} className="py-8 text-center text-sm text-zinc-400 animate-pulse">
+                <td colSpan={4} className="py-8 text-center text-sm text-zinc-400 animate-pulse">
                   Cargando calificaciones...
                 </td>
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={3} className="py-10 text-center text-sm text-zinc-500">
+                <td colSpan={4} className="py-10 text-center text-sm text-zinc-500">
                   {reportMessages.byProperty.noProperties}
                 </td>
               </tr>
@@ -178,11 +190,14 @@ export function PropertyRatingsTable({
 
                 return (
                   <tr
-                    key={`${item.propertyId}-${index}`}
+                    key={`${item.propertyId}-${item.lastReviewDate ?? "sin-fecha"}-${index}`}
                     className="hover:bg-zinc-50/70 transition-colors"
                   >
                     <td className="py-4 px-4 sm:px-2 font-medium text-zinc-900">
                       {item.title}
+                    </td>
+                    <td className="py-4 px-4 text-center text-zinc-600">
+                      {item.lastReviewDate ?? reportMessages.ratings.noReviewsDate}
                     </td>
                     <td className="py-4 px-4 text-center">
                       <Badge variant={badgeInfo.variant} size="sm">
