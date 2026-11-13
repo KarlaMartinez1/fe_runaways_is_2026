@@ -144,7 +144,25 @@ export const mockReportRepository: ReportRepository = {
     const page = Math.max(1, params?.page ?? 1);
     const pageSize = params?.pageSize ?? 10;
 
-    const items = [...propertyRatingItemsFixture];
+    const from = params?.from ? parseFixtureDate(params.from) : null;
+    const to = params?.to ? parseFixtureDate(params.to) : null;
+    if (to) {
+      to.setHours(23, 59, 59, 999);
+    }
+
+    let items = [...propertyRatingItemsFixture];
+
+    if (from || to) {
+      items = items.filter((item) => {
+        const itemDate = parseFixtureDate(item.lastReviewDate ?? null);
+        if (!itemDate) {
+          return item.reviewCount === 0;
+        }
+        if (from && itemDate < from) return false;
+        if (to && itemDate > to) return false;
+        return true;
+      });
+    }
 
     items.sort((a, b) => {
       const aVal = a.averageRating ?? -1;
