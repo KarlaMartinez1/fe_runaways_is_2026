@@ -22,17 +22,17 @@ const reportTabs: ReportTabItem[] = [
   {
     key: "income",
     label: reportMessages.tabs.income,
-    href: "/lessor/reports",
+    href: "/owner/reports",
   },
   {
     key: "ratings",
     label: reportMessages.tabs.ratings,
-    href: "/lessor/reports/ratings",
+    href: "/owner/reports/ratings",
   },
   {
     key: "occupancy",
     label: reportMessages.tabs.occupancy,
-    href: "/lessor/reports/occupancy",
+    href: "/owner/reports/occupancy",
   },
 ];
 
@@ -46,9 +46,10 @@ export function ReportsNav({ className }: ReportsNavProps) {
     >
       {reportTabs.map((tab) => {
         const isActive =
-          tab.href === "/lessor/reports"
-            ? pathname === "/lessor/reports"
-            : pathname.startsWith(tab.href);
+          tab.href === "/owner/reports"
+            ? pathname === "/owner/reports" || pathname === "/lessor/reports"
+            : pathname.startsWith(tab.href) ||
+              pathname.startsWith(tab.href.replace("/owner/", "/lessor/"));
 
         return (
           <Link
