@@ -15,6 +15,8 @@ export const metadata: Metadata = {
 
 interface OwnerRatingsPageProps {
   searchParams?: Promise<{
+    from?: string;
+    to?: string;
     order?: string;
     page?: string;
     scenario?: string;
@@ -27,6 +29,8 @@ export default async function OwnerRatingsPage({
   searchParams,
 }: OwnerRatingsPageProps) {
   const resolvedParams = searchParams ? await searchParams : {};
+  const from = resolvedParams.from || undefined;
+  const to = resolvedParams.to || undefined;
   const order = resolvedParams.order === "asc" ? "asc" : "desc";
   const page = Math.max(1, Number(resolvedParams.page) || 1);
   const scenario = resolvedParams.scenario || undefined;
@@ -62,6 +66,8 @@ export default async function OwnerRatingsPage({
   if (!forbidden) {
     try {
       ratings = await reportRepository.getPropertyRatings({
+        from,
+        to,
         order,
         page,
         pageSize: 10,
@@ -112,6 +118,8 @@ export default async function OwnerRatingsPage({
       <Navbar />
       <RatingsPageBody
         initialRatings={initialRatings}
+        initialFrom={from ?? ""}
+        initialTo={to ?? ""}
         initialOrder={order}
       />
     </div>
