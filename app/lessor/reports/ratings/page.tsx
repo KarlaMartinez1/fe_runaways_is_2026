@@ -2,6 +2,8 @@ import { redirect } from "next/navigation";
 
 interface LessorRatingsPageProps {
   searchParams?: Promise<{
+    from?: string;
+    to?: string;
     order?: string;
     page?: string;
     scenario?: string;
