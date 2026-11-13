@@ -563,6 +563,7 @@ export const propertyRatingItemsFixture: PropertyRatingItem[] = [
     status: "DISPONIBLE",
     averageRating: 4.8,
     reviewCount: 12,
+    lastReviewDate: "2026-10-25",
   },
   {
     propertyId: "prop-02",
@@ -570,6 +571,7 @@ export const propertyRatingItemsFixture: PropertyRatingItem[] = [
     status: "DISPONIBLE",
     averageRating: 4.5,
     reviewCount: 6,
+    lastReviewDate: "2026-10-18",
   },
   {
     propertyId: "prop-03",
@@ -577,6 +579,7 @@ export const propertyRatingItemsFixture: PropertyRatingItem[] = [
     status: "ELIMINADO",
     averageRating: 4.2,
     reviewCount: 4,
+    lastReviewDate: "2026-09-30",
   },
   {
     propertyId: "prop-04",
@@ -584,6 +587,7 @@ export const propertyRatingItemsFixture: PropertyRatingItem[] = [
     status: "DISPONIBLE",
     averageRating: null,
     reviewCount: 0,
+    lastReviewDate: null,
   },
 ];
 
