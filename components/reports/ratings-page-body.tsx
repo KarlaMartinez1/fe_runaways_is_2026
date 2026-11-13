@@ -7,21 +7,28 @@ import { reportMessages } from "@/lib/messages/reports";
 import { fetchRatingsDataAction } from "@/app/actions/reports";
 import type { PropertyRatingListResult } from "@/lib/repositories/report-repository";
 import { ReportsNav } from "./reports-nav";
+import { ReportsDateFilter } from "./reports-date-filter";
 import { PropertyRatingsTable } from "./property-ratings-table";
 
 export interface RatingsPageBodyProps {
   initialRatings: PropertyRatingListResult;
+  initialFrom?: string;
+  initialTo?: string;
   initialOrder?: "asc" | "desc";
   className?: string;
 }
 
 export function RatingsPageBody({
   initialRatings,
+  initialFrom = "",
+  initialTo = "",
   initialOrder = "desc",
   className,
 }: RatingsPageBodyProps) {
   const router = useRouter();
 
+  const [from, setFrom] = React.useState<string>(initialFrom);
+  const [to, setTo] = React.useState<string>(initialTo);
   const [order, setOrder] = React.useState<"asc" | "desc">(initialOrder);
   const [page, setPage] = React.useState<number>(initialRatings.page || 1);
   const [ratings, setRatings] = React.useState<PropertyRatingListResult>(initialRatings);
@@ -29,8 +36,10 @@ export function RatingsPageBody({
   const [error, setError] = React.useState<string | null>(null);
 
   const syncUrl = React.useCallback(
-    (newOrder: "asc" | "desc", newPage: number) => {
+    (newFrom: string, newTo: string, newOrder: "asc" | "desc", newPage: number) => {
       const params = new URLSearchParams();
+      if (newFrom) params.set("from", newFrom);
+      if (newTo) params.set("to", newTo);
       if (newOrder !== "desc") params.set("order", newOrder);
       if (newPage > 1) params.set("page", String(newPage));
 
@@ -44,18 +53,25 @@ export function RatingsPageBody({
   );
 
   const fetchData = React.useCallback(
-    async (newOrder: "asc" | "desc", newPage: number) => {
+    async (
+      newFrom: string,
+      newTo: string,
+      newOrder: "asc" | "desc",
+      newPage: number
+    ) => {
       setIsLoading(true);
       setError(null);
       try {
         const result = await fetchRatingsDataAction({
+          from: newFrom || undefined,
+          to: newTo || undefined,
           order: newOrder,
           page: newPage,
           pageSize: 10,
         });
 
         setRatings(result);
-        syncUrl(newOrder, newPage);
+        syncUrl(newFrom, newTo, newOrder, newPage);
       } catch (err) {
         console.error("Error fetching ratings:", err);
         setError(reportMessages.errors.loadError);
@@ -66,19 +82,35 @@ export function RatingsPageBody({
     [syncUrl]
   );
 
+  const handleApplyFilter = (values: { from?: string; to?: string }) => {
+    const nextFrom = values.from ?? "";
+    const nextTo = values.to ?? "";
+    setFrom(nextFrom);
+    setTo(nextTo);
+    setPage(1);
+    fetchData(nextFrom, nextTo, order, 1);
+  };
+
+  const handleClearFilter = () => {
+    setFrom("");
+    setTo("");
+    setPage(1);
+    fetchData("", "", order, 1);
+  };
+
   const handleOrderChange = (newOrder: "asc" | "desc") => {
     setOrder(newOrder);
     setPage(1);
-    fetchData(newOrder, 1);
+    fetchData(from, to, newOrder, 1);
   };
 
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
-    fetchData(order, newPage);
+    fetchData(from, to, order, newPage);
   };
 
   const handleRefresh = () => {
-    fetchData(order, page);
+    fetchData(from, to, order, page);
   };
 
   return (
@@ -93,6 +125,14 @@ export function RatingsPageBody({
           {reportMessages.pageTitle}
         </h1>
       </div>
+
+      <ReportsDateFilter
+        initialFrom={from}
+        initialTo={to}
+        onApply={handleApplyFilter}
+        onClear={handleClearFilter}
+        isLoading={isLoading}
+      />
 
       <ReportsNav />
 
