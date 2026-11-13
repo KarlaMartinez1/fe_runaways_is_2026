@@ -156,7 +156,7 @@ export const mockReportRepository: ReportRepository = {
       items = items.filter((item) => {
         const itemDate = parseFixtureDate(item.lastReviewDate ?? null);
         if (!itemDate) {
-          return item.reviewCount === 0;
+          return false;
         }
         if (from && itemDate < from) return false;
         if (to && itemDate > to) return false;
