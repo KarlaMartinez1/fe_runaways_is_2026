@@ -94,7 +94,7 @@ export function PropertyIncomeTable({
             {reportMessages.byProperty.noProperties}
           </div>
         ) : (
-          items.map((item) => {
+          items.map((item, index) => {
             const badgeInfo = statusBadgeConfig[item.status] ?? {
               variant: "neutral",
               label: item.status,
@@ -102,7 +102,7 @@ export function PropertyIncomeTable({
 
             return (
               <div
-                key={item.propertyId}
+                key={`${item.propertyId}-${item.lastIncomeDate ?? "sin-fecha"}-${index}`}
                 className="rounded-2xl bg-[#F9FAFB] p-4 sm:p-5 space-y-2.5 transition-shadow"
               >
                 <div className="flex items-center justify-between gap-2">
@@ -181,7 +181,7 @@ export function PropertyIncomeTable({
                 </td>
               </tr>
             ) : (
-              items.map((item) => {
+              items.map((item, index) => {
                 const badgeInfo = statusBadgeConfig[item.status] ?? {
                   variant: "neutral",
                   label: item.status,
@@ -189,7 +189,7 @@ export function PropertyIncomeTable({
 
                 return (
                   <tr
-                    key={item.propertyId}
+                    key={`${item.propertyId}-${item.lastIncomeDate ?? "sin-fecha"}-${index}`}
                     className="hover:bg-zinc-50/70 transition-colors"
                   >
                     <td className="py-4 px-4 sm:px-2 font-medium text-zinc-900">
