@@ -37,6 +37,8 @@ export async function fetchReportsDataAction(params: FetchReportsParams): Promis
 }
 
 export interface FetchRatingsParams {
+  from?: string;
+  to?: string;
   order?: "asc" | "desc";
   page?: number;
   pageSize?: number;
@@ -46,6 +48,8 @@ export async function fetchRatingsDataAction(
   params: FetchRatingsParams
 ): Promise<PropertyRatingListResult> {
   return reportRepository.getPropertyRatings({
+    from: params.from,
+    to: params.to,
     order: params.order,
     page: params.page,
     pageSize: params.pageSize,
