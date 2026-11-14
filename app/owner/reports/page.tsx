@@ -44,7 +44,6 @@ export default async function OwnerReportsPage({
 
   let forbidden = false;
 
-  // Verificación de acceso para rol OWNER (se puede omitir en desarrollo con ?bypass=true o ?dev=true)
   if (!bypass) {
     try {
       const profile = await profileRepository.getUserProfile(scenario);

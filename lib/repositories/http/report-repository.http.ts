@@ -42,6 +42,8 @@ export const httpReportRepository: ReportRepository = {
 
   getPropertyRatings(params?: GetPropertyRatingsParams) {
     const query = buildQuery({
+      from: params?.from,
+      to: params?.to,
       order: params?.order ?? "desc",
       page: params?.page ?? 1,
       pageSize: params?.pageSize ?? 10,
