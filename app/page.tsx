@@ -60,7 +60,7 @@ export default async function Home() {
           ) : recent.length === 0 ? (
             <p className="py-16 text-center text-zinc-600">{catalogMessages.empty}</p>
           ) : (
-            <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-8">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {recent.map((property) => (
                 <PropertyCard key={property.id} property={property} />
               ))}
