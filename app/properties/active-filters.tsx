@@ -47,7 +47,13 @@ function getChips(filters: PropertyFilters): Chip[] {
       next: { ...filters, minPrice: undefined, maxPrice: undefined },
     });
   }
-
+  if (filters.startDate && filters.endDate) {
+    chips.push({
+      key: "dates",
+      label: filterMessages.dateChip(filters.startDate, filters.endDate),
+      next: { ...filters, startDate: undefined, endDate: undefined },
+    });
+  }
   return chips;
 }
 
