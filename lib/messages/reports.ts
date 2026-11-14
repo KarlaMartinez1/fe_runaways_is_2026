@@ -13,6 +13,7 @@ export const reportMessages = {
     clearButton: "Limpiar",
     invalidDateRange: "La fecha final no puede ser anterior a la inicial.",
     periodExceeded: "El período no puede superar 365 días.",
+    futureDateNotAllowed: "No se pueden seleccionar fechas futuras.",
   },
   summary: {
     title: "Ingresos totales",
