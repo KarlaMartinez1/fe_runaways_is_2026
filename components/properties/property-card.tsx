@@ -17,22 +17,22 @@ export function PropertyCard({ property }: { property: Property }) {
     >
       {cover ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={cover} alt={property.title} className="h-[170px] w-full object-cover" />
+        <img src={cover} alt={property.title} className="aspect-[3/2] w-full object-cover" />
       ) : (
-        <div className="h-[170px] w-full bg-[#DCE2F4]" aria-hidden="true" />
+        <div className="aspect-[3/2] w-full bg-[#DCE2F4]" aria-hidden="true" />
       )}
 
-      <div className="flex flex-col gap-1.5 p-4">
+      <div className="flex flex-col gap-1 p-3">
         <span
           className={`self-start rounded-md px-2.5 py-0.5 text-xs font-semibold ${categoryStyles[property.category]}`}
         >
           {categoryLabels[property.category]}
         </span>
-        <h3 className="text-[17px] font-semibold text-zinc-900">{property.title}</h3>
-        <p className="text-sm text-zinc-500">
+        <h3 className="line-clamp-2 text-[15px] font-semibold text-zinc-900">{property.title}</h3>
+        <p className="truncate text-sm text-zinc-500">
           {property.municipality}, {property.department}
         </p>
-        <p className="font-bold text-zinc-900">
+        <p className="text-[15px] font-bold text-zinc-900">
           {formatPrice(property.pricePerDay)} {propertyMessages.perDay}
         </p>
 

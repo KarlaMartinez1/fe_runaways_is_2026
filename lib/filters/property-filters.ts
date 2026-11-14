@@ -1,4 +1,7 @@
 import type { PropertyCategory, PropertyFilters } from "@/lib/api/types";
+import { countBookingDays } from "@/lib/bookings/rules";
+import { searchMessages } from "@/lib/messages/properties";
+import { addDaysIso, todayInElSalvador } from "@/lib/utils/dates";
 
 type RawParams = Record<string, string | string[] | undefined>;
 
@@ -6,6 +9,22 @@ const categories: PropertyCategory[] = ["PROPIEDAD", "EQUIPO"];
 
 export const PRICE_MIN = 0.01;
 export const PRICE_MAX = 9999.99;
+export const DATE_FILTER_WINDOW_DAYS = 90;
+export const DATE_FILTER_MAX_DAYS = 30;
+const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+// Reglas de H8. Devuelve el mensaje del primer error o undefined si el rango es válido.
+export function getDateRangeError(startDate: string, endDate: string, today = todayInElSalvador()) {
+  if (!startDate && !endDate) return undefined;
+  if (!startDate || !endDate) return searchMessages.datesBoth;
+
+  const lastDay = addDaysIso(today, DATE_FILTER_WINDOW_DAYS - 1);
+  if (startDate < today) return searchMessages.dateStartBeforeToday;
+  if (endDate < startDate) return searchMessages.dateEndBeforeStart;
+  if (endDate > lastDay) return searchMessages.dateOutsideWindow;
+  if (countBookingDays(startDate, endDate) > DATE_FILTER_MAX_DAYS) return searchMessages.dateTooLong;
+  return undefined;
+}
 
 function single(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value;
@@ -33,6 +52,12 @@ export function parseFilters(params: RawParams): PropertyFilters {
     maxPrice = undefined;
   }
 
+  // Las fechas solo se aceptan de a par, con formato AAAA-MM-DD y cumpliendo las reglas de H8.
+  const startDate = single(params.startDate) ?? "";
+  const endDate = single(params.endDate) ?? "";
+  const validDates =
+    ISO_DATE.test(startDate) && ISO_DATE.test(endDate) && !getDateRangeError(startDate, endDate);
+
   return {
     q: q && q.length >= 2 && q.length <= 100 ? q : undefined,
     department: department || undefined,
@@ -41,6 +66,8 @@ export function parseFilters(params: RawParams): PropertyFilters {
     noDeposit: single(params.noDeposit) === "true" ? true : undefined,
     minPrice,
     maxPrice,
+    startDate: validDates ? startDate : undefined,
+    endDate: validDates ? endDate : undefined,
   };
 }
 
@@ -53,6 +80,10 @@ export function filtersToQuery(filters: PropertyFilters): Record<string, string>
   if (filters.noDeposit) query.noDeposit = "true";
   if (filters.minPrice !== undefined) query.minPrice = filters.minPrice.toFixed(2);
   if (filters.maxPrice !== undefined) query.maxPrice = filters.maxPrice.toFixed(2);
+  if (filters.startDate && filters.endDate) {
+    query.startDate = filters.startDate;
+    query.endDate = filters.endDate;
+  }
   return query;
 }
 
