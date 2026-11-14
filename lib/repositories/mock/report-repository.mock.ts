@@ -56,8 +56,11 @@ export const mockReportRepository: ReportRepository = {
       return defaultIncomeSummaryFixture;
     }
 
-    const fromDate = from ? new Date(from) : null;
-    const toDate = to ? new Date(to) : null;
+    const fromDate = from ? parseFixtureDate(from) : null;
+    const toDate = to ? parseFixtureDate(to) : null;
+    if (toDate) {
+      toDate.setHours(23, 59, 59, 999);
+    }
 
     const filtered = propertyIncomeItemsFixture.filter((item) => {
       const itemDate = parseFixtureDate(item.lastIncomeDate);
@@ -89,8 +92,11 @@ export const mockReportRepository: ReportRepository = {
     const order = params?.order ?? "desc";
     const page = Math.max(1, params?.page ?? 1);
     const pageSize = params?.pageSize ?? 10;
-    const from = params?.from ? new Date(params.from) : null;
-    const to = params?.to ? new Date(params.to) : null;
+    const from = params?.from ? parseFixtureDate(params.from) : null;
+    const to = params?.to ? parseFixtureDate(params.to) : null;
+    if (to) {
+      to.setHours(23, 59, 59, 999);
+    }
 
     let items = [...propertyIncomeItemsFixture];
 
