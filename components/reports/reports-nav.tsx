@@ -47,9 +47,8 @@ export function ReportsNav({ className }: ReportsNavProps) {
       {reportTabs.map((tab) => {
         const isActive =
           tab.href === "/owner/reports"
-            ? pathname === "/owner/reports" || pathname === "/lessor/reports"
-            : pathname.startsWith(tab.href) ||
-              pathname.startsWith(tab.href.replace("/owner/", "/lessor/"));
+            ? pathname === "/owner/reports"
+            : pathname.startsWith(tab.href);
 
         return (
           <Link

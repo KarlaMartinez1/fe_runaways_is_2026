@@ -46,6 +46,7 @@ export interface PropertyRatingItem {
   status: PropertyStatus;
   averageRating: number | null;
   reviewCount: number;
+  lastReviewDate?: string | null;
 }
 
 export interface PropertyRatingListResult {
@@ -57,6 +58,8 @@ export interface PropertyRatingListResult {
 }
 
 export interface GetPropertyRatingsParams {
+  from?: string;
+  to?: string;
   order?: "asc" | "desc";
   page?: number;
   pageSize?: number;
