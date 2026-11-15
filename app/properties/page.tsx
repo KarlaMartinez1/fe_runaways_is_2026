@@ -84,7 +84,7 @@ export default async function CatalogPage({ searchParams }: CatalogPageProps) {
               )
             ) : (
               <>
-                <div className="grid grid-cols-[repeat(auto-fill,minmax(220px,1fr))] gap-8">
+                <div className="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                   {result.data.map((property) => (
                     <PropertyCard key={property.id} property={property} />
                   ))}

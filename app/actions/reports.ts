@@ -4,6 +4,7 @@ import { reportRepository } from "@/lib/repositories";
 import type {
   IncomeSummary,
   PropertyIncomeListResult,
+  PropertyRatingListResult,
 } from "@/lib/repositories/report-repository";
 
 export interface FetchReportsParams {
@@ -33,4 +34,24 @@ export async function fetchReportsDataAction(params: FetchReportsParams): Promis
   ]);
 
   return { summary, propertyIncome };
+}
+
+export interface FetchRatingsParams {
+  from?: string;
+  to?: string;
+  order?: "asc" | "desc";
+  page?: number;
+  pageSize?: number;
+}
+
+export async function fetchRatingsDataAction(
+  params: FetchRatingsParams
+): Promise<PropertyRatingListResult> {
+  return reportRepository.getPropertyRatings({
+    from: params.from,
+    to: params.to,
+    order: params.order,
+    page: params.page,
+    pageSize: params.pageSize,
+  });
 }

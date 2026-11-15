@@ -52,8 +52,20 @@ export function ReportsDateFilter({
   const fromValue = useWatch({ control, name: "from" });
   const toValue = useWatch({ control, name: "to" });
 
+  const todayStr = React.useMemo(() => {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = String(now.getMonth() + 1).padStart(2, "0");
+    const day = String(now.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }, []);
+
+  const isFutureFrom = Boolean(fromValue && fromValue > todayStr);
+  const isFutureTo = Boolean(toValue && toValue > todayStr);
+  const isFutureDate = isFutureFrom || isFutureTo;
+
   const isInvalidRange = Boolean(
-    fromValue && toValue && new Date(toValue) < new Date(fromValue)
+    fromValue && toValue && toValue < fromValue
   );
 
   const isPeriodExceeded = Boolean(
@@ -68,9 +80,10 @@ export function ReportsDateFilter({
         365
   );
 
-  const hasValidationError = isInvalidRange || isPeriodExceeded;
+  const hasValidationError = isFutureDate || isInvalidRange || isPeriodExceeded;
 
   const onSubmit = (data: ReportDateFilterFormData) => {
+    if (hasValidationError) return;
     onApply({
       from: data.from || undefined,
       to: data.to || undefined,
@@ -101,9 +114,15 @@ export function ReportsDateFilter({
             <input
               id="filter-from-date"
               type="date"
+              max={todayStr}
               {...register("from")}
               placeholder={reportMessages.filter.datePlaceholder}
-              className="w-full rounded-xl border border-zinc-300 bg-white px-3.5 py-2.5 text-sm text-zinc-900 outline-none focus:border-[#1E4DB7] focus:ring-2 focus:ring-blue-100 transition-colors"
+              className={cn(
+                "w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-zinc-900 outline-none transition-colors",
+                isFutureFrom
+                  ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100"
+                  : "border-zinc-300 focus:border-[#1E4DB7] focus:ring-2 focus:ring-blue-100"
+              )}
             />
           </div>
 
@@ -117,11 +136,12 @@ export function ReportsDateFilter({
             <input
               id="filter-to-date"
               type="date"
+              max={todayStr}
               {...register("to")}
               placeholder={reportMessages.filter.datePlaceholder}
               className={cn(
                 "w-full rounded-xl border bg-white px-3.5 py-2.5 text-sm text-zinc-900 outline-none transition-colors",
-                hasValidationError
+                hasValidationError && (isFutureTo || isInvalidRange || isPeriodExceeded)
                   ? "border-red-500 focus:border-red-500 focus:ring-2 focus:ring-red-100"
                   : "border-zinc-300 focus:border-[#1E4DB7] focus:ring-2 focus:ring-blue-100"
               )}
@@ -152,13 +172,19 @@ export function ReportsDateFilter({
           </div>
         </div>
 
-        {isInvalidRange && (
+        {isFutureDate && (
+          <p className="text-xs text-red-600 font-medium pt-0.5">
+            {reportMessages.filter.futureDateNotAllowed}
+          </p>
+        )}
+
+        {isInvalidRange && !isFutureDate && (
           <p className="text-xs text-red-600 font-medium pt-0.5">
             {reportMessages.filter.invalidDateRange}
           </p>
         )}
 
-        {isPeriodExceeded && (
+        {isPeriodExceeded && !isFutureDate && !isInvalidRange && (
           <p className="text-xs text-red-600 font-medium pt-0.5">
             {reportMessages.filter.periodExceeded}
           </p>
