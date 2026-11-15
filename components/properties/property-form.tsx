@@ -4,9 +4,10 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import Link from "next/link";
 import { useState, type ReactNode } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { createProperty } from "@/app/actions/properties";
+import { createProperty, updateProperty } from "@/app/actions/properties";
 import { PhotoPicker, type PhotoItem } from "@/components/properties/photo-picker";
 import { Button } from "@/components/ui";
+import type { OwnerProperty } from "@/lib/api/types";
 import { departments, getMunicipalities } from "@/lib/locations/el-salvador";
 import { categoryLabels, formatPrice, propertyMessages } from "@/lib/messages/properties";
 import { propertyFormMessages as m } from "@/lib/messages/property-form";
@@ -19,7 +20,8 @@ import {
   getPhotoFileError,
   PHOTO_MAX_COUNT,
   propertyFormSchema,
-   TITLE_MAX,
+  TITLE_MAX,
+  toMoney,
   type PropertyFormData,
   type PropertyFormInput,
 } from "@/lib/validations/property-form";
@@ -72,30 +74,70 @@ function Field({ id, label, required, error, hint, counter, children }: FieldPro
   );
 }
 
-export function PropertyForm() {
-  const [photos, setPhotos] = useState<PhotoItem[]>([]);
+const emptyValues: PropertyFormInput = {
+  title: "",
+  description: "",
+  category: "",
+  department: "",
+  municipality: "",
+  address: "",
+  pricePerDay: "",
+  securityDeposit: "",
+};
+
+// Depósito 0.00 se muestra vacío ("Sin depósito"), igual que al publicar.
+function depositForForm(value: string) {
+  return Number(value || "0") > 0 ? toMoney(value) : "";
+}
+
+// H4: valores del formulario a partir del bien guardado.
+function toFormValues(property: OwnerProperty): PropertyFormInput {
+  return {
+    title: property.title,
+    description: property.description,
+    category: property.category,
+    department: property.department,
+    municipality: property.municipality,
+    address: property.address,
+    pricePerDay: toMoney(property.pricePerDay),
+    securityDeposit: depositForForm(property.securityDeposit),
+  };
+}
+
+// H4: fotos ya guardadas (solo URL, sin archivo).
+function toSavedPhotos(urls: string[]): PhotoItem[] {
+  return urls.map((url, index) => ({ id: `saved-${index}-${url}`, previewUrl: url }));
+}
+
+type PropertyFormProps = {
+  // H4: si llega un bien, el formulario abre en modo de solo lectura con sus datos y permite editarlo.
+  property?: OwnerProperty;
+};
+
+export function PropertyForm({ property }: PropertyFormProps) {
+  const isEditScreen = Boolean(property);
+  const [isEditing, setIsEditing] = useState(false);
+  const readOnly = isEditScreen && !isEditing;
+
+  const [savedPhotos, setSavedPhotos] = useState<PhotoItem[]>(() =>
+    property ? toSavedPhotos(property.images) : [],
+  );
+  const [photos, setPhotos] = useState<PhotoItem[]>(savedPhotos);
   const [photoError, setPhotoError] = useState<string>();
   const [serverError, setServerError] = useState<string>();
+  const [showSaved, setShowSaved] = useState(false);
 
   const {
     register,
     handleSubmit,
     control,
     setValue,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<PropertyFormInput, unknown, PropertyFormData>({
     resolver: zodResolver(propertyFormSchema),
     mode: "onChange",
-    defaultValues: {
-      title: "",
-      description: "",
-      category: "",
-      department: "",
-      municipality: "",
-      address: "",
-      pricePerDay: "",
-      securityDeposit: "",
-    },
+    defaultValues: property ? toFormValues(property) : emptyValues,
   });
 
   const [title, description, category, department, municipality, address, pricePerDay] = useWatch({
@@ -132,9 +174,29 @@ export function PropertyForm() {
 
   const handleRemovePhoto = (id: string) => {
     const removed = photos.find((photo) => photo.id === id);
-    if (removed) URL.revokeObjectURL(removed.previewUrl);
+    // Solo las fotos nuevas tienen una vista previa local que hay que liberar.
+    if (removed?.file) URL.revokeObjectURL(removed.previewUrl);
     setPhotos((current) => current.filter((photo) => photo.id !== id));
     setPhotoError(undefined);
+  };
+
+  // H4: pasa de solo lectura a edición en la misma pantalla.
+  const handleStartEditing = () => {
+    setShowSaved(false);
+    setServerError(undefined);
+    setIsEditing(true);
+  };
+
+  // H4: descarta los cambios y vuelve a solo lectura con los datos anteriores.
+  const handleCancelEditing = () => {
+    for (const photo of photos) {
+      if (photo.file) URL.revokeObjectURL(photo.previewUrl);
+    }
+    reset();
+    setPhotos(savedPhotos);
+    setPhotoError(undefined);
+    setServerError(undefined);
+    setIsEditing(false);
   };
 
   const onSubmit = async (values: PropertyFormData) => {
@@ -146,20 +208,49 @@ export function PropertyForm() {
       return;
     }
 
+    // Se suben solo las fotos nuevas; las ya guardadas conservan su URL.
     let imageUrls: string[];
     try {
-      imageUrls = await Promise.all(photos.map((photo) => imageStorage.uploadPropertyImage(photo.file)));
+      imageUrls = await Promise.all(
+        photos.map((photo) =>
+          photo.file ? imageStorage.uploadPropertyImage(photo.file) : Promise.resolve(photo.previewUrl),
+        ),
+      );
     } catch (error) {
       console.error("Error al subir las fotos:", error);
       setServerError(m.saveError);
       return;
     }
 
-    // Si se publica con éxito, la acción redirige a "Mis publicaciones".
-    const result = await createProperty(values, imageUrls);
-    if (result && !result.ok) {
-      setServerError(result.message);
+    if (!property) {
+      // Si se publica con éxito, la acción redirige a "Mis publicaciones".
+      const result = await createProperty(values, imageUrls);
+      if (result && !result.ok) {
+        setServerError(result.message);
+      }
+      return;
     }
+
+    // H4: al guardar, vuelve a solo lectura con los datos nuevos.
+    const result = await updateProperty(property.id, values, imageUrls);
+    if (!result.ok) {
+      setServerError(result.message);
+      return;
+    }
+
+    for (const photo of photos) {
+      if (photo.file) URL.revokeObjectURL(photo.previewUrl);
+    }
+    const newPhotos = toSavedPhotos(imageUrls);
+    reset({
+      ...values,
+      pricePerDay: toMoney(values.pricePerDay),
+      securityDeposit: depositForForm(values.securityDeposit),
+    });
+    setSavedPhotos(newPhotos);
+    setPhotos(newPhotos);
+    setIsEditing(false);
+    setShowSaved(true);
   };
 
   return (
@@ -168,7 +259,7 @@ export function PropertyForm() {
       noValidate
       className="grid gap-10 lg:grid-cols-[minmax(0,1fr)_330px] lg:gap-16"
     >
-      <div className="flex flex-col gap-10">
+      <fieldset disabled={readOnly} className="flex min-w-0 flex-col gap-10">
         <section aria-labelledby="basic-section" className="flex flex-col gap-5">
           <h2 id="basic-section" className="text-base font-semibold text-zinc-900">
             {m.basicSection}
@@ -354,7 +445,7 @@ export function PropertyForm() {
             </Field>
           </div>
         </section>
-      </div>
+      </fieldset>
 
       <aside aria-labelledby="preview-title" className="flex flex-col gap-3 lg:sticky lg:top-8 lg:self-start">
         <p id="preview-title" className="text-sm font-semibold text-zinc-700">
@@ -390,7 +481,13 @@ export function PropertyForm() {
         <h2 id="photos-section" className="text-base font-semibold text-zinc-900">
           {m.photosSection}
         </h2>
-        <PhotoPicker photos={photos} error={photoError} onAdd={handleAddPhotos} onRemove={handleRemovePhoto} />
+        <PhotoPicker
+          photos={photos}
+          error={photoError}
+          onAdd={handleAddPhotos}
+          onRemove={handleRemovePhoto}
+          disabled={readOnly}
+        />
       </section>
 
       <div className="flex flex-col gap-4 lg:col-span-2">
@@ -399,22 +496,51 @@ export function PropertyForm() {
             {serverError}
           </p>
         )}
-
-        <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <p className="rounded-xl bg-[#EEF0E2] px-4 py-3 text-sm text-zinc-800">
-            {m.availabilityNote} <span className="font-semibold">{m.availabilityLink}</span>
+        {showSaved && (
+          <p role="status" className="rounded-xl bg-[#d9f5e3] px-4 py-3 text-sm font-medium text-[#14532d]">
+            {m.saved}
           </p>
+        )}
+
+        {isEditScreen ? (
           <div className="flex justify-end gap-3">
-            <Button asChild variant="outline">
-              <Link href="/properties/mine">{m.cancel}</Link>
-            </Button>
-            <Button type="submit" isLoading={isSubmitting} disabled={hasErrors}>
-              {isSubmitting ? m.publishing : m.publish}
-            </Button>
+            {readOnly ? (
+              <Button key="edit" type="button" onClick={handleStartEditing}>
+                {m.edit}
+              </Button>
+            ) : (
+              <>
+                <Button
+                  key="cancel"
+                  type="button"
+                  variant="outline"
+                  onClick={handleCancelEditing}
+                  disabled={isSubmitting}
+                >
+                  {m.cancel}
+                </Button>
+                <Button key="save" type="submit" isLoading={isSubmitting} disabled={hasErrors}>
+                  {isSubmitting ? m.saving : m.save}
+                </Button>
+              </>
+            )}
           </div>
-        </div>
+        ) : (
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <p className="rounded-xl bg-[#EEF0E2] px-4 py-3 text-sm text-zinc-800">
+              {m.availabilityNote} <span className="font-semibold">{m.availabilityLink}</span>
+            </p>
+            <div className="flex justify-end gap-3">
+              <Button asChild variant="outline">
+                <Link href="/properties/mine">{m.cancel}</Link>
+              </Button>
+              <Button type="submit" isLoading={isSubmitting} disabled={hasErrors}>
+                {isSubmitting ? m.publishing : m.publish}
+              </Button>
+            </div>
+          </div>
+        )}
       </div>
     </form>
   );
-  
 }

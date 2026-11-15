@@ -75,6 +75,11 @@ export function apiPatch<T, TBody>(path: string, body: TBody): Promise<T> {
   return apiWithSession<T>(path, { method: "PATCH", body });
 }
 
+// H4: editar una publicación (PUT /api/v1/properties/:id).
+export function apiPut<T, TBody>(path: string, body: TBody): Promise<T> {
+  return apiWithSession<T>(path, { method: "PUT", body });
+}
+
 export function apiDelete(path: string): Promise<void> {
   return apiWithSession<void>(path, { method: "DELETE" });
 }

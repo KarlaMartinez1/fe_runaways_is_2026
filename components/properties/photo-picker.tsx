@@ -3,9 +3,10 @@
 import { propertyFormMessages as m } from "@/lib/messages/property-form";
 import { PHOTO_MAX_COUNT } from "@/lib/validations/property-form";
 
+// file solo existe en las fotos nuevas. Las fotos ya guardadas (H4) solo traen su URL.
 export type PhotoItem = {
   id: string;
-  file: File;
+  file?: File;
   previewUrl: string;
 };
 
@@ -14,11 +15,13 @@ type PhotoPickerProps = {
   error?: string;
   onAdd: (files: File[]) => void;
   onRemove: (id: string) => void;
+  // H4: en modo de solo lectura no se puede agregar ni quitar fotos.
+  disabled?: boolean;
 };
 
 // Cuadrícula de 5 espacios para fotos: fotos elegidas, "+ Agregar" y espacios vacíos.
-export function PhotoPicker({ photos, error, onAdd, onRemove }: PhotoPickerProps) {
-  const canAdd = photos.length < PHOTO_MAX_COUNT;
+export function PhotoPicker({ photos, error, onAdd, onRemove, disabled = false }: PhotoPickerProps) {
+  const canAdd = !disabled && photos.length < PHOTO_MAX_COUNT;
   const emptySlots = Math.max(0, PHOTO_MAX_COUNT - photos.length - (canAdd ? 1 : 0));
 
   return (
@@ -33,13 +36,15 @@ export function PhotoPicker({ photos, error, onAdd, onRemove }: PhotoPickerProps
                 {m.cover}
               </span>
             )}
-            <button
-              type="button"
-              onClick={() => onRemove(photo.id)}
-              className="absolute bottom-2 right-2 rounded-md bg-white/90 px-2 py-0.5 text-sm font-medium text-[#2449c6] hover:bg-white"
-            >
-              {m.removePhoto}
-            </button>
+            {!disabled && (
+              <button
+                type="button"
+                onClick={() => onRemove(photo.id)}
+                className="absolute bottom-2 right-2 rounded-md bg-white/90 px-2 py-0.5 text-sm font-medium text-[#2449c6] hover:bg-white"
+              >
+                {m.removePhoto}
+              </button>
+            )}
           </div>
         ))}
 

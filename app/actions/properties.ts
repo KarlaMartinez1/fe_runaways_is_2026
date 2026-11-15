@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { ApiError } from "@/lib/api/client";
 import type { PropertyCategory } from "@/lib/api/types";
+import { detailMessages } from "@/lib/messages/properties";
 import { propertyFormMessages as m } from "@/lib/messages/property-form";
 import { propertyRepository } from "@/lib/repositories";
 import {
@@ -70,4 +71,67 @@ export async function createProperty(
   revalidatePath("/properties");
   revalidatePath("/");
   redirect("/properties/mine?published=1");
+}
+
+export type UpdatePropertyResult = { ok: true } | { ok: false; message: string };
+
+// H4: guarda los cambios de un bien del arrendador. Devuelve si se guardó o el mensaje de error.
+export async function updateProperty(
+  id: string,
+  values: PropertyFormData,
+  images: string[],
+): Promise<UpdatePropertyResult> {
+  const parsed = propertyFormSchema.safeParse(values);
+  if (!parsed.success) {
+    return { ok: false, message: parsed.error.issues[0]?.message ?? m.saveError };
+  }
+
+  const photoError = getPhotoCountError(images.length);
+  if (photoError) {
+    return { ok: false, message: photoError };
+  }
+
+  const data = parsed.data;
+  let unauthorized = false;
+
+  try {
+    await propertyRepository.update(id, {
+      title: data.title,
+      description: data.description,
+      category: data.category as PropertyCategory,
+      department: data.department,
+      municipality: data.municipality,
+      address: data.address,
+      pricePerDay: toMoney(data.pricePerDay),
+      securityDeposit: toMoney(data.securityDeposit),
+      images,
+    });
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      unauthorized = true;
+    } else if (error instanceof ApiError && error.status === 403) {
+      return { ok: false, message: m.forbidden };
+    } else if (error instanceof ApiError && error.status === 404) {
+      return { ok: false, message: detailMessages.notAvailable };
+    } else if (error instanceof ApiError && error.status === 409) {
+      return { ok: false, message: m.moneyLocked };
+    } else if (error instanceof ApiError && error.status === 413) {
+      return { ok: false, message: m.photoSize };
+    } else if (error instanceof ApiError && error.status === 400 && error.message) {
+      return { ok: false, message: error.message };
+    } else {
+      console.error("Error al guardar los cambios del bien:", error);
+      return { ok: false, message: m.saveError };
+    }
+  }
+
+  if (unauthorized) {
+    redirect("/login");
+  }
+
+  revalidatePath("/");
+  revalidatePath("/properties");
+  revalidatePath("/properties/mine");
+  revalidatePath(`/properties/${id}`);
+  return { ok: true };
 }
