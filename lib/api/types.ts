@@ -125,3 +125,10 @@ export type OwnerProperty = PropertyDetail & {
 // Cuerpo de PUT /api/v1/properties/:id (H4): los mismos campos de H1 para reemplazo integral.
 // images es la lista final de fotos (las que se conservan más las nuevas ya subidas).
 export type UpdatePropertyInput = NewPropertyInput;
+
+// Respuesta de PATCH /api/v1/properties/:id/status (H5).
+export type PropertyStatusChange = {
+  id: string;
+  status: PropertyStatus;
+  statusChangedAt: string;
+};
