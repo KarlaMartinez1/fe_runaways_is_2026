@@ -87,9 +87,8 @@ export function PropertyManager({ property }: PropertyManagerProps) {
       {error && (
         <p
           role="alert"
-          className="flex items-start gap-2 rounded-xl border border-red-400 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
+          className="rounded-xl border border-red-400 bg-red-50 px-4 py-3 text-sm font-medium text-red-700"
         >
-          <span aria-hidden="true">!</span>
           {error}
         </p>
       )}
