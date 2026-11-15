@@ -115,3 +115,13 @@ export type NewPropertyInput = {
   securityDeposit: string;
   images: string[];
 };
+
+// H4: bien del arrendador en "Mis publicaciones" y en la pantalla de gestión.
+// Incluye la dirección exacta, que solo ve el dueño.
+export type OwnerProperty = PropertyDetail & {
+  address: string;
+};
+
+// Cuerpo de PUT /api/v1/properties/:id (H4): los mismos campos de H1 para reemplazo integral.
+// images es la lista final de fotos (las que se conservan más las nuevas ya subidas).
+export type UpdatePropertyInput = NewPropertyInput;
