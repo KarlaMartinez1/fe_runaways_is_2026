@@ -2,13 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
-import { PropertyForm } from "@/components/properties/property-form";
 import { ApiError } from "@/lib/api/client";
 import type { OwnerProperty } from "@/lib/api/types";
 import { detailMessages } from "@/lib/messages/properties";
 import { propertyFormMessages as m } from "@/lib/messages/property-form";
 import { profileRepository, propertyRepository } from "@/lib/repositories";
 import type { UserRole } from "@/types/models";
+import { PropertyManager } from "./property-manager";
 
 export const metadata: Metadata = {
   title: "Editar bien | Runaways",
@@ -80,7 +80,7 @@ export default async function EditPropertyPage({ params }: EditPropertyPageProps
               <h1 className="text-2xl font-semibold text-zinc-900">{m.editTitle}</h1>
               <p className="mt-1 text-sm text-zinc-500">{m.requiredHint}</p>
             </div>
-            <PropertyForm property={property} />
+            <PropertyManager property={property} />
           </>
         ) : (
           <p role="alert" className="py-16 text-center text-zinc-600">

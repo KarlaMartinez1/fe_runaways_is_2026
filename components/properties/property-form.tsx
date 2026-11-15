@@ -112,9 +112,11 @@ function toSavedPhotos(urls: string[]): PhotoItem[] {
 type PropertyFormProps = {
   // H4: si llega un bien, el formulario abre en modo de solo lectura con sus datos y permite editarlo.
   property?: OwnerProperty;
+  // H5: botones de gestión (pausar, bloquear fechas, eliminar). Solo se muestran en solo lectura.
+  actions?: ReactNode;
 };
 
-export function PropertyForm({ property }: PropertyFormProps) {
+export function PropertyForm({ property, actions }: PropertyFormProps) {
   const isEditScreen = Boolean(property);
   const [isEditing, setIsEditing] = useState(false);
   const readOnly = isEditScreen && !isEditing;
@@ -503,27 +505,30 @@ export function PropertyForm({ property }: PropertyFormProps) {
         )}
 
         {isEditScreen ? (
-          <div className="flex justify-end gap-3">
-            {readOnly ? (
-              <Button key="edit" type="button" onClick={handleStartEditing}>
-                {m.edit}
-              </Button>
-            ) : (
-              <>
-                <Button
-                  key="cancel"
-                  type="button"
-                  variant="outline"
-                  onClick={handleCancelEditing}
-                  disabled={isSubmitting}
-                >
-                  {m.cancel}
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+            <div className="flex flex-wrap gap-3">{readOnly && actions}</div>
+            <div className="flex justify-end gap-3">
+              {readOnly ? (
+                <Button key="edit" type="button" onClick={handleStartEditing}>
+                  {m.edit}
                 </Button>
-                <Button key="save" type="submit" isLoading={isSubmitting} disabled={hasErrors}>
-                  {isSubmitting ? m.saving : m.save}
-                </Button>
-              </>
-            )}
+              ) : (
+                <>
+                  <Button
+                    key="cancel"
+                    type="button"
+                    variant="outline"
+                    onClick={handleCancelEditing}
+                    disabled={isSubmitting}
+                  >
+                    {m.cancel}
+                  </Button>
+                  <Button key="save" type="submit" isLoading={isSubmitting} disabled={hasErrors}>
+                    {isSubmitting ? m.saving : m.save}
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         ) : (
           <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">

@@ -29,6 +29,23 @@ function isOwnedAndActive(property: Property) {
   return mockOwnedIds.has(property.id) && property.status !== "ELIMINADO";
 }
 
+// H5: reservas PENDIENTE o PAGADA del bien (las mismas que ocupan el calendario).
+function hasActiveBookings(propertyId: string) {
+  return getMockBookedDates(propertyId).length > 0;
+}
+
+// H5: busca un bien del arrendador para pausar, reactivar o eliminar, con las reglas del backend.
+function findManageable(id: string) {
+  const property = propertyFixtures.find((item) => item.id === id);
+  if (!property || !mockOwnedIds.has(property.id)) {
+    throw new ApiError(404);
+  }
+  if (property.status === "ELIMINADO" || hasActiveBookings(id)) {
+    throw new ApiError(409, undefined, propertyFormMessages.statusLocked);
+  }
+  return property;
+}
+
 function toOwnerProperty(property: Property): OwnerProperty {
   return { ...toDetail(property), address: mockAddresses[property.id] ?? DEFAULT_MOCK_ADDRESS };
 }
@@ -162,9 +179,7 @@ export const mockPropertyRepository: PropertyRepository = {
     const moneyChanged =
       input.pricePerDay !== Number(current.pricePerDay).toFixed(2) ||
       input.securityDeposit !== Number(current.securityDeposit).toFixed(2);
-    // Reservas PENDIENTE o PAGADA del bien (las mismas que ocupan el calendario).
-    const hasActiveBookings = getMockBookedDates(id).length > 0;
-    if (moneyChanged && hasActiveBookings) {
+    if (moneyChanged && hasActiveBookings(id)) {
       throw new ApiError(409, undefined, propertyFormMessages.moneyLocked);
     }
 
@@ -184,5 +199,18 @@ export const mockPropertyRepository: PropertyRepository = {
     mockAddresses[id] = input.address;
 
     return property;
+  },
+
+  // H5: simula PATCH /api/v1/properties/:id/status.
+  async changeStatus(id, status) {
+    const property = findManageable(id);
+    property.status = status;
+    return { id, status, statusChangedAt: new Date().toISOString() };
+  },
+
+  // H5: simula DELETE /api/v1/properties/:id. Las reseñas del bien se conservan.
+  async remove(id) {
+    const property = findManageable(id);
+    property.status = "ELIMINADO";
   },
 };
