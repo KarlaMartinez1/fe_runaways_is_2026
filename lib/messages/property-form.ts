@@ -3,6 +3,7 @@
 export const propertyFormMessages = {
   // Encabezado
   createTitle: "Publicar un bien o equipo",
+  editTitle: "Editar bien o equipo",
   requiredHint: "Los campos con * son obligatorios",
   backToMine: "Volver a mis publicaciones",
 
@@ -44,9 +45,15 @@ export const propertyFormMessages = {
   cancel: "Cancelar",
   publish: "Publicar",
   publishing: "Publicando...",
+  edit: "Editar",
+  save: "Guardar",
+  saving: "Guardando...",
 
   // Resultado
   published: "Bien publicado exitosamente",
+  saved: "Cambios guardados",
+  moneyLocked:
+    "No se puede modificar el precio ni el depósito de un bien con reservas PENDIENTE O PAGADA",
   saveError: "No se pudo guardar. Intente de nuevo.",
   forbidden: "No tienes permiso para ver esta página",
 
