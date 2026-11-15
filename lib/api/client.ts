@@ -1,66 +1,80 @@
-  import { getSession } from "@/lib/session";
+import { cookies } from "next/headers";
+import { buildApiUrl } from "@/lib/api/url";
+import { SESSION_COOKIE } from "@/lib/session";
 
-  export class ApiError extends Error {
-    constructor(
-      public status: number,
-      public code?: string,
-      message?: string,
-    ) {
-      super(message ?? `La API respondió ${status}`);
-    }
+export class ApiError extends Error {
+  constructor(
+    public readonly status: number,
+    public readonly code?: string,
+    message?: string,
+  ) {
+    super(message ?? `La API respondió ${status}`);
+    this.name = "ApiError";
   }
+}
 
-  async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
-    const apiUrl = process.env.API_URL;
-    if (!apiUrl) {
-      throw new Error("Falta la variable de entorno API_URL.");
-    }
+type Method = "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
 
-    const token = await getSession();
-    const headers = new Headers(init.headers);
-    if (token) {
-      headers.set("Authorization", `Bearer ${token}`);
-    }
+type RequestOptions = {
+  method?: Method;
+  body?: unknown;
+  accessToken?: string;
+};
 
-    const res = await fetch(new URL(path, apiUrl.replace(/\/?$/, "/")), {
-      ...init,
+// Llamada genérica. No lee cookies: el token entra como parámetro, así login
+// y registro (que no tienen sesión) pueden usar la misma función.
+export async function apiRequest<T = void>(path: string, options: RequestOptions = {}): Promise<T> {
+  const headers: Record<string, string> = {};
+  if (options.body !== undefined) headers["Content-Type"] = "application/json";
+  if (options.accessToken) headers.Authorization = `Bearer ${options.accessToken}`;
+
+  let response: Response;
+  try {
+    response = await fetch(buildApiUrl(path), {
+      method: options.method ?? "GET",
       headers,
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
       cache: "no-store",
     });
-
-    if (!res.ok) {
-      const body = await res.json().catch(() => ({}));
-      const message = Array.isArray(body.message) ? body.message.join(", ") : body.message;
-      throw new ApiError(res.status, body.code, message);
-    }
-
-    if (res.status === 204) {
-      return undefined as T;
-    }
-
-    return res.json() as Promise<T>;
+  } catch {
+    throw new ApiError(0, "NETWORK_ERROR", "No se pudo conectar con el servidor.");
   }
 
-  export function apiGet<T>(path: string): Promise<T> {
-    return request<T>(path);
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}));
+    const message = Array.isArray(body.message) ? body.message.join(", ") : body.message;
+    throw new ApiError(response.status, body.code, typeof message === "string" ? message : undefined);
   }
 
-  export function apiPost<T, TBody = unknown>(path: string, body: TBody): Promise<T> {
-    return request<T>(path, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-  }
+  if (response.status === 204) return undefined as T;
+  return (await response.json()) as T;
+}
 
-  export function apiPatch<T, TBody>(path: string, body: TBody): Promise<T> {
-    return request<T>(path, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(body),
-    });
-  }
+// Igual que apiRequest, pero toma el access token de la cookie del servidor.
+// Solo funciona en Server Components, route handlers y acciones.
+export async function apiWithSession<T = void>(
+  path: string,
+  options: Omit<RequestOptions, "accessToken"> = {},
+): Promise<T> {
+  const store = await cookies();
+  const accessToken = store.get(SESSION_COOKIE)?.value;
+  return apiRequest<T>(path, { ...options, accessToken });
+}
 
-  export function apiDelete(path: string): Promise<void> {
-    return request<void>(path, { method: "DELETE" });
-  }
+// Helpers que usan los repositorios HTTP de las historias.
+// Las firmas coinciden con las de develop: los repositorios no cambian.
+export function apiGet<T>(path: string): Promise<T> {
+  return apiWithSession<T>(path, { method: "GET" });
+}
+
+export function apiPost<T, TBody = unknown>(path: string, body: TBody): Promise<T> {
+  return apiWithSession<T>(path, { method: "POST", body });
+}
+
+export function apiPatch<T, TBody>(path: string, body: TBody): Promise<T> {
+  return apiWithSession<T>(path, { method: "PATCH", body });
+}
+
+export function apiDelete(path: string): Promise<void> {
+  return apiWithSession<void>(path, { method: "DELETE" });
+}
