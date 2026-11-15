@@ -1,6 +1,6 @@
 import { ApiError, apiRequest } from "@/lib/api/client";
 import { getAccessToken } from "@/lib/session";
-import { mockLogin, mockMe, mockRegister } from "@/lib/auth/mock-auth";
+import { mockLogin, mockLogout, mockMe, mockRefresh, mockRegister } from "@/lib/auth/mock-auth";
 
 export type Role = "TENANT" | "OWNER" | "ADMIN";
 
@@ -20,10 +20,10 @@ export type LoginResult = {
 };
 
 // Un solo interruptor: con USE_MOCKS=true no se llama al backend.
-const useMocks = () => process.env.USE_MOCKS === "true";
+const mocksEnabled = () => process.env.USE_MOCKS === "true";
 
 export async function login(email: string, password: string): Promise<LoginResult> {
-  if (useMocks()) return mockLogin(email, password);
+  if (mocksEnabled()) return mockLogin(email, password);
   return apiRequest<LoginResult>("auth/login", {
     method: "POST",
     body: { email, password },
@@ -31,7 +31,7 @@ export async function login(email: string, password: string): Promise<LoginResul
 }
 
 export async function register(name: string, email: string, password: string): Promise<AuthUser> {
-  if (useMocks()) return mockRegister(name, email, password);
+  if (mocksEnabled()) return mockRegister(name, email, password);
   return apiRequest<AuthUser>("auth/register", {
     method: "POST",
     body: { name, email, password },
@@ -39,15 +39,20 @@ export async function register(name: string, email: string, password: string): P
 }
 
 export async function logout(refreshToken: string): Promise<void> {
-  if (useMocks()) return;
+  if (mocksEnabled()) return mockLogout(refreshToken);
   return apiRequest<void>("auth/logout", {
     method: "POST",
     body: { refreshToken },
   });
 }
 
+export async function refresh(refreshToken: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
+  if (mocksEnabled()) return mockRefresh(refreshToken);
+  return apiRequest("auth/refresh", { method: "POST", body: { refreshToken } });
+}
+
 export async function me(accessToken: string): Promise<AuthUser> {
-  if (useMocks()) return mockMe(accessToken);
+  if (mocksEnabled()) return mockMe(accessToken);
   return apiRequest<AuthUser>("auth/me", { accessToken });
 }
 

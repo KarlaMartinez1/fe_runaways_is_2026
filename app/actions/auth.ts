@@ -81,15 +81,13 @@ export async function register(_prevState: RegisterState, formData: FormData): P
 }
 
 export async function logout() {
-  const refreshToken = await getRefreshToken();
-  if (refreshToken) {
-    try {
-      await logoutRequest(refreshToken);
-    } catch (error) {
-      // Aunque la API falle, las cookies se borran igual.
-      console.error("Error al cerrar sesión en la API:", error instanceof ApiError ? error.status : "sin respuesta");
-    }
+  try {
+    const refreshToken = await getRefreshToken();
+    if (refreshToken) await logoutRequest(refreshToken);
+  } catch (error) {
+    console.error("Error al cerrar sesión en la API:", error instanceof ApiError ? error.status : "sin respuesta");
+  } finally {
+    await deleteSession();
   }
-  await deleteSession();
   redirect("/login");
 }
