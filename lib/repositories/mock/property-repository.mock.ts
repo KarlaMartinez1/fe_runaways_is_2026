@@ -1,11 +1,12 @@
 import type { Property, PropertyDetail, PropertyFilters } from "@/lib/api/types";
+import { rangeOverlapsOccupied } from "@/lib/bookings/rules";
 import { normalizeText } from "@/lib/filters/property-filters";
 import { PROPERTIES_PAGE_SIZE, type PropertyRepository } from "../property-repository";
 import { propertyFixtures } from "./fixtures/properties";
 import { defaultDetailExtras, propertyDetailExtras } from "./fixtures/property-details";
 import { getMockOccupiedDates } from "./booking-repository.mock";
 import { buildMockAvailability } from "./fixtures/availability";
-import { rangeOverlapsOccupied } from "@/lib/bookings/rules";
+import { mockUserProfileFixture } from "./fixtures/profile";
 
 function toDetail(property: Property): PropertyDetail {
   const extras = propertyDetailExtras[property.id] ?? {
@@ -31,10 +32,14 @@ function matchesFilters(property: PropertyDetail, filters: PropertyFilters) {
   const price = Number(property.pricePerDay);
   if (filters.minPrice !== undefined && price < filters.minPrice) return false;
   if (filters.maxPrice !== undefined && price > filters.maxPrice) return false;
+
+  // H8: se excluye el bien si algún día del rango está ocupado (reservas vigentes o bloqueos)
+  // con los mismos datos que usa el calendario de disponibilidad (H9).
   if (filters.startDate && filters.endDate) {
     const occupied = getMockOccupiedDates(property.id);
     if (rangeOverlapsOccupied(filters.startDate, filters.endDate, occupied)) return false;
   }
+
   return true;
 }
 
@@ -65,7 +70,8 @@ export const mockPropertyRepository: PropertyRepository = {
     }
     return toDetail(property);
   },
-    async getAvailability(id) {
+
+  async getAvailability(id) {
     const property = propertyFixtures.find((item) => item.id === id);
     if (!property || property.status !== "DISPONIBLE") {
       return null;
@@ -73,5 +79,31 @@ export const mockPropertyRepository: PropertyRepository = {
 
     const { from, to } = buildMockAvailability(id);
     return { propertyId: id, from, to, occupiedDates: getMockOccupiedDates(id) };
+  },
+
+  // H1: el bien se guarda en memoria y aparece en el catálogo hasta reiniciar el servidor.
+  async create(input) {
+    const property: Property = {
+      id: `p-${Date.now()}`,
+      title: input.title,
+      category: input.category,
+      department: input.department,
+      municipality: input.municipality,
+      pricePerDay: input.pricePerDay,
+      images: input.images,
+      status: "DISPONIBLE",
+      createdAt: new Date().toISOString(),
+      averageRating: null,
+    };
+
+    propertyFixtures.push(property);
+    propertyDetailExtras[property.id] = {
+      description: input.description,
+      securityDeposit: input.securityDeposit,
+      ownerName: mockUserProfileFixture.fullName,
+      reviewCount: 0,
+    };
+
+    return property;
   },
 };

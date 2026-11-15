@@ -101,3 +101,17 @@ export type NoAvailabilityBlock = {
   endDate: string;
   createdAt: string;
 };
+
+// Cuerpo de POST /api/v1/properties (H1). Los montos van como texto con 2 decimales
+// y las fotos como URLs ya subidas a Firebase Storage.
+export type NewPropertyInput = {
+  title: string;
+  description: string;
+  category: PropertyCategory;
+  department: string;
+  municipality: string;
+  address: string;
+  pricePerDay: string;
+  securityDeposit: string;
+  images: string[];
+};

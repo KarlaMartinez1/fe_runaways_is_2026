@@ -1,4 +1,5 @@
 import type {
+  NewPropertyInput,
   Paginated,
   Property,
   PropertyAvailability,
@@ -12,4 +13,5 @@ export interface PropertyRepository {
   listAvailable(page: number, filters?: PropertyFilters): Promise<Paginated<Property>>;
   getById(id: string): Promise<PropertyDetail | null>;
   getAvailability(id: string): Promise<PropertyAvailability | null>;
+  create(input: NewPropertyInput): Promise<Property>;
 }

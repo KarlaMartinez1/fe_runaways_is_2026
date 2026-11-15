@@ -1,5 +1,6 @@
-import { ApiError, apiGet } from "@/lib/api/client";
+import { ApiError, apiGet, apiPost } from "@/lib/api/client";
 import type {
+  NewPropertyInput,
   Paginated,
   Property,
   PropertyAvailability,
@@ -42,5 +43,9 @@ export const httpPropertyRepository: PropertyRepository = {
       }
       throw error;
     }
+  },
+
+  create(input) {
+    return apiPost<Property, NewPropertyInput>("api/v1/properties", input);
   },
 };
