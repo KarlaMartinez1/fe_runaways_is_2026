@@ -12,6 +12,8 @@ import { httpDepositRepository } from "./http/deposit-repository.http";
 import { mockDepositRepository } from "./mock/deposit-repository.mock";
 import { httpReportRepository } from "./http/report-repository.http";
 import { mockReportRepository } from "./mock/report-repository.mock";
+import { httpIdentityDocumentRepository } from "./http/identity-document-repository.http";
+import { mockIdentityDocumentRepository } from "./mock/identity-document-repository.mock";
 import { httpReviewRepository } from "./http/review-repository.http";
 import { mockReviewRepository } from "./mock/review-repository.mock";
 import { httpNotificationRepository } from "./http/notification-repository.http";
@@ -46,6 +48,10 @@ export const blockRepository = useMocks
 export const reportRepository = useMocks
   ? mockReportRepository
   : httpReportRepository;
+
+export const identityDocumentRepository = useMocks
+  ? mockIdentityDocumentRepository
+  : httpIdentityDocumentRepository;
 
 export const reviewRepository = useMocks 
   ? mockReviewRepository

@@ -3,34 +3,21 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { PropertyForm } from "@/components/properties/property-form";
-import { ApiError } from "@/lib/api/client";
+import { getCurrentUser } from "@/lib/api/auth";
 import { propertyFormMessages as m } from "@/lib/messages/property-form";
-import { profileRepository } from "@/lib/repositories";
-import type { UserRole } from "@/types/models";
 
 export const metadata: Metadata = {
   title: "Publicar bien | Runaways",
 };
 
 export default async function NewPropertyPage() {
-  let role: UserRole | null = null;
-  let unauthorized = false;
-
-  try {
-    role = (await profileRepository.getUserProfile()).role;
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 401) {
-      unauthorized = true;
-    } else {
-      console.error("Error al cargar el perfil:", error);
-    }
-  }
-
-  if (unauthorized) {
+  // El rol sale de la sesión (H28).
+  const user = await getCurrentUser();
+  if (!user) {
     redirect("/login");
   }
   // H1: solo el arrendador (OWNER) puede publicar bienes.
-  if (role !== "OWNER") {
+  if (user.role !== "OWNER") {
     redirect("/access-denied");
   }
 
