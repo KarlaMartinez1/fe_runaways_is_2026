@@ -4,8 +4,8 @@ import { SESSION_COOKIE } from "@/lib/session";
 
 export class ApiError extends Error {
   constructor(
-    public readonly status: number,
-    public readonly code?: string,
+    public status: number,
+    public code?: string,
     message?: string,
   ) {
     super(message ?? `La API respondió ${status}`);
@@ -36,7 +36,8 @@ export async function apiRequest<T = void>(path: string, options: RequestOptions
       body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
       cache: "no-store",
     });
-  } catch {
+  } catch (error) {
+    console.error(error);
     throw new ApiError(0, "NETWORK_ERROR", "No se pudo conectar con el servidor.");
   }
 

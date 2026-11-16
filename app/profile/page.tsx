@@ -4,7 +4,9 @@ import { Navbar } from "@/components/layout/navbar";
 import { ProfilePageBody } from "@/components/profile/profile-page-body";
 import { profileRepository } from "@/lib/repositories";
 import { ApiError } from "@/lib/api/client";
-import type { UserProfile, RoleRequirements, UserRole } from "@/types/models";
+import { createSession } from "@/lib/session";
+import { profileMessages } from "@/lib/messages/profile";
+import type { UserProfile, UserRole } from "@/types/models";
 
 export const metadata: Metadata = {
   title: "Mi perfil | Runaways",
@@ -19,14 +21,35 @@ async function updateRoleAction(newRole: UserRole) {
   "use server";
   try {
     const res = await profileRepository.changeRole(newRole);
-    return { success: res.success, message: res.message };
+
+    if (res.success) {
+      if (res.accessToken) {
+        await createSession(
+          res.accessToken,
+          res.expiresIn ?? 900,
+          res.refreshToken ?? ""
+        );
+      }
+      return {
+        success: true,
+        newRole: res.newRole,
+        message: res.message,
+      };
+    }
+
+    return {
+      success: false,
+      code: res.code,
+      message: res.message,
+    };
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) {
       redirect("/login");
     }
     return {
       success: false,
-      message: err instanceof Error ? err.message : undefined,
+      message:
+        err instanceof Error ? err.message : profileMessages.backendErrors.DEFAULT,
     };
   }
 }
@@ -36,14 +59,10 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const { scenario } = resolvedSearchParams;
 
   let profile: UserProfile | null = null;
-  let requirements: RoleRequirements | null = null;
   let unauthorized = false;
 
   try {
-    [profile, requirements] = await Promise.all([
-      profileRepository.getUserProfile(scenario),
-      profileRepository.getRoleRequirements(scenario),
-    ]);
+    profile = await profileRepository.getUserProfile(scenario);
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
       unauthorized = true;
@@ -56,7 +75,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     redirect("/login");
   }
 
-  if (!profile || !requirements) {
+  if (!profile) {
     return null;
   }
 
@@ -65,7 +84,6 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
       <Navbar />
       <ProfilePageBody
         initialProfile={profile}
-        roleRequirements={requirements}
         onUpdateRole={updateRoleAction}
       />
     </div>

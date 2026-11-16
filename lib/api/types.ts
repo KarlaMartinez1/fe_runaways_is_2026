@@ -27,6 +27,17 @@ export type PropertyDetail = Property & {
   securityDeposit: string;
   ownerName: string;
   reviewCount: number;
+  ownerAverageRating?: number | null;
+  ownerReviewCount?: number;
+  propertyReviews?: ReviewListItem[];
+};
+
+export type ReviewListItem = {
+  id: string;
+  reviewerName: string;
+  rating: number;
+  comment?: string | null;
+  createdAt: string;
 };
 
 export type PropertyAvailability = {
@@ -90,6 +101,8 @@ export type BookingListItem = {
   deliveredAt: string | null;
   returnedAt: string | null;
   lesseeName?: string;
+  finalizedAt?: string | null;
+  ratedByMe?: boolean;
 };
 
 export type BookingListResult = Paginated<BookingListItem>;
@@ -126,9 +139,60 @@ export type OwnerProperty = PropertyDetail & {
 // images es la lista final de fotos (las que se conservan más las nuevas ya subidas).
 export type UpdatePropertyInput = NewPropertyInput;
 
+export type ReviewBlockReason = "NOT_FINALIZED" | "ALREADY_REVIEWED" | "WINDOW_CLOSED";
+
+// Reserva con los datos necesarios para la pantalla "Calificar mi renta".
+export type ReservationForReview = {
+  id: string;
+  propertyId: string;
+  propertyTitle: string;
+  propertyImage: string | null;
+  startDate: string;
+  endDate: string;
+  days: number;
+  subtotal: string;
+  securityDeposit: string;
+  status: BookingStatus;
+  finalizedAt: string | null;
+  ratedByMe: boolean;
+};
+
+// Cuerpo de POST /api/v1/reservations/:id/reviews/property.
+export type PropertyReviewInput = {
+  propertyRating: number;
+  userRating: number;
+  comment?: string;
+};
+
+// Resultado de publicar una reseña de bien.
+export type PropertyReviewResult = {
+  propertyId: string;
+  averageRating: number | null;
+  reviewCount: number;
+  createdAt: string;
+};
+
 // Respuesta de PATCH /api/v1/properties/:id/status (H5).
 export type PropertyStatusChange = {
   id: string;
   status: PropertyStatus;
   statusChangedAt: string;
+};
+
+export type BackendRoleChangeResponse = {
+  userId: string;
+  previousRole: "TENANT" | "OWNER" | "ADMIN";
+  role: "TENANT" | "OWNER" | "ADMIN";
+  changedAt: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+};
+
+export type BackendUserResponse = {
+  id: string;
+  email: string;
+  role: "TENANT" | "OWNER" | "ADMIN";
+  isActive: boolean;
+  createdAt: string;
 };

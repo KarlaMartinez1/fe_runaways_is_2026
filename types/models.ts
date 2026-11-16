@@ -39,9 +39,11 @@ export interface PaymentReceiptDetail {
   paymentMethod: string;
 }
 
+import type { AccountStatus } from '@/lib/api/types';
+export type { AccountStatus };
+
 export type UserRole = 'TENANT' | 'OWNER' | 'ADMIN';
 
-export type AccountStatus = 'SIN_VERIFICAR' | 'PENDIENTE' | 'VERIFICADA' | 'RECHAZADA';
 export interface UserProfile {
   id: string;
   fullName: string;
@@ -84,7 +86,10 @@ export interface RoleChangeResult {
   success: boolean;
   newRole?: UserRole;
   message?: string;
-  token?: string;
+  code?: string;
+  accessToken?: string;
+  refreshToken?: string;
+  expiresIn?: number;
 }
 
 export type DepositDecisionStatus =
