@@ -5,12 +5,12 @@ import { Navbar } from "@/components/layout/navbar";
 import { PropertyCard } from "@/components/properties/property-card";
 import { Button } from "@/components/ui";
 import { Pagination } from "@/components/ui/pagination";
+import { getCurrentUser } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import type { Paginated, Property } from "@/lib/api/types";
 import { myPropertiesMessages as m } from "@/lib/messages/my-properties";
 import { propertyFormMessages } from "@/lib/messages/property-form";
-import { profileRepository, propertyRepository } from "@/lib/repositories";
-import type { UserRole } from "@/types/models";
+import { propertyRepository } from "@/lib/repositories";
 
 export const metadata: Metadata = {
   title: "Mis publicaciones | Runaways",
@@ -26,33 +26,23 @@ function parsePage(value: string | string[] | undefined) {
 }
 
 export default async function MyPropertiesPage({ searchParams }: MyPropertiesPageProps) {
+  // El rol sale de la sesión (H28).
+  const user = await getCurrentUser();
+  if (!user) {
+    redirect("/login");
+  }
+  // H4: solo el arrendador (OWNER) usa esta pantalla.
+  if (user.role !== "OWNER") {
+    redirect("/access-denied");
+  }
+
   const params = await searchParams;
   const page = parsePage(params.page);
   // H1 redirige aquí con ?published=1 después de publicar con éxito.
   const justPublished = params.published === "1";
 
-  let role: UserRole | null = null;
-  let unauthorized = false;
-
-  try {
-    role = (await profileRepository.getUserProfile()).role;
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 401) {
-      unauthorized = true;
-    } else {
-      console.error("Error al cargar el perfil:", error);
-    }
-  }
-
-  if (unauthorized) {
-    redirect("/login");
-  }
-  // H4: solo el arrendador (OWNER) usa esta pantalla.
-  if (role !== "OWNER") {
-    redirect("/access-denied");
-  }
-
   let result: Paginated<Property> | null = null;
+  let unauthorized = false;
   try {
     result = await propertyRepository.listMine(page);
   } catch (error) {

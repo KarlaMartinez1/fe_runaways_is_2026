@@ -2,12 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
+import { getCurrentUser } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import type { OwnerProperty } from "@/lib/api/types";
 import { detailMessages } from "@/lib/messages/properties";
 import { propertyFormMessages as m } from "@/lib/messages/property-form";
-import { profileRepository, propertyRepository } from "@/lib/repositories";
-import type { UserRole } from "@/types/models";
+import { propertyRepository } from "@/lib/repositories";
 import { PropertyManager } from "./property-manager";
 
 export const metadata: Metadata = {
@@ -19,31 +19,21 @@ type EditPropertyPageProps = {
 };
 
 export default async function EditPropertyPage({ params }: EditPropertyPageProps) {
-  const { id } = await params;
-
-  let role: UserRole | null = null;
-  let unauthorized = false;
-
-  try {
-    role = (await profileRepository.getUserProfile()).role;
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 401) {
-      unauthorized = true;
-    } else {
-      console.error("Error al cargar el perfil:", error);
-    }
-  }
-
-  if (unauthorized) {
+  // El rol sale de la sesión (H28).
+  const user = await getCurrentUser();
+  if (!user) {
     redirect("/login");
   }
   // H4: solo el arrendador (OWNER) usa esta pantalla.
-  if (role !== "OWNER") {
+  if (user.role !== "OWNER") {
     redirect("/access-denied");
   }
 
+  const { id } = await params;
+
   // H4: si el bien no existe o es de otro arrendador, el repositorio devuelve null.
   let property: OwnerProperty | null = null;
+  let unauthorized = false;
   let loadFailed = false;
   try {
     property = await propertyRepository.getMine(id);
