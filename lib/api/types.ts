@@ -203,6 +203,43 @@ export type SubmittedIdentityDocument = {
   documentSubmittedAt: string;
 };
 
+// H20: estado del documento en la revisión del ADMIN.
+export type IdentityDocumentStatus = "PENDIENTE" | "APROBADO" | "RECHAZADO";
+
+// H20: elemento de GET /api/v1/profile/document/admin.
+export type PendingIdentityDocument = {
+  userId: string;
+  name: string;
+  email: string;
+  documentType: DocumentType;
+  documentNumber: string;
+  documentSubmittedAt: string;
+};
+
+// H20: respuesta de GET /api/v1/profile/document/admin.
+export type PendingIdentityDocumentList = {
+  data: PendingIdentityDocument[];
+  total: number;
+  page: number;
+};
+
+// H20: respuesta de GET /api/v1/profile/document/admin/:userId.
+// fileUrl es un enlace firmado válido por 5 minutos (expiresAt).
+export type IdentityDocumentReview = PendingIdentityDocument & {
+  documentStatus: IdentityDocumentStatus;
+  fileUrl: string;
+  expiresAt: string;
+};
+
+// H20: respuesta de PATCH .../approve y .../reject.
+export type IdentityDocumentDecision = {
+  userId: string;
+  documentStatus: IdentityDocumentStatus;
+  isVerified?: boolean;
+  rejectionReason?: string;
+  reviewedAt: string;
+};
+
 export type BackendRoleChangeResponse = {
   userId: string;
   previousRole: "TENANT" | "OWNER" | "ADMIN";
