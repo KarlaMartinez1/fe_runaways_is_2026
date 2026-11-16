@@ -132,3 +132,27 @@ export type PropertyStatusChange = {
   status: PropertyStatus;
   statusChangedAt: string;
 };
+
+// H19: tipo de documento de identidad.
+export type DocumentType = "DUI" | "PASAPORTE";
+
+// H19: respuesta de GET /api/v1/profile/document.
+export type IdentityDocumentInfo = ProfileDocument & {
+  documentType?: DocumentType;
+  documentSubmittedAt?: string;
+  rejectionReason?: string;
+};
+
+// H19: datos para POST /api/v1/profile/document (se envían como multipart/form-data).
+export type IdentityDocumentInput = {
+  documentType: DocumentType;
+  documentNumber: string;
+  file: File;
+};
+
+// H19: respuesta 201 de POST /api/v1/profile/document.
+export type SubmittedIdentityDocument = {
+  documentType: DocumentType;
+  documentStatus: "PENDIENTE";
+  documentSubmittedAt: string;
+};
