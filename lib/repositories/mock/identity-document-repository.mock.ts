@@ -1,5 +1,5 @@
 import { ApiError } from "@/lib/api/client";
-import { getCurrentUser } from "@/lib/api/auth";
+import { getCurrentUser, type Role } from "@/lib/api/auth";
 import type { AccountStatus, DocumentType } from "@/lib/api/types";
 import { identityDocumentMessages } from "@/lib/messages/identity-document";
 import { getDocumentFileError } from "@/lib/validations/identity-document";
@@ -33,6 +33,12 @@ const accountStatusByDocument: Record<DocumentStatus, AccountStatus> = {
   RECHAZADO: "RECHAZADA",
 };
 
+// Para cambiar a arrendador la cuenta debe estar verificada (requisito del cambio de rol),
+// así que en el mock un OWNER sin documento guardado se trata como verificado.
+function statusWithoutDocument(role: Role): AccountStatus {
+  return role === "OWNER" ? "VERIFICADA" : "SIN_VERIFICAR";
+}
+
 // El backend identifica al usuario por su token; aquí se usa la sesión de prueba.
 async function requireUser() {
   const user = await getCurrentUser();
@@ -46,7 +52,7 @@ export const mockIdentityDocumentRepository: IdentityDocumentRepository = {
     const user = await requireUser();
     const document = mockIdentityDocuments.get(user.id);
     if (!document) {
-      return { accountStatus: "SIN_VERIFICAR" };
+      return { accountStatus: statusWithoutDocument(user.role) };
     }
     return {
       accountStatus: accountStatusByDocument[document.status],
@@ -59,8 +65,10 @@ export const mockIdentityDocumentRepository: IdentityDocumentRepository = {
   async submit(input) {
     const user = await requireUser();
 
+    // No se permite enviar otro documento si hay uno PENDIENTE o la cuenta ya está verificada.
     const current = mockIdentityDocuments.get(user.id);
-    if (current && current.status !== "RECHAZADO") {
+    const status = current ? accountStatusByDocument[current.status] : statusWithoutDocument(user.role);
+    if (status === "PENDIENTE" || status === "VERIFICADA") {
       throw new ApiError(409, undefined, identityDocumentMessages.alreadySubmitted);
     }
 
