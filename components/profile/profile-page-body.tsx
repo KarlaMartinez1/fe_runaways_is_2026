@@ -10,7 +10,7 @@ import { RoleRequirementsCard } from './role-requirements-card';
 export interface ProfilePageBodyProps {
   initialProfile: UserProfile;
   roleRequirements: RoleRequirements;
-  onUpdateRole?: (newRole: UserRole) => Promise<{ success: boolean; message?: string }>;
+  onUpdateRole?: (newRole: UserRole) => Promise<{ success: boolean; message?: string; code?: string }>;
 }
 
 export function ProfilePageBody({
@@ -25,7 +25,9 @@ export function ProfilePageBody({
     text: string;
   } | null>(null);
 
-  const handleRoleChange = async (newRole: UserRole) => {
+  const handleRoleChange = async (
+    newRole: UserRole
+  ): Promise<{ success: boolean; message?: string; code?: string }> => {
     setIsLoading(true);
     setNotice(null);
 
@@ -33,12 +35,19 @@ export function ProfilePageBody({
       if (onUpdateRole) {
         const result = await onUpdateRole(newRole);
         if (!result.success) {
+          const mappedBackendMessage =
+            result.code && result.code in profileMessages.backendErrors
+              ? profileMessages.backendErrors[
+                  result.code as keyof typeof profileMessages.backendErrors
+                ]
+              : undefined;
+
           setNotice({
             type: 'error',
-            text: result.message || profileMessages.roleChangeError,
+            text: mappedBackendMessage || result.message || profileMessages.roleChangeError,
           });
           setIsLoading(false);
-          return;
+          return result;
         }
       }
 
@@ -52,11 +61,13 @@ export function ProfilePageBody({
         type: 'success',
         text: profileMessages.roleChangeSuccess(roleDisplayLabels[newRole]),
       });
+      return { success: true };
     } catch {
       setNotice({
         type: 'error',
         text: profileMessages.roleChangeError,
       });
+      return { success: false, message: profileMessages.roleChangeError };
     } finally {
       setIsLoading(false);
     }

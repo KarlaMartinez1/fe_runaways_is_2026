@@ -16,7 +16,9 @@ export interface RoleManagementCardProps {
   currentRole: UserRole;
   accountStatus: AccountStatus;
   roleRequirements: RoleRequirements;
-  onRoleChange: (newRole: UserRole) => Promise<void>;
+  onRoleChange: (
+    newRole: UserRole
+  ) => Promise<{ success: boolean; message?: string; code?: string } | void>;
   isLoading?: boolean;
   className?: string;
 }
@@ -84,8 +86,18 @@ export function RoleManagementCard({
 
   const handleConfirmRoleChange = async () => {
     try {
-      await onRoleChange(selectedRole);
+      const result = await onRoleChange(selectedRole);
       setIsConfirmationOpen(false);
+
+      if (result && !result.success) {
+        if (result.code === 'ACCOUNT_NOT_VERIFIED') {
+          setBlockedDialogType('unverified_account');
+        } else if (result.code === 'ROLE_CHANGE_BLOCKED') {
+          setBlockedDialogType(
+            currentRole === 'OWNER' ? 'pending_deposit' : 'pending_payment'
+          );
+        }
+      }
     } catch {
       // Handled in parent
     }
