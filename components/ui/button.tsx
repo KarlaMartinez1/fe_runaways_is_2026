@@ -71,17 +71,24 @@ export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
         className?: string;
         onClick?: (e: React.MouseEvent<HTMLButtonElement>) => void;
       }>;
+
+      // Solo se inyecta onClick si hace falta. Si no, un <Link> de un
+      // Server Component recibiría una función y Next lanzaría el error.
+      const needsClickHandler = Boolean(isDisabled || onClick || child.props.onClick);
+
       return React.cloneElement(child, {
         className: cn(combinedClassName, child.props.className),
-        onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
-          if (isDisabled) {
-            e.preventDefault();
-            e.stopPropagation();
-            return;
-          }
-          child.props.onClick?.(e);
-          onClick?.(e);
-        },
+        ...(needsClickHandler && {
+          onClick: (e: React.MouseEvent<HTMLButtonElement>) => {
+            if (isDisabled) {
+              e.preventDefault();
+              e.stopPropagation();
+              return;
+            }
+            child.props.onClick?.(e);
+            onClick?.(e);
+          },
+        }),
       });
     }
 

@@ -23,9 +23,8 @@ async function updateRoleAction(newRole: UserRole) {
     const res = await profileRepository.changeRole(newRole);
 
     if (res.success) {
-      const newToken = res.accessToken ?? res.token;
-      if (newToken) {
-        await createSession(newToken);
+      if (res.accessToken) {
+        await createSession(res.accessToken);
       }
       return {
         success: true,

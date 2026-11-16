@@ -3,6 +3,7 @@ import { Heading } from '@/components/ui/heading';
 import { cn } from '@/lib/utils/cn';
 import { ReservationSummary } from '@/components/payment/reservation-summary';
 import { PaymentMethodForm } from '@/components/payment/payment-method-form';
+import { paymentMessages } from '@/lib/messages/payment';
 import type { ReservationDetail } from '@/types';
 
 export interface PaymentPageBodyProps {
@@ -26,10 +27,10 @@ export function PaymentPageBody({
           <Heading
             as="h1"
             size="2xl"
-            subtitle="Acá encontrarás los detalles de tu reserva."
+            subtitle={paymentMessages.pageSubtitle}
             className="text-gray-950 font-extrabold tracking-tight text-2xl sm:text-3xl"
           >
-            Pagar reserva
+            {paymentMessages.pageTitle}
           </Heading>
         </div>
 

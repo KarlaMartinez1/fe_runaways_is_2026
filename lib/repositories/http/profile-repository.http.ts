@@ -1,12 +1,14 @@
 import { apiGet, apiPatch, ApiError } from "@/lib/api/client";
 import type {
+  AccountStatus,
+  BackendRoleChangeResponse,
+  BackendUserResponse,
+} from "@/lib/api/types";
+import type {
   UserProfile,
   RoleRequirements,
   RoleChangeResult,
   UserRole,
-  AccountStatus,
-  BackendRoleChangeResponse,
-  BackendUserResponse,
 } from "@/types/models";
 import type { ProfileRepository } from "../profile-repository";
 
@@ -109,7 +111,6 @@ export const httpProfileRepository: ProfileRepository = {
         success: true,
         newRole: res.role,
         accessToken: res.accessToken,
-        token: res.accessToken,
       };
     } catch (error) {
       if (error instanceof ApiError) {

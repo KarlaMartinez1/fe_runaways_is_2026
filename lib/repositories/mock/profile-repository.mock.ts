@@ -103,7 +103,7 @@ export const mockProfileRepository: ProfileRepository = {
     return {
       success: true,
       newRole,
-      token: "mock-jwt-token-after-role-change",
+      accessToken: "mock-jwt-token-after-role-change",
     };
   },
 };
