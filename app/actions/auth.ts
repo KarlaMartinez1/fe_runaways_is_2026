@@ -16,6 +16,18 @@ export type RegisterState = {
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+function buildApiUrl(path: string, baseUrl: string): URL {
+  const normalizedBase = baseUrl.replace(/\/?$/, "/");
+  const cleanPath = path.replace(/^\/?/, "");
+  if (normalizedBase.endsWith("/api/v1/") && cleanPath.startsWith("api/v1/")) {
+    return new URL(cleanPath.replace(/^api\/v1\/?/, ""), normalizedBase);
+  }
+  if (!normalizedBase.includes("/api/v1") && !cleanPath.startsWith("api/v1/")) {
+    return new URL(`api/v1/${cleanPath}`, normalizedBase);
+  }
+  return new URL(cleanPath, normalizedBase);
+}
+
 // Llama a la API de autenticación. Devuelve el token si las credenciales son
 // válidas, o null si la API responde 401/403.
 async function authenticate(email: string, password: string) {
@@ -24,7 +36,7 @@ async function authenticate(email: string, password: string) {
     throw new Error("Falta la variable de entorno API_URL.");
   }
 
-  const res = await fetch(new URL("auth/login", apiUrl.replace(/\/?$/, "/")), {
+  const res = await fetch(buildApiUrl("auth/login", apiUrl), {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ email, password }),
@@ -102,7 +114,7 @@ export async function register(
 
   let res: Response;
   try {
-    res = await fetch(new URL("auth/register", apiUrl.replace(/\/?$/, "/")), {
+    res = await fetch(buildApiUrl("auth/register", apiUrl), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name, email, password }),

@@ -15,7 +15,12 @@ function resolveApiUrl(path: string): URL {
   if (!apiUrl) {
     throw new Error("Falta la variable de entorno API_URL.");
   }
-  return new URL(path, apiUrl.replace(/\/?$/, "/"));
+  const normalizedBase = apiUrl.replace(/\/?$/, "/");
+  const cleanPath = path.replace(/^\/?/, "");
+  if (normalizedBase.endsWith("/api/v1/") && cleanPath.startsWith("api/v1/")) {
+    return new URL(cleanPath.replace(/^api\/v1\/?/, ""), normalizedBase);
+  }
+  return new URL(cleanPath, normalizedBase);
 }
 
 export async function apiGet<T>(path: string): Promise<T> {
