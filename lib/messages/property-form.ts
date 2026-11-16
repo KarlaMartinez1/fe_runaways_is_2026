@@ -49,11 +49,21 @@ export const propertyFormMessages = {
   save: "Guardar",
   saving: "Guardando...",
 
+  // Gestión de la publicación (H5)
+  pause: "Pausar publicación",
+  reactivate: "Reactivar publicación",
+  blockDates: "Bloquear fechas",
+  deleteProperty: "Eliminar bien",
+  deleteConfirm: (title: string) => `¿Eliminar «${title}»? Esta acción no se puede deshacer.`,
+  deleteConfirmButton: "Eliminar",
+
   // Resultado
   published: "Bien publicado exitosamente",
   saved: "Cambios guardados",
   moneyLocked:
     "No se puede modificar el precio ni el depósito de un bien con reservas PENDIENTE O PAGADA",
+  statusLocked:
+    "No se puede cambiar el estado ni eliminar un bien con reservas PENDIENTE O PAGADA",
   saveError: "No se pudo guardar. Intente de nuevo.",
   forbidden: "No tienes permiso para ver esta página",
 

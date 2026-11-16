@@ -171,3 +171,10 @@ export type PropertyReviewResult = {
   reviewCount: number;
   createdAt: string;
 };
+
+// Respuesta de PATCH /api/v1/properties/:id/status (H5).
+export type PropertyStatusChange = {
+  id: string;
+  status: PropertyStatus;
+  statusChangedAt: string;
+};

@@ -1,4 +1,4 @@
-import { ApiError, apiGet, apiPost, apiPut } from "@/lib/api/client";
+import { ApiError, apiDelete, apiGet, apiPatch, apiPost, apiPut } from "@/lib/api/client";
 import type {
   NewPropertyInput,
   OwnerProperty,
@@ -6,10 +6,11 @@ import type {
   Property,
   PropertyAvailability,
   PropertyDetail,
+  PropertyStatusChange,
   UpdatePropertyInput,
 } from "@/lib/api/types";
 import { filtersToQuery } from "@/lib/filters/property-filters";
-import type { PropertyRepository } from "../property-repository";
+import type { ManageableStatus, PropertyRepository } from "../property-repository";
 
 export const httpPropertyRepository: PropertyRepository = {
   listAvailable(page, filters = {}) {
@@ -73,5 +74,16 @@ export const httpPropertyRepository: PropertyRepository = {
       `api/v1/properties/${encodeURIComponent(id)}`,
       input,
     );
+  },
+
+  changeStatus(id, status) {
+    return apiPatch<PropertyStatusChange, { status: ManageableStatus }>(
+      `api/v1/properties/${encodeURIComponent(id)}/status`,
+      { status },
+    );
+  },
+
+  remove(id) {
+    return apiDelete(`api/v1/properties/${encodeURIComponent(id)}`);
   },
 };
