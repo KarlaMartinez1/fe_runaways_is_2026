@@ -3,9 +3,11 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { PropertyGallery } from "@/components/properties/property-gallery";
+import { PropertyReviewsTabs } from "@/components/reviews/property-reviews-tabs";
 import { ApiError } from "@/lib/api/client";
 import type { PropertyAvailabilityState, PropertyDetail } from "@/lib/api/types";
 import { categoryLabels, detailMessages } from "@/lib/messages/properties";
+import { reviewMessages } from "@/lib/messages/reviews";
 import { profileRepository, propertyRepository } from "@/lib/repositories";
 import { BookingBox } from "./booking-box";
 
@@ -137,8 +139,16 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               <div>
                 <p className="font-semibold text-zinc-900">{property.ownerName}</p>
                 <p className="text-sm text-zinc-500">{detailMessages.ownerRole}</p>
+                <p className="text-sm text-zinc-500">
+                  {reviewMessages.ownerRatingLine(
+                    property.ownerAverageRating ?? null,
+                    property.ownerReviewCount ?? 0,
+                  )}
+                </p>
               </div>
             </div>
+
+            <PropertyReviewsTabs propertyReviews={property.propertyReviews ?? []} />
 
             <section id="reservar" aria-label="Disponibilidad y reserva" />
           </section>

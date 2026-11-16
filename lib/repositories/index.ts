@@ -16,6 +16,8 @@ import { httpAdminRepository } from "./http/admin-repository.http";
 import { mockAdminRepository } from "./mock/admin-repository.mock";
 import { httpIdentityDocumentRepository } from "./http/identity-document-repository.http";
 import { mockIdentityDocumentRepository } from "./mock/identity-document-repository.mock";
+import { httpReviewRepository } from "./http/review-repository.http";
+import { mockReviewRepository } from "./mock/review-repository.mock";
 
 const useMocks = process.env.USE_MOCKS === "true";
 
@@ -35,12 +37,12 @@ export const depositRepository = useMocks
   ? mockDepositRepository
   : httpDepositRepository;
 
-export const bookingRepository = useMocks 
-  ? mockBookingRepository 
+export const bookingRepository = useMocks
+  ? mockBookingRepository
   : httpBookingRepository;
 
-export const blockRepository = useMocks 
-  ? mockBlockRepository 
+export const blockRepository = useMocks
+  ? mockBlockRepository
   : httpBlockRepository;
 
 export const reportRepository = useMocks
@@ -54,3 +56,7 @@ export const identityDocumentRepository = useMocks
 export const adminRepository = useMocks
   ? mockAdminRepository
   : httpAdminRepository;
+
+export const reviewRepository = useMocks
+  ? mockReviewRepository
+  : httpReviewRepository;
