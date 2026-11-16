@@ -1,26 +1,47 @@
 import { cookies } from "next/headers";
 
 export const SESSION_COOKIE = "session";
-const SESSION_DURATION_MS = 7 * 24 * 60 * 60 * 1000;
+export const REFRESH_SESSION_COOKIE = "refresh_session";
 
-// Guarda el token de sesión en una cookie httpOnly (no accesible desde JS del cliente).
-export async function createSession(token: string) {
-  const cookieStore = await cookies();
-  cookieStore.set(SESSION_COOKIE, token, {
+const REFRESH_MAX_AGE_SECONDS = 7 * 24 * 60 * 60;
+
+function cookieOptions(maxAge: number) {
+  return {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: "lax" as const,
     path: "/",
-    expires: new Date(Date.now() + SESSION_DURATION_MS),
-  });
+    maxAge,
+  };
 }
 
-export async function getSession() {
-  const cookieStore = await cookies();
-  return cookieStore.get(SESSION_COOKIE)?.value;
+export async function createSession(
+  accessToken: string,
+  expiresInSeconds: number = 900,
+  refreshToken?: string,
+) {
+  const store = await cookies();
+  store.set(SESSION_COOKIE, accessToken, cookieOptions(expiresInSeconds));
+  if (refreshToken) {
+    store.set(REFRESH_SESSION_COOKIE, refreshToken, cookieOptions(REFRESH_MAX_AGE_SECONDS));
+  }
+}
+
+export async function getAccessToken() {
+  const store = await cookies();
+  return store.get(SESSION_COOKIE)?.value;
+}
+
+export async function getRefreshToken() {
+  const store = await cookies();
+  return store.get(REFRESH_SESSION_COOKIE)?.value;
 }
 
 export async function deleteSession() {
-  const cookieStore = await cookies();
-  cookieStore.delete(SESSION_COOKIE);
+  const store = await cookies();
+  store.delete(SESSION_COOKIE);
+  store.delete(REFRESH_SESSION_COOKIE);
 }
+
+/** @deprecated Solo para compatibilidad con develop. En código nuevo usar getAccessToken. */
+export const getSession = getAccessToken;

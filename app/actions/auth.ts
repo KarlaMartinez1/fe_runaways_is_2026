@@ -1,148 +1,93 @@
 "use server";
 
 import { redirect } from "next/navigation";
-import { createSession, deleteSession } from "@/lib/session";
+import {
+  login as loginRequest,
+  logout as logoutRequest,
+  register as registerRequest,
+} from "@/lib/api/auth";
+import { ApiError } from "@/lib/api/client";
+import { createSession, deleteSession, getRefreshToken } from "@/lib/session";
 
-export type LoginState = {
-  error?: string;
-  email?: string;
-};
-
-export type RegisterState = {
-  error?: string;
-  name?: string;
-  email?: string;
-};
+export type LoginState = { error?: string; email?: string };
+export type RegisterState = { error?: string; name?: string; email?: string };
 
 const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-function buildApiUrl(path: string, baseUrl: string): URL {
-  const normalizedBase = baseUrl.replace(/\/?$/, "/");
-  const cleanPath = path.replace(/^\/?/, "");
-  if (normalizedBase.endsWith("/api/v1/") && cleanPath.startsWith("api/v1/")) {
-    return new URL(cleanPath.replace(/^api\/v1\/?/, ""), normalizedBase);
-  }
-  if (!normalizedBase.includes("/api/v1") && !cleanPath.startsWith("api/v1/")) {
-    return new URL(`api/v1/${cleanPath}`, normalizedBase);
-  }
-  return new URL(cleanPath, normalizedBase);
-}
-
-// Llama a la API de autenticación. Devuelve el token si las credenciales son
-// válidas, o null si la API responde 401/403.
-async function authenticate(email: string, password: string) {
-  const apiUrl = process.env.API_URL;
-  if (!apiUrl) {
-    throw new Error("Falta la variable de entorno API_URL.");
-  }
-
-  const res = await fetch(buildApiUrl("auth/login", apiUrl), {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-    cache: "no-store",
-  });
-
-  if (res.status === 401 || res.status === 403) {
-    return null;
-  }
-  if (!res.ok) {
-    throw new Error(`auth/login respondió ${res.status}`);
-  }
-
-  // Ajustar al formato de respuesta real de la API.
-  const data = await res.json();
-  const token: string | undefined =
-    data.token ?? data.accessToken ?? data.access_token;
-  if (!token) {
-    throw new Error("La respuesta de auth/login no incluye un token.");
-  }
-  return token;
-}
-
-export async function login(
-  _prevState: LoginState,
-  formData: FormData,
-): Promise<LoginState> {
+export async function login(_prevState: LoginState, formData: FormData): Promise<LoginState> {
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  if (!email || !password) {
-    return { error: "Ingresa tu correo y contraseña.", email };
-  }
-  if (!EMAIL_REGEX.test(email)) {
-    return { error: "Ingresa un correo válido.", email };
-  }
+  if (!email || !password) return { error: "Ingresa tu correo y contraseña.", email };
+  if (!EMAIL_REGEX.test(email)) return { error: "Ingresa un correo válido.", email };
 
-  let token: string | null;
   try {
-    token = await authenticate(email, password);
+    const result = await loginRequest(email, password);
+    await createSession(result.accessToken, result.expiresIn, result.refreshToken);
   } catch (error) {
-    console.error("Error al iniciar sesión:", error);
+    if (error instanceof ApiError) {
+      if (error.status === 401) return { error: "Correo o contraseña incorrectos.", email };
+      if (error.status === 403) return { error: "Tu cuenta está deshabilitada.", email };
+      if (error.status === 429) {
+        return { error: "Demasiados intentos. Intenta nuevamente en 15 minutos.", email };
+      }
+    }
+    console.error("Error de login:", error instanceof ApiError ? error.status : "sin respuesta");
     return { error: "No se pudo iniciar sesión. Intenta más tarde.", email };
   }
-  if (!token) {
-    return { error: "Correo o contraseña incorrectos.", email };
-  }
 
-  await createSession(token);
+  // redirect lanza una excepción interna de Next, por eso va fuera del try.
   redirect("/");
 }
 
-export async function register(
-  _prevState: RegisterState,
-  formData: FormData,
-): Promise<RegisterState> {
+export async function register(_prevState: RegisterState, formData: FormData): Promise<RegisterState> {
   const name = String(formData.get("name") ?? "").trim();
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
 
-  if (!name || !email || !password) {
-    return { error: "Ingresa los datos requeridos.", name, email };
+  if (!name || name.length > 100) {
+    return { error: "El nombre es obligatorio y debe tener máximo 100 caracteres.", name, email };
   }
-  if (!EMAIL_REGEX.test(email)) {
-    return { error: "Ingresa un correo válido.", name, email };
-  }
-  if (password.length < 8) {
-    return { error: "La contraseña debe tener al menos 8 caracteres.", name, email };
+  if (!EMAIL_REGEX.test(email)) return { error: "Ingresa un correo válido.", name, email };
+  if (
+    password.length < 8 ||
+    password.length > 72 ||
+    !/[a-z]/.test(password) ||
+    !/[A-Z]/.test(password) ||
+    !/[0-9]/.test(password)
+  ) {
+    return {
+      error: "La contraseña debe tener entre 8 y 72 caracteres e incluir una minúscula, una mayúscula y un número.",
+      name,
+      email,
+    };
   }
 
-  const apiUrl = process.env.API_URL;
-  if (!apiUrl) {
-    return { error: "No se pudo crear la cuenta. Intenta más tarde.", name, email };
-  }
-
-  let res: Response;
   try {
-    res = await fetch(buildApiUrl("auth/register", apiUrl), {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ name, email, password }),
-      cache: "no-store",
-    });
+    await registerRequest(name, email, password);
   } catch (error) {
-    console.error("Error al registrar la cuenta:", error);
+    if (error instanceof ApiError) {
+      if (error.status === 409) {
+        return { error: "Ya existe una cuenta con ese correo electrónico.", name, email };
+      }
+      if (error.status === 400 && error.message) return { error: error.message, name, email };
+    }
+    console.error("Error de registro:", error instanceof ApiError ? error.status : "sin respuesta");
     return { error: "No se pudo crear la cuenta. Intenta más tarde.", name, email };
   }
 
-  if (res.status === 409) {
-    return { error: "Ya existe una cuenta con ese correo electrónico.", name, email };
-  }
-  if (!res.ok) {
-    return { error: "No se pudo crear la cuenta. Intenta más tarde.", name, email };
-  }
-
-  const data = await res.json();
-  const token: string | undefined =
-    data.token ?? data.accessToken ?? data.access_token;
-  if (token) {
-    await createSession(token);
-    redirect("/");
-  }
+  // El registro no crea sesión: el usuario inicia sesión después.
   redirect("/login?registered=true");
 }
 
 export async function logout() {
-  await deleteSession();
+  try {
+    const refreshToken = await getRefreshToken();
+    if (refreshToken) await logoutRequest(refreshToken);
+  } catch (error) {
+    console.error("Error al cerrar sesión en la API:", error instanceof ApiError ? error.status : "sin respuesta");
+  } finally {
+    await deleteSession();
+  }
   redirect("/login");
 }

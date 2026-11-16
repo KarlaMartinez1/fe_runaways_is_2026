@@ -102,6 +102,37 @@ export type NoAvailabilityBlock = {
   createdAt: string;
 };
 
+// Cuerpo de POST /api/v1/properties (H1). Los montos van como texto con 2 decimales
+// y las fotos como URLs ya subidas a Firebase Storage.
+export type NewPropertyInput = {
+  title: string;
+  description: string;
+  category: PropertyCategory;
+  department: string;
+  municipality: string;
+  address: string;
+  pricePerDay: string;
+  securityDeposit: string;
+  images: string[];
+};
+
+// H4: bien del arrendador en "Mis publicaciones" y en la pantalla de gestión.
+// Incluye la dirección exacta, que solo ve el dueño.
+export type OwnerProperty = PropertyDetail & {
+  address: string;
+};
+
+// Cuerpo de PUT /api/v1/properties/:id (H4): los mismos campos de H1 para reemplazo integral.
+// images es la lista final de fotos (las que se conservan más las nuevas ya subidas).
+export type UpdatePropertyInput = NewPropertyInput;
+
+// Respuesta de PATCH /api/v1/properties/:id/status (H5).
+export type PropertyStatusChange = {
+  id: string;
+  status: PropertyStatus;
+  statusChangedAt: string;
+};
+
 export type BackendRoleChangeResponse = {
   userId: string;
   previousRole: "TENANT" | "OWNER" | "ADMIN";

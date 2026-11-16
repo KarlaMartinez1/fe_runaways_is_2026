@@ -27,6 +27,13 @@ Regla: si una pieza se usa en una sola pantalla, va junto a esa pantalla. Si se 
 - `proxy.ts` decide qué rutas son públicas (`/login`, `/register`) y redirige a `/login` sin sesión.
 - Decisión pendiente: cómo se comparte el estado de sesión y rol en la interfaz (Zustand u otra librería).
 
+## norma
+Los repositorios y las acciones llaman solo a apiGet, apiPost, apiPatch o apiDelete, importados de lib/api/client.ts.
+Nadie lee cookies a mano ni importa getSession o createSession fuera de lib/session.ts y app/actions/auth.ts. Los nombres actuales son getAccessToken y getRefreshToken.
+Nadie usa fetch directo contra la API.
+Nadie pasa tokens por props ni los guarda en el cliente.
+Los repositorios HTTP solo se usan desde Server Components, acciones o route handlers, nunca desde componentes cliente ("use client").
+
 ## 4. Textos y diseño
 
 - Los textos de la interfaz se copian del documento de historias, sin reescribirlos.

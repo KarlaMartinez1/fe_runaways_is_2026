@@ -24,7 +24,11 @@ async function updateRoleAction(newRole: UserRole) {
 
     if (res.success) {
       if (res.accessToken) {
-        await createSession(res.accessToken);
+        await createSession(
+          res.accessToken,
+          res.expiresIn ?? 900,
+          res.refreshToken ?? ""
+        );
       }
       return {
         success: true,

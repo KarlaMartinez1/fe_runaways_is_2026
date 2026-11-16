@@ -111,6 +111,8 @@ export const httpProfileRepository: ProfileRepository = {
         success: true,
         newRole: res.role,
         accessToken: res.accessToken,
+        refreshToken: res.refreshToken,
+        expiresIn: res.expiresIn,
       };
     } catch (error) {
       if (error instanceof ApiError) {

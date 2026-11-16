@@ -88,6 +88,8 @@ export interface RoleChangeResult {
   message?: string;
   code?: string;
   accessToken?: string;
+  refreshToken?: string;
+  expiresIn?: number;
 }
 
 export type DepositDecisionStatus =
