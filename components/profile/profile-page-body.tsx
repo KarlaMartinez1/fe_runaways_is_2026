@@ -18,7 +18,7 @@ export function ProfilePageBody({
   const [profile, setProfile] = React.useState<UserProfile>(initialProfile);
   const [isLoading, setIsLoading] = React.useState(false);
   const [notice, setNotice] = React.useState<{
-    type: 'success' | 'error';
+    type: 'success';
     text: string;
   } | null>(null);
 
@@ -32,17 +32,6 @@ export function ProfilePageBody({
       if (onUpdateRole) {
         const result = await onUpdateRole(newRole);
         if (!result.success) {
-          const mappedBackendMessage =
-            result.code && result.code in profileMessages.backendErrors
-              ? profileMessages.backendErrors[
-                  result.code as keyof typeof profileMessages.backendErrors
-                ]
-              : undefined;
-
-          setNotice({
-            type: 'error',
-            text: mappedBackendMessage || result.message || profileMessages.roleChangeError,
-          });
           setIsLoading(false);
           return result;
         }
@@ -60,10 +49,6 @@ export function ProfilePageBody({
       });
       return { success: true };
     } catch {
-      setNotice({
-        type: 'error',
-        text: profileMessages.roleChangeError,
-      });
       return { success: false, message: profileMessages.roleChangeError };
     } finally {
       setIsLoading(false);
@@ -84,12 +69,8 @@ export function ProfilePageBody({
 
         {notice && (
           <div
-            role="alert"
-            className={`mb-6 flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-all ${
-              notice.type === 'success'
-                ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
-                : 'bg-red-50 border border-red-200 text-red-800'
-            }`}
+            role="status"
+            className="mb-6 flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium bg-emerald-50 border border-emerald-200 text-emerald-800 transition-all"
           >
             <span>{notice.text}</span>
             <button
