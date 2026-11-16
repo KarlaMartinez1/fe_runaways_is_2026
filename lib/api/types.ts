@@ -178,3 +178,21 @@ export type PropertyStatusChange = {
   status: PropertyStatus;
   statusChangedAt: string;
 };
+
+export type BackendRoleChangeResponse = {
+  userId: string;
+  previousRole: "TENANT" | "OWNER" | "ADMIN";
+  role: "TENANT" | "OWNER" | "ADMIN";
+  changedAt: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+};
+
+export type BackendUserResponse = {
+  id: string;
+  email: string;
+  role: "TENANT" | "OWNER" | "ADMIN";
+  isActive: boolean;
+  createdAt: string;
+};
