@@ -2,11 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { BookingList } from "@/components/bookings/booking-list";
+import { RatingSuccessNotice } from "@/components/bookings/rating-success-notice";
 import { Navbar } from "@/components/layout/navbar";
 import { Pagination } from "@/components/ui/pagination";
 import { ApiError } from "@/lib/api/client";
 import type { BookingListResult, BookingStatus } from "@/lib/api/types";
 import { bookingMessages } from "@/lib/messages/bookings";
+import { reviewMessages } from "@/lib/messages/reviews";
 import { bookingRepository } from "@/lib/repositories";
 
 export const metadata: Metadata = {
@@ -16,7 +18,7 @@ export const metadata: Metadata = {
 const STATUSES: BookingStatus[] = ["PENDIENTE", "PAGADA", "FINALIZADA", "CANCELADA"];
 
 type MyBookingsPageProps = {
-  searchParams: Promise<{ status?: string; page?: string; created?: string }>;
+  searchParams: Promise<{ status?: string; page?: string; created?: string; rated?: string }>;
 };
 
 export default async function MyBookingsPage({ searchParams }: MyBookingsPageProps) {
@@ -53,6 +55,10 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
           <p role="status" className="rounded-lg bg-green-50 px-4 py-3 text-sm text-green-800">
             {bookingMessages.createdBanner}
           </p>
+        )}
+
+        {params.rated === "1" && (
+          <RatingSuccessNotice message={reviewMessages.success} />
         )}
 
         <nav aria-label="Filtrar por estado" className="flex flex-wrap gap-2">
