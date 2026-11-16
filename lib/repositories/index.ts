@@ -18,6 +18,8 @@ import { httpIdentityDocumentRepository } from "./http/identity-document-reposit
 import { mockIdentityDocumentRepository } from "./mock/identity-document-repository.mock";
 import { httpReviewRepository } from "./http/review-repository.http";
 import { mockReviewRepository } from "./mock/review-repository.mock";
+import { httpConversationRepository } from "./http/conversation-repository.http";
+import { mockConversationRepository } from "./mock/conversation-repository.mock";
 
 const useMocks = process.env.USE_MOCKS === "true";
 
@@ -60,3 +62,7 @@ export const adminRepository = useMocks
 export const reviewRepository = useMocks
   ? mockReviewRepository
   : httpReviewRepository;
+
+export const conversationRepository = useMocks
+  ? mockConversationRepository
+  : httpConversationRepository;
