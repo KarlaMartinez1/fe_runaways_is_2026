@@ -91,5 +91,26 @@ export interface RoleChangeResult {
   success: boolean;
   newRole?: UserRole;
   message?: string;
+  code?: string;
   token?: string;
+  accessToken?: string;
 }
+
+export interface BackendRoleChangeResponse {
+  userId: string;
+  previousRole: UserRole;
+  role: UserRole;
+  changedAt: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+}
+
+export interface BackendUserResponse {
+  id: string;
+  email: string;
+  role: UserRole;
+  isActive: boolean;
+  createdAt: string;
+}
+
