@@ -13,6 +13,7 @@ import type { BookingRepository, CreateBookingInput, ListBookingsParams } from "
 import { buildMockAvailability } from "./fixtures/availability";
 import { propertyFixtures } from "./fixtures/properties";
 import { getMockBlockedDates } from "./block-store";
+import { isMockUserVerified } from "./identity-document-repository.mock";
 import { isReservationRated } from "./review-store";
 import { MOCK_CURRENT_USER_ID, rateableReservationSeeds } from "./fixtures/rateable-reservations";
 
@@ -129,7 +130,8 @@ export const mockBookingRepository: BookingRepository = {
   async create(input: CreateBookingInput): Promise<CreatedBooking> {
     expireStalePending();
 
-    if (process.env.MOCK_ACCOUNT_STATUS !== "VERIFICADA") {
+       // H21: el servidor revisa la verificación del usuario de la sesión.
+    if (!(await isMockUserVerified())) {
       throw new ApiError(403, "VERIFICATION_REQUIRED", bookingMessages.verificationRequired);
     }
 
