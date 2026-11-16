@@ -23,9 +23,10 @@ export const identityDocumentMessages = {
   reviewInfo:
     "Tu documento será evaluado por un administrador. Te notificaremos una vez que el estado cambie; este proceso puede tardar hasta 24 horas.",
   requirementsTitle: "Requisitos del documento",
+  // El backend recibe un solo archivo, por eso se pide solo el frente del documento.
   requirements: [
     "Debe ser legible y estar vigente.",
-    "Debe mostrarse completo (anverso y reverso para el DUI).",
+    "Debe mostrarse completo y de frente.",
     "El número ingresado debe coincidir con el de la imagen subida.",
   ],
   rejectionLabel: "Motivo:",
