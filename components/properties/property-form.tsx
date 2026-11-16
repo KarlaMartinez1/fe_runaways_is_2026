@@ -449,8 +449,7 @@ export function PropertyForm({ property, actions }: PropertyFormProps) {
         </section>
       </fieldset>
 
-      <aside aria-labelledby="preview-title" className="flex flex-col gap-3 lg:sticky lg:top-8 lg:self-start">
-        <p id="preview-title" className="text-sm font-semibold text-zinc-700">
+      <aside aria-labelledby="preview-title" className="flex flex-col gap-3 lg:self-start">        <p id="preview-title" className="text-sm font-semibold text-zinc-700">
           {m.previewTitle}
         </p>
         <div className="overflow-hidden rounded-2xl border border-zinc-200 bg-white">
