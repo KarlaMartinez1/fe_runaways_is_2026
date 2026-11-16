@@ -257,3 +257,33 @@ export type BackendUserResponse = {
   isActive: boolean;
   createdAt: string;
 };
+
+// H15: reserva del arrendatario con ese bien, si existe (se muestra en el encabezado del chat).
+export type ConversationBooking = {
+  startDate: string;
+  endDate: string;
+  status: BookingStatus;
+};
+
+// H15: elemento de GET /api/v1/conversations (un hilo por bien y arrendatario).
+// Supuesto: el backend devuelve el título del bien, el nombre de la otra persona y el último mensaje.
+export type ConversationSummary = {
+  id: string;
+  propertyId: string;
+  propertyTitle: string;
+  otherParticipantName: string;
+  lastMessage: string | null;
+  lastMessageAt: string | null;
+  lastMessageIsMine: boolean;
+  hasUnread: boolean;
+  booking: ConversationBooking | null;
+};
+
+// H15: mensaje de GET y POST /api/v1/conversations/:id/messages.
+export type ChatMessage = {
+  id: string;
+  senderId: string;
+  content: string;
+  isRead: boolean;
+  createdAt: string;
+};
