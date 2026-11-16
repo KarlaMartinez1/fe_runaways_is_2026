@@ -9,6 +9,11 @@ import { defaultDetailExtras, propertyDetailExtras } from "./fixtures/property-d
 import { getMockBookedDates, getMockOccupiedDates } from "./booking-repository.mock";
 import { buildMockAvailability } from "./fixtures/availability";
 import { mockUserProfileFixture } from "./fixtures/profile";
+import {
+  getOwnerRatingSummary,
+  getPropertyRatingSummary,
+  getPropertyReviews,
+} from "./review-store";
 
 function toDetail(property: Property): PropertyDetail {
   const extras = propertyDetailExtras[property.id] ?? {
@@ -85,7 +90,19 @@ export const mockPropertyRepository: PropertyRepository = {
     if (!property || property.status !== "DISPONIBLE") {
       return null;
     }
-    return toDetail(property);
+
+    const detail = toDetail(property);
+    const rating = getPropertyRatingSummary(id);
+    const ownerRating = getOwnerRatingSummary(detail.ownerName);
+
+    return {
+      ...detail,
+      averageRating: rating.averageRating,
+      reviewCount: rating.reviewCount,
+      ownerAverageRating: ownerRating.averageRating,
+      ownerReviewCount: ownerRating.reviewCount,
+      propertyReviews: getPropertyReviews(id),
+    };
   },
 
   async getAvailability(id) {
