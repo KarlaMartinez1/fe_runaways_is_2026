@@ -4,6 +4,8 @@ import { Navbar } from "@/components/layout/navbar";
 import { ProfilePageBody } from "@/components/profile/profile-page-body";
 import { profileRepository } from "@/lib/repositories";
 import { ApiError } from "@/lib/api/client";
+import { createSession } from "@/lib/session";
+import { profileMessages } from "@/lib/messages/profile";
 import type { UserProfile, RoleRequirements, UserRole } from "@/types/models";
 
 export const metadata: Metadata = {
@@ -19,14 +21,32 @@ async function updateRoleAction(newRole: UserRole) {
   "use server";
   try {
     const res = await profileRepository.changeRole(newRole);
-    return { success: res.success, message: res.message };
+
+    if (res.success) {
+      const newToken = res.accessToken ?? res.token;
+      if (newToken) {
+        await createSession(newToken);
+      }
+      return {
+        success: true,
+        newRole: res.newRole,
+        message: res.message,
+      };
+    }
+
+    return {
+      success: false,
+      code: res.code,
+      message: res.message,
+    };
   } catch (err) {
     if (err instanceof ApiError && err.status === 401) {
       redirect("/login");
     }
     return {
       success: false,
-      message: err instanceof Error ? err.message : undefined,
+      message:
+        err instanceof Error ? err.message : profileMessages.backendErrors.DEFAULT,
     };
   }
 }
