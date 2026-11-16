@@ -1,7 +1,6 @@
 import * as React from 'react';
 import type {
   UserRole,
-  RoleRequirements,
   AccountStatus,
 } from '@/types/models';
 import { profileMessages, roleDisplayLabels } from '@/lib/messages/profile';
@@ -14,8 +13,7 @@ import {
 
 export interface RoleManagementCardProps {
   currentRole: UserRole;
-  accountStatus: AccountStatus;
-  roleRequirements: RoleRequirements;
+  accountStatus?: AccountStatus;
   onRoleChange: (
     newRole: UserRole
   ) => Promise<{ success: boolean; message?: string; code?: string } | void>;
@@ -25,8 +23,6 @@ export interface RoleManagementCardProps {
 
 export function RoleManagementCard({
   currentRole,
-  accountStatus,
-  roleRequirements,
   onRoleChange,
   isLoading = false,
   className,
@@ -38,49 +34,15 @@ export function RoleManagementCard({
   const [isConfirmationOpen, setIsConfirmationOpen] = React.useState(false);
   const [blockedDialogType, setBlockedDialogType] =
     React.useState<BlockedReasonType | null>(null);
+  const [blockedCustomMessage, setBlockedCustomMessage] =
+    React.useState<string | undefined>(undefined);
 
   const selectedRole = selectedRoleOverride ?? defaultTarget;
   const isCurrentActive = selectedRole === currentRole;
 
-  // Validation when user clicks the main action button
+  // Direct confirmation request without mock requirement checks
   const handleActionClick = () => {
     if (isCurrentActive || isLoading) return;
-
-    // 1. Pending payment check applies to BOTH roles
-    const paymentReq = roleRequirements.requirements.find(
-      (r) => r.id === 'noPendingPayments'
-    );
-    if (paymentReq && !paymentReq.met) {
-      setBlockedDialogType('pending_payment');
-      return;
-    }
-
-    // 2. Verified account check applies ONLY when switching to Arrendador (OWNER)
-    if (selectedRole === 'OWNER') {
-      const verifiedReq = roleRequirements.requirements.find(
-        (r) => r.id === 'verifiedAccount'
-      );
-      const isVerified =
-        accountStatus === 'VERIFICADA' && (verifiedReq ? verifiedReq.met : true);
-
-      if (!isVerified) {
-        setBlockedDialogType('unverified_account');
-        return;
-      }
-    }
-
-    // 3. Deposit decision check applies ONLY when current role is Arrendador (OWNER)
-    if (currentRole === 'OWNER') {
-      const depositReq = roleRequirements.requirements.find(
-        (r) => r.id === 'noPendingDeposits'
-      );
-      if (depositReq && !depositReq.met) {
-        setBlockedDialogType('pending_deposit');
-        return;
-      }
-    }
-
-    // All applicable requirements met -> Open confirmation dialog
     setIsConfirmationOpen(true);
   };
 
@@ -90,12 +52,15 @@ export function RoleManagementCard({
       setIsConfirmationOpen(false);
 
       if (result && !result.success) {
+        setBlockedCustomMessage(result.message);
         if (result.code === 'ACCOUNT_NOT_VERIFIED') {
           setBlockedDialogType('unverified_account');
         } else if (result.code === 'ROLE_CHANGE_BLOCKED') {
           setBlockedDialogType(
             currentRole === 'OWNER' ? 'pending_deposit' : 'pending_payment'
           );
+        } else {
+          setBlockedDialogType('generic_blocked');
         }
       }
     } catch {
@@ -210,18 +175,15 @@ export function RoleManagementCard({
         isLoading={isLoading}
       />
 
-      {/* Blocked Requirement Dialog (when a requirement fails) */}
+      {/* Blocked Requirement Dialog (when a requirement fails on backend) */}
       <RoleRequirementBlockedDialog
         isOpen={blockedDialogType !== null}
         type={blockedDialogType ?? 'pending_payment'}
-        onClose={() => setBlockedDialogType(null)}
-        itemDetail={
-          blockedDialogType === 'pending_payment'
-            ? roleRequirements.pendingPaymentDetail
-            : blockedDialogType === 'pending_deposit'
-            ? roleRequirements.pendingDepositDetail
-            : undefined
-        }
+        customMessage={blockedCustomMessage}
+        onClose={() => {
+          setBlockedDialogType(null);
+          setBlockedCustomMessage(undefined);
+        }}
       />
     </>
   );

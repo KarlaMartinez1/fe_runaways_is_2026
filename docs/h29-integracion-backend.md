@@ -113,6 +113,20 @@ El objetivo de esta intervención fue conectar el flujo de cambio de rol de la i
 
 ---
 
+### 2.10. Eliminación de la Tarjeta de Requisitos y Control por Diálogo de Alerta
+* **Archivos intervenidos:** `app/profile/page.tsx`, `components/profile/profile-page-body.tsx`, `components/profile/role-management-card.tsx`, `components/profile/role-requirement-blocked-dialog.tsx`.
+* **Cambios realizados:**
+  - Se eliminó del diseño de la página de perfil la tarjeta visual "Requisitos para cambiar de rol" (`RoleRequirementsCard`).
+  - Se retiró la llamada a `profileRepository.getRoleRequirements()` del Server Component `ProfilePage`.
+  - Se configuró la acción de cambio de rol para que la validación ocurra de manera atómica en el backend al invocar `PATCH /api/v1/profile/role`.
+  - Cuando el backend rechaza la operación (e.g. `{ "code": "ACCOUNT_NOT_VERIFIED", "message": "Debes verificar tu cuenta antes de cambiar a OWNER." }` o `{ "code": "ROLE_CHANGE_BLOCKED", "message": "..." }`), el frontend levanta automáticamente el diálogo de alerta `RoleRequirementBlockedDialog` mostrando el mensaje exacto retornado por el backend y ofreciendo los accesos directos necesarios (ej. `/profile/verification` para verificar cuenta, o `/bookings/mine` para reservas activas).
+  - Se eliminaron las cadenas quemadas de ítems de prueba (como "$95.00", "$50.00" y "Alquiler de espacio de oficina") del diálogo de bloqueo.
+* **Justificación:**
+  - El backend no cuenta ni contará con un endpoint para consultar el checklist previo de requisitos. La validación se ejecuta en el backend bajo una transacción serializable al intentar el cambio. Por tanto, mostrar un checklist simulado no reflejaba la realidad del sistema y podía desincronizarse del estado real de la base de datos.
+  - El diálogo de alerta interactivo proporciona al usuario la retroalimentación precisa del backend con acción correctiva inmediata.
+
+---
+
 ## 3. Estado de Verificación y Compilación
 
 Antes de dar por concluida la tarea, se ejecutaron las herramientas de análisis estático y empaquetado:

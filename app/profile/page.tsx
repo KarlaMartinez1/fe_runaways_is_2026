@@ -6,7 +6,7 @@ import { profileRepository } from "@/lib/repositories";
 import { ApiError } from "@/lib/api/client";
 import { createSession } from "@/lib/session";
 import { profileMessages } from "@/lib/messages/profile";
-import type { UserProfile, RoleRequirements, UserRole } from "@/types/models";
+import type { UserProfile, UserRole } from "@/types/models";
 
 export const metadata: Metadata = {
   title: "Mi perfil | Runaways",
@@ -55,14 +55,10 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   const { scenario } = resolvedSearchParams;
 
   let profile: UserProfile | null = null;
-  let requirements: RoleRequirements | null = null;
   let unauthorized = false;
 
   try {
-    [profile, requirements] = await Promise.all([
-      profileRepository.getUserProfile(scenario),
-      profileRepository.getRoleRequirements(scenario),
-    ]);
+    profile = await profileRepository.getUserProfile(scenario);
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
       unauthorized = true;
@@ -75,7 +71,7 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
     redirect("/login");
   }
 
-  if (!profile || !requirements) {
+  if (!profile) {
     return null;
   }
 
@@ -84,7 +80,6 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
       <Navbar />
       <ProfilePageBody
         initialProfile={profile}
-        roleRequirements={requirements}
         onUpdateRole={updateRoleAction}
       />
     </div>

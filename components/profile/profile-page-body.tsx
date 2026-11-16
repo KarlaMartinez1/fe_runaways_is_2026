@@ -1,21 +1,18 @@
 'use client';
 
 import * as React from 'react';
-import type { UserProfile, RoleRequirements, UserRole } from '@/types/models';
+import type { UserProfile, UserRole } from '@/types/models';
 import { profileMessages, roleDisplayLabels } from '@/lib/messages/profile';
 import { ProfileInfoCard } from './profile-info-card';
 import { RoleManagementCard } from './role-management-card';
-import { RoleRequirementsCard } from './role-requirements-card';
 
 export interface ProfilePageBodyProps {
   initialProfile: UserProfile;
-  roleRequirements: RoleRequirements;
   onUpdateRole?: (newRole: UserRole) => Promise<{ success: boolean; message?: string; code?: string }>;
 }
 
 export function ProfilePageBody({
   initialProfile,
-  roleRequirements,
   onUpdateRole,
 }: ProfilePageBodyProps) {
   const [profile, setProfile] = React.useState<UserProfile>(initialProfile);
@@ -120,12 +117,9 @@ export function ProfilePageBody({
             <RoleManagementCard
               currentRole={profile.role}
               accountStatus={profile.accountStatus}
-              roleRequirements={roleRequirements}
               onRoleChange={handleRoleChange}
               isLoading={isLoading}
             />
-
-            <RoleRequirementsCard roleRequirements={roleRequirements} />
           </section>
         </div>
       </div>

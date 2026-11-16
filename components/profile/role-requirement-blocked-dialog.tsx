@@ -6,12 +6,14 @@ import { cn } from '@/lib/utils/cn';
 export type BlockedReasonType =
   | 'pending_payment'
   | 'unverified_account'
-  | 'pending_deposit';
+  | 'pending_deposit'
+  | 'generic_blocked';
 
 export interface RoleRequirementBlockedDialogProps {
   isOpen: boolean;
   type: BlockedReasonType;
   onClose: () => void;
+  customMessage?: string;
   itemDetail?: {
     itemTitle: string;
     amount?: string;
@@ -23,6 +25,7 @@ export function RoleRequirementBlockedDialog({
   isOpen,
   type,
   onClose,
+  customMessage,
   itemDetail,
 }: RoleRequirementBlockedDialogProps) {
   // Close on Escape
@@ -49,12 +52,11 @@ export function RoleRequirementBlockedDialog({
       ? {
           title: profileMessages.blockedPendingPayment.title,
           body: profileMessages.blockedPendingPayment.body,
-          boxTitle:
-            itemDetail?.itemTitle || 'Alquiler de espacio de oficina',
+          boxTitle: itemDetail?.itemTitle,
           boxSubtitle:
             itemDetail?.amount && itemDetail?.dueDate
               ? `${itemDetail.amount} · ${itemDetail.dueDate}`
-              : '$95.00 · Vence 10/11/2026 10:00 AM',
+              : undefined,
           actionText: profileMessages.blockedPendingPayment.actionButton,
           actionHref: profileMessages.blockedPendingPayment.actionHref,
           iconBg: 'bg-red-50 text-red-600',
@@ -73,17 +75,28 @@ export function RoleRequirementBlockedDialog({
           boxBg: 'bg-[#FFFBEB] border-amber-200/80 text-amber-900',
           boxSubtext: 'text-amber-700',
         }
-      : {
+      : type === 'pending_deposit'
+      ? {
           title: profileMessages.blockedPendingDeposits.title,
           body: profileMessages.blockedPendingDeposits.body,
-          boxTitle:
-            itemDetail?.itemTitle || 'Alquiler de espacio de oficina',
+          boxTitle: itemDetail?.itemTitle,
           boxSubtitle:
             itemDetail?.amount && itemDetail?.dueDate
               ? `${itemDetail.amount} · ${itemDetail.dueDate}`
-              : '$50.00 en garantía · Fecha límite: 19/11/2026',
+              : undefined,
           actionText: profileMessages.blockedPendingDeposits.actionButton,
           actionHref: profileMessages.blockedPendingDeposits.actionHref,
+          iconBg: 'bg-red-50 text-red-600',
+          boxBg: 'bg-[#FFF5F5] border-red-100 text-red-700',
+          boxSubtext: 'text-red-500',
+        }
+      : {
+          title: 'No se puede cambiar el rol',
+          body: profileMessages.roleChangeError,
+          boxTitle: undefined,
+          boxSubtitle: undefined,
+          actionText: undefined,
+          actionHref: undefined,
           iconBg: 'bg-red-50 text-red-600',
           boxBg: 'bg-[#FFF5F5] border-red-100 text-red-700',
           boxSubtext: 'text-red-500',
@@ -126,20 +139,24 @@ export function RoleRequirementBlockedDialog({
         </h3>
 
         <p className="mt-2 text-xs sm:text-sm text-gray-600 leading-relaxed">
-          {config.body}
+          {customMessage || config.body}
         </p>
 
-        <div
-          className={cn(
-            'mt-4 rounded-xl border p-3.5 text-left',
-            config.boxBg
-          )}
-        >
-          <p className="text-xs sm:text-sm font-semibold">{config.boxTitle}</p>
-          <p className={cn('text-xs mt-0.5', config.boxSubtext)}>
-            {config.boxSubtitle}
-          </p>
-        </div>
+        {config.boxTitle && (
+          <div
+            className={cn(
+              'mt-4 rounded-xl border p-3.5 text-left',
+              config.boxBg
+            )}
+          >
+            <p className="text-xs sm:text-sm font-semibold">{config.boxTitle}</p>
+            {config.boxSubtitle && (
+              <p className={cn('text-xs mt-0.5', config.boxSubtext)}>
+                {config.boxSubtitle}
+              </p>
+            )}
+          </div>
+        )}
 
         <div className="mt-6 flex items-center justify-end gap-3 pt-1">
           <button
@@ -150,12 +167,14 @@ export function RoleRequirementBlockedDialog({
             {profileMessages.blockedDialogUnderstandButton}
           </button>
 
-          <Link
-            href={config.actionHref}
-            className="rounded-xl bg-[#1E4DB7] px-5 py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-[#163c91] active:scale-[0.99] transition-all cursor-pointer shadow-xs inline-flex items-center justify-center"
-          >
-            {config.actionText}
-          </Link>
+          {config.actionHref && config.actionText && (
+            <Link
+              href={config.actionHref}
+              className="rounded-xl bg-[#1E4DB7] px-5 py-2.5 text-xs sm:text-sm font-semibold text-white hover:bg-[#163c91] active:scale-[0.99] transition-all cursor-pointer shadow-xs inline-flex items-center justify-center"
+            >
+              {config.actionText}
+            </Link>
+          )}
         </div>
       </div>
     </div>
