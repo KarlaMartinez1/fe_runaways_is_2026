@@ -83,8 +83,12 @@ export default async function ConversationPage({ params }: ConversationPageProps
             </Link>
 
             {messages && conversation ? (
-              <ChatThread conversation={conversation} messages={messages} currentUserId={user.id} />
-            ) : (
+              <ChatThread
+                conversation={conversation}
+                messages={messages}
+                currentUserId={user.id}
+                // H15: solo entra el arrendatario, que no ve el estado de la reserva. H16 lo activa para el arrendador.
+                showBookingStatus={false}              />            ) : (
               <p role="alert" className="py-16 text-center text-zinc-600">
                 {notFound || (messages && !conversation) ? m.notFound : m.loadError}
               </p>

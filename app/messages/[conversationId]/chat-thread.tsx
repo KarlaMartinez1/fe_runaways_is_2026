@@ -18,10 +18,12 @@ type ChatThreadProps = {
   conversation: ConversationSummary;
   messages: ChatMessage[];
   currentUserId: string;
+  // Según el Figma, solo el arrendador ve el estado de la reserva en el encabezado.
+  showBookingStatus: boolean;
 };
 
 // H15: hilo de conversación con los mensajes y el cuadro para escribir.
-export function ChatThread({ conversation, messages, currentUserId }: ChatThreadProps) {
+export function ChatThread({ conversation, messages, currentUserId, showBookingStatus }: ChatThreadProps) {
   const router = useRouter();
   const [content, setContent] = useState("");
   const [error, setError] = useState<string>();
@@ -87,7 +89,7 @@ export function ChatThread({ conversation, messages, currentUserId }: ChatThread
           </h2>
           <p className="truncate text-sm text-zinc-500">{subtitle}</p>
         </div>
-        {conversation.booking && (
+        {showBookingStatus && conversation.booking && (
           <span className="shrink-0 rounded-md bg-[#fef3c7] px-2.5 py-0.5 text-xs font-semibold text-[#854d0e]">
             {bookingStatusLabels[conversation.booking.status]}
           </span>
