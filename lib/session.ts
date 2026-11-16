@@ -17,12 +17,14 @@ function cookieOptions(maxAge: number) {
 
 export async function createSession(
   accessToken: string,
-  expiresInSeconds: number,
-  refreshToken: string,
+  expiresInSeconds: number = 900,
+  refreshToken?: string,
 ) {
   const store = await cookies();
   store.set(SESSION_COOKIE, accessToken, cookieOptions(expiresInSeconds));
-  store.set(REFRESH_SESSION_COOKIE, refreshToken, cookieOptions(REFRESH_MAX_AGE_SECONDS));
+  if (refreshToken) {
+    store.set(REFRESH_SESSION_COOKIE, refreshToken, cookieOptions(REFRESH_MAX_AGE_SECONDS));
+  }
 }
 
 export async function getAccessToken() {

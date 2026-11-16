@@ -32,6 +32,18 @@ export const profileMessages = {
     `Tu cuenta ha cambiado al rol ${newRoleName} exitosamente.`,
   roleChangeError:
     'No fue posible cambiar el rol. Asegúrate de cumplir con todos los requisitos antes de intentarlo.',
+  backendErrors: {
+    ROLE_CHANGE_BLOCKED:
+      'No se puede cambiar el rol mientras haya reservas activas o depósitos pendientes de decisión.',
+    ACCOUNT_NOT_VERIFIED:
+      'Debes verificar tu cuenta antes de cambiar a Arrendador.',
+    ROLE_UNCHANGED:
+      'Tu cuenta ya tiene el rol solicitado.',
+    FORBIDDEN:
+      'No tienes permiso para realizar esta acción.',
+    DEFAULT:
+      'No fue posible cambiar el rol. Intenta de nuevo más tarde.',
+  },
 
   // Confirmation Dialog
   dialogTitle: 'Cambiar de rol',
