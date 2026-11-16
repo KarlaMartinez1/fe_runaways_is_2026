@@ -65,3 +65,23 @@ export function formatLongDate(iso: string): string {
   const { year, month, day } = splitIso(iso);
   return longDateFormatter.format(new Date(Date.UTC(year, month - 1, day)));
 }
+
+const notificationDateFormatter = new Intl.DateTimeFormat("es-SV", {
+  day: "numeric",
+  month: "short",
+  year: "numeric",
+  hour: "numeric",
+  minute: "2-digit",
+  hour12: true,
+  timeZone: TIME_ZONE,
+});
+
+export function formatNotificationDate(dateString: string): string {
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return dateString;
+    return notificationDateFormatter.format(date);
+  } catch {
+    return dateString;
+  }
+}
