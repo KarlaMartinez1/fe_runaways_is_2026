@@ -15,7 +15,6 @@ export interface OccupancyPageBodyProps {
   initialFrom?: string;
   initialTo?: string;
   initialOrder?: "asc" | "desc";
-  bypass?: boolean;
   className?: string;
 }
 
@@ -24,7 +23,6 @@ export function OccupancyPageBody({
   initialFrom = "",
   initialTo = "",
   initialOrder = "desc",
-  bypass = false,
   className,
 }: OccupancyPageBodyProps) {
   const router = useRouter();
@@ -40,7 +38,6 @@ export function OccupancyPageBody({
   const syncUrl = React.useCallback(
     (newFrom: string, newTo: string, newOrder: "asc" | "desc", newPage: number) => {
       const params = new URLSearchParams();
-      if (bypass) params.set("bypass", "true");
       if (newFrom) params.set("from", newFrom);
       if (newTo) params.set("to", newTo);
       if (newOrder !== "desc") params.set("order", newOrder);
@@ -52,7 +49,7 @@ export function OccupancyPageBody({
         : "/owner/reports/occupancy";
       router.replace(newUrl);
     },
-    [router, bypass]
+    [router]
   );
 
   const fetchData = React.useCallback(
