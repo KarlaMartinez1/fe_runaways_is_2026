@@ -17,8 +17,8 @@ export default async function MessagesPage() {
   if (!user) {
     redirect("/login");
   }
-  // H15: mensajería del arrendatario. H16 habilita al arrendador.
-  if (user.role !== "TENANT") {
+  // H15: el arrendatario pregunta. H16: el arrendador responde. El ADMIN no usa mensajería.
+  if (user.role !== "TENANT" && user.role !== "OWNER") {
     redirect("/access-denied");
   }
 
