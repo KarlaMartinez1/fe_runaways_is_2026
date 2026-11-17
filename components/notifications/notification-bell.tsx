@@ -13,7 +13,7 @@ export interface NotificationBellProps {
 }
 
 export function NotificationBell({
-  initialCount = 2,
+  initialCount = 0,
   className,
 }: NotificationBellProps) {
   const pathname = usePathname();
