@@ -16,7 +16,7 @@ import {
   propertyRatingItemsFixture,
 } from "./fixtures/reports";
 
-function parseFixtureDate(dateStr: string | null): Date | null {
+function parseFixtureDate(dateStr?: string | null): Date | null {
   if (!dateStr) return null;
   // Format DD/MM/YYYY or YYYY-MM-DD in local time
   if (dateStr.includes("/")) {
@@ -118,6 +118,12 @@ export const mockReportRepository: ReportRepository = {
       return order === "asc" ? aVal - bVal : bVal - aVal;
     });
 
+    const totalRental = items
+      .reduce((acc, curr) => acc + parseFloat(curr.rentalIncome || "0"), 0)
+      .toFixed(2);
+    const totalDeposit = items
+      .reduce((acc, curr) => acc + parseFloat(curr.retainedDepositIncome || "0"), 0)
+      .toFixed(2);
     const totalIncome = items
       .reduce((acc, curr) => acc + parseFloat(curr.totalIncome), 0)
       .toFixed(2);
@@ -128,7 +134,11 @@ export const mockReportRepository: ReportRepository = {
     const paginatedItems = items.slice(startIndex, startIndex + pageSize);
 
     return {
+      from: params?.from ?? null,
+      to: params?.to ?? null,
       data: paginatedItems,
+      rentalIncome: totalRental,
+      retainedDepositIncome: totalDeposit,
       totalIncome,
       total,
       page,

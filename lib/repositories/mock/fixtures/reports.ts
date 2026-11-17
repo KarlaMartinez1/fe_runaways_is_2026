@@ -15,6 +15,24 @@ export const defaultIncomeSummaryFixture: IncomeSummary = {
 
 export const propertyIncomeItemsFixture: PropertyIncomeItem[] = [
   {
+    propertyId: "3c000001-0000-0000-0000-000000000001",
+    title: "Apartamento de Lujo Torre Futura",
+    category: "PROPERTY",
+    lastIncomeDate: "15/11/2026",
+    rentalIncome: "450.00",
+    retainedDepositIncome: "50.00",
+    totalIncome: "500.00",
+  },
+  {
+    propertyId: "3c000002-0000-0000-0000-000000000002",
+    title: "Set Profesional de Iluminación y Estudio",
+    category: "EQUIPMENT",
+    lastIncomeDate: "10/11/2026",
+    rentalIncome: "80.00",
+    retainedDepositIncome: "0.00",
+    totalIncome: "80.00",
+  },
+  {
     propertyId: "prop-01",
     title: "Quinta Las Cascadas",
     status: "DISPONIBLE",

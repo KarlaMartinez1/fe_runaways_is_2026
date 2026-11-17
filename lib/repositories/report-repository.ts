@@ -11,15 +11,20 @@ export interface IncomeSummary {
 export interface PropertyIncomeItem {
   propertyId: string;
   title: string;
-  status: PropertyStatus;
-  lastIncomeDate: string | null;
+  category?: string;
+  status?: PropertyStatus;
+  lastIncomeDate?: string | null;
   rentalIncome: string;
   retainedDepositIncome: string;
   totalIncome: string;
 }
 
 export interface PropertyIncomeListResult {
+  from?: string | null;
+  to?: string | null;
   data: PropertyIncomeItem[];
+  rentalIncome?: string;
+  retainedDepositIncome?: string;
   totalIncome: string;
   total: number;
   page: number;
