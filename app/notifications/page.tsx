@@ -82,8 +82,22 @@ export default async function NotificationsPage({
     result = await notificationRepository.list({ page, pageSize: 10 });
   } catch (error) {
     console.error("Error al obtener notificaciones:", error);
-    if (error instanceof ApiError && error.status === 401) {
-      redirect("/login");
+    if (error instanceof ApiError) {
+      if (error.status === 401) {
+        redirect("/login");
+      }
+      if (error.status === 403) {
+        return (
+          <>
+            <Navbar />
+            <main className="mx-auto flex w-full max-w-5xl flex-col items-center justify-center gap-4 px-6 py-20 text-center">
+              <h1 className="text-2xl font-bold text-zinc-900">
+                {notificationMessages.forbidden}
+              </h1>
+            </main>
+          </>
+        );
+      }
     }
     result = {
       data: [],
