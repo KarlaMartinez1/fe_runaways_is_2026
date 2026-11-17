@@ -13,7 +13,9 @@ export const notificationMessages = {
   categories: {
     MESSAGING: "Mensajería",
     BOOKING: "Reservaciones",
+    RESERVATIONS: "Reservaciones",
     PAYMENT: "Pagos",
+    PAYMENTS: "Pagos",
     VERIFICATION: "Verificación",
   } satisfies Record<NotificationCategory, string>,
   empty: "No tienes notificaciones",
