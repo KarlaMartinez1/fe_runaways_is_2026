@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createBookingAction } from "@/app/actions/bookings";
+import { startConversation } from "@/app/actions/messages";
 import { AvailabilitySection } from "@/components/availability/availability-section";
 import { Button, Card } from "@/components/ui";
 import type { PropertyAvailabilityState } from "@/lib/api/types";
@@ -189,9 +190,12 @@ export function BookingBox({
         </div>
       )}
 
-      <Button asChild variant="outline" fullWidth size="lg">
-        <Link href="/messages">{bookingBoxMessages.askOwner}</Link>
-      </Button>
+           {/* H15: abre el hilo de conversación de este bien con su arrendador. */}
+      <form action={startConversation.bind(null, propertyId)}>
+        <Button type="submit" variant="outline" fullWidth size="lg">
+          {bookingBoxMessages.askOwner}
+        </Button>
+      </form>
     </Card>
   );
 }
