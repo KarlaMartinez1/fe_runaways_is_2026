@@ -1,1 +1,1 @@
-export { GET } from "@/app/api/v1/income/reports/by-property/route";
+export { GET } from "@/app/api/income/reports/by-property/route";
