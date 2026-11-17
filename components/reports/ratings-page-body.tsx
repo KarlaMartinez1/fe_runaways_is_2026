@@ -132,6 +132,7 @@ export function RatingsPageBody({
         onApply={handleApplyFilter}
         onClear={handleClearFilter}
         isLoading={isLoading}
+        disallowFutureDates={true}
       />
 
       <ReportsNav />

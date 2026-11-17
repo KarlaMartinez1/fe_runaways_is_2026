@@ -25,7 +25,7 @@ export const httpReportRepository: ReportRepository = {
       from: params?.from,
       to: params?.to,
     });
-    const url = query ? `api/v1/lessor/reports/income?${query}` : "api/v1/lessor/reports/income";
+    const url = query ? `income/reports?${query}` : "income/reports";
     return apiGet<IncomeSummary>(url);
   },
 
@@ -37,7 +37,7 @@ export const httpReportRepository: ReportRepository = {
       page: params?.page ?? 1,
       pageSize: params?.pageSize ?? 10,
     });
-    return apiGet<PropertyIncomeListResult>(`api/v1/lessor/reports/income/by-property?${query}`);
+    return apiGet<PropertyIncomeListResult>(`income/reports/by-property?${query}`);
   },
 
   getPropertyRatings(params?: GetPropertyRatingsParams) {

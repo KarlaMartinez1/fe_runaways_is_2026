@@ -16,6 +16,7 @@ import {
 } from "@/lib/utils/dates";
 import {
   occupancyReportFilterSchema,
+  ratingsReportFilterSchema,
   reportDateFilterSchema,
   type ReportDateFilterFormData,
 } from "@/lib/validations/reports";
@@ -28,6 +29,7 @@ export interface ReportsDateFilterProps {
   isLoading?: boolean;
   helperText?: string;
   checkMaxDays?: boolean;
+  disallowFutureDates?: boolean;
   className?: string;
 }
 
@@ -39,9 +41,14 @@ export function ReportsDateFilter({
   isLoading = false,
   helperText,
   checkMaxDays = false,
+  disallowFutureDates = false,
   className,
 }: ReportsDateFilterProps) {
-  const schema = checkMaxDays ? occupancyReportFilterSchema : reportDateFilterSchema;
+  const schema = checkMaxDays
+    ? occupancyReportFilterSchema
+    : disallowFutureDates
+      ? ratingsReportFilterSchema
+      : reportDateFilterSchema;
 
   const {
     handleSubmit,
@@ -61,6 +68,7 @@ export function ReportsDateFilter({
   const toValue = useWatch({ control, name: "to" });
 
   const todayStr = React.useMemo(() => todayInElSalvador(), []);
+  const maxCalendarDate = disallowFutureDates ? todayStr : "2030-12-31";
 
   const [openFrom, setOpenFrom] = React.useState(false);
   const [openTo, setOpenTo] = React.useState(false);
@@ -122,8 +130,8 @@ export function ReportsDateFilter({
     setOpenFrom(false);
   };
 
-  const isFutureFrom = Boolean(fromValue && fromValue > todayStr);
-  const isFutureTo = Boolean(toValue && toValue > todayStr);
+  const isFutureFrom = Boolean(disallowFutureDates && fromValue && fromValue > todayStr);
+  const isFutureTo = Boolean(disallowFutureDates && toValue && toValue > todayStr);
   const isFutureDate = isFutureFrom || isFutureTo;
 
   const isInvalidRange = Boolean(
@@ -167,23 +175,23 @@ export function ReportsDateFilter({
     return buildAvailabilityCalendarModel({
       visibleMonth: fromVisibleMonth,
       from: "2020-01-01",
-      to: todayStr,
+      to: maxCalendarDate,
       occupiedDates,
       selectedStart: fromValue || null,
       selectedEnd: toValue || null,
     });
-  }, [fromVisibleMonth, todayStr, occupiedDates, fromValue, toValue]);
+  }, [fromVisibleMonth, maxCalendarDate, occupiedDates, fromValue, toValue]);
 
   const toCalendarModel = React.useMemo(() => {
     return buildAvailabilityCalendarModel({
       visibleMonth: toVisibleMonth,
       from: "2020-01-01",
-      to: todayStr,
+      to: maxCalendarDate,
       occupiedDates,
       selectedStart: fromValue || null,
       selectedEnd: toValue || null,
     });
-  }, [toVisibleMonth, todayStr, occupiedDates, fromValue, toValue]);
+  }, [toVisibleMonth, maxCalendarDate, occupiedDates, fromValue, toValue]);
 
   return (
     <div
@@ -262,7 +270,7 @@ export function ReportsDateFilter({
                   previousMonthLabel={availabilityMessages.previousMonth}
                   nextMonthLabel={availabilityMessages.nextMonth}
                   canGoPrevious={fromVisibleMonth > "2020-01"}
-                  canGoNext={fromVisibleMonth < toMonthKey(todayStr)}
+                  canGoNext={fromVisibleMonth < toMonthKey(maxCalendarDate)}
                   cells={fromCalendarModel.cells}
                   selectionLabel="Fecha seleccionada"
                   onPreviousMonth={() => setFromVisibleMonth((m) => shiftMonthKey(m, -1))}
@@ -344,7 +352,7 @@ export function ReportsDateFilter({
                   previousMonthLabel={availabilityMessages.previousMonth}
                   nextMonthLabel={availabilityMessages.nextMonth}
                   canGoPrevious={toVisibleMonth > "2020-01"}
-                  canGoNext={toVisibleMonth < toMonthKey(todayStr)}
+                  canGoNext={toVisibleMonth < toMonthKey(maxCalendarDate)}
                   cells={toCalendarModel.cells}
                   selectionLabel="Fecha seleccionada"
                   onPreviousMonth={() => setToVisibleMonth((m) => shiftMonthKey(m, -1))}

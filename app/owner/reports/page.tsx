@@ -132,6 +132,7 @@ export default async function OwnerReportsPage({
     <div className="flex min-h-screen flex-col bg-[#F9FAFB]">
       <Navbar />
       <ReportsPageBody
+        key={`${from ?? ""}_${to ?? ""}_${order}_${page}`}
         initialSummary={initialSummary}
         initialPropertyIncome={initialPropertyIncome}
         initialFrom={from ?? ""}
