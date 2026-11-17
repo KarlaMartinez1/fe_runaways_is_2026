@@ -17,6 +17,7 @@ export interface PropertyIncomeTableProps {
   totalPages: number;
   onPageChange?: (page: number) => void;
   isLoading?: boolean;
+  hasDateFilter?: boolean;
   className?: string;
 }
 
@@ -44,6 +45,7 @@ export function PropertyIncomeTable({
   totalPages,
   onPageChange,
   isLoading = false,
+  hasDateFilter = true,
   className,
 }: PropertyIncomeTableProps) {
   const hasPrevious = currentPage > 1;
@@ -77,11 +79,13 @@ export function PropertyIncomeTable({
           </div>
         </div>
 
-        <p className="text-sm font-semibold text-[#1E4DB7]">
-          {reportMessages.byProperty.periodTotal(
-            reportMessages.formatCurrency(totalPeriodIncome)
-          )}
-        </p>
+        {hasDateFilter && (
+          <p className="text-sm font-semibold text-[#1E4DB7]">
+            {reportMessages.byProperty.periodTotal(
+              reportMessages.formatCurrency(totalPeriodIncome)
+            )}
+          </p>
+        )}
       </div>
 
       <div className="space-y-3.5 md:hidden">
@@ -91,7 +95,9 @@ export function PropertyIncomeTable({
           </div>
         ) : items.length === 0 ? (
           <div className="py-8 text-center text-sm text-zinc-500">
-            {reportMessages.byProperty.noProperties}
+            {hasDateFilter
+              ? reportMessages.byProperty.noPeriodData
+              : "Selecciona un rango de fechas en el filtro para consultar los ingresos por bien."}
           </div>
         ) : (
           items.map((item, index) => {
@@ -176,7 +182,9 @@ export function PropertyIncomeTable({
             ) : items.length === 0 ? (
               <tr>
                 <td colSpan={6} className="py-10 text-center text-sm text-zinc-500">
-                  {reportMessages.byProperty.noProperties}
+                  {hasDateFilter
+                    ? reportMessages.byProperty.noPeriodData
+                    : "Selecciona un rango de fechas en el filtro para consultar los ingresos por bien."}
                 </td>
               </tr>
             ) : (
@@ -220,7 +228,7 @@ export function PropertyIncomeTable({
         </table>
       </div>
 
-      {totalPages > 0 && (
+      {totalPages > 0 && items.length > 0 && (
         <div className="flex items-center justify-between sm:justify-center sm:gap-4 pt-2">
           <button
             type="button"

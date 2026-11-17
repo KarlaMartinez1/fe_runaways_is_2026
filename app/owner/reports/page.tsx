@@ -3,7 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { ReportsPageBody } from "@/components/reports/reports-page-body";
-import { profileRepository, reportRepository } from "@/lib/repositories";
+import { getCurrentUser } from "@/lib/api/auth";
+import { reportRepository } from "@/lib/repositories";
 import { ApiError } from "@/lib/api/client";
 import { reportMessages } from "@/lib/messages/reports";
 import type {
@@ -22,9 +23,6 @@ interface OwnerReportsPageProps {
     to?: string;
     order?: string;
     page?: string;
-    scenario?: string;
-    bypass?: string;
-    dev?: string;
   }>;
 }
 
@@ -36,31 +34,27 @@ export default async function OwnerReportsPage({
   const to = resolvedParams.to || undefined;
   const order = resolvedParams.order === "asc" ? "asc" : "desc";
   const page = Math.max(1, Number(resolvedParams.page) || 1);
-  const scenario = resolvedParams.scenario || undefined;
-  const bypass =
-    resolvedParams.bypass === "true" ||
-    resolvedParams.dev === "true" ||
-    scenario === "owner";
 
   let forbidden = false;
 
-  if (!bypass) {
-    try {
-      const profile = await profileRepository.getUserProfile(scenario);
-      if (!profile || profile.role !== "OWNER") {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      redirect("/login");
+    }
+    if (user.role !== "OWNER") {
+      forbidden = true;
+    }
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 401) {
+        redirect("/login");
+      }
+      if (error.status === 403) {
         forbidden = true;
       }
-    } catch (error) {
-      if (error instanceof ApiError) {
-        if (error.status === 401) {
-          redirect("/login");
-        }
-        if (error.status === 403) {
-          forbidden = true;
-        }
-      }
-      console.error("Error al verificar perfil de usuario:", error);
     }
+    console.error("Error al verificar perfil de usuario:", error);
   }
 
   let summary: IncomeSummary | null = null;
@@ -68,15 +62,37 @@ export default async function OwnerReportsPage({
 
   if (!forbidden) {
     try {
+      const hasDateFilter = Boolean(from || to);
+      const summaryPromise = hasDateFilter
+        ? reportRepository.getIncomeSummary({ from, to })
+        : Promise.resolve({
+            from: null,
+            to: null,
+            rentalIncome: "0.00",
+            retainedDepositIncome: "0.00",
+            totalIncome: "0.00",
+          });
+
+      const propertyIncomePromise = hasDateFilter
+        ? reportRepository.getIncomeByProperty({
+            from,
+            to,
+            order,
+            page,
+            pageSize: 10,
+          })
+        : Promise.resolve({
+            data: [],
+            totalIncome: "0.00",
+            total: 0,
+            page: 1,
+            pageSize: 10,
+            totalPages: 0,
+          });
+
       [summary, propertyIncome] = await Promise.all([
-        reportRepository.getIncomeSummary({ from, to }),
-        reportRepository.getIncomeByProperty({
-          from,
-          to,
-          order,
-          page,
-          pageSize: 10,
-        }),
+        summaryPromise,
+        propertyIncomePromise,
       ]);
     } catch (error) {
       if (error instanceof ApiError) {
