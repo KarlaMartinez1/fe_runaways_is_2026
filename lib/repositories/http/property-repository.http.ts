@@ -7,6 +7,7 @@ import type {
   Property,
   PropertyAvailability,
   PropertyDetail,
+  PropertyStatus,
   PropertyStatusChange,
   UpdatePropertyInput,
 } from "@/lib/api/types";
@@ -23,6 +24,36 @@ const fromApiCategory: Record<string, PropertyCategory> = {
   PROPERTY: "PROPIEDAD",
   EQUIPMENT: "EQUIPO",
 };
+
+const fromApiStatus: Record<string, PropertyStatus> = {
+  AVAILABLE: "DISPONIBLE",
+  PAUSED: "PAUSADO",
+  DELETED: "ELIMINADO",
+};
+
+// Elemento de GET /api/v1/properties (H2) y GET /api/v1/properties/mine (H4).
+// El catálogo no incluye status porque solo devuelve bienes AVAILABLE.
+type ApiPropertyItem = Omit<Property, "category" | "status" | "createdAt"> & {
+  category: string;
+  status?: string;
+};
+
+// El backend pagina con pageSize (12) en lugar de totalPages.
+type ApiPage<T> = { data: T[]; total: number; page: number; pageSize: number };
+
+function toPropertyPage(result: ApiPage<ApiPropertyItem>): Paginated<Property> {
+  return {
+    data: result.data.map((item) => ({
+      ...item,
+      category: fromApiCategory[item.category],
+      status: item.status ? fromApiStatus[item.status] : "DISPONIBLE",
+      createdAt: "",
+    })),
+    total: result.total,
+    page: result.page,
+    totalPages: Math.max(1, Math.ceil(result.total / result.pageSize)),
+  };
+}
 
 // H3: respuesta de GET /api/v1/properties/:id. Los promedios llegan como texto con un decimal.
 type ApiPropertyDetail = {
@@ -83,9 +114,12 @@ function toPropertyDetail(data: ApiPropertyDetail): PropertyDetail {
 }
 
 export const httpPropertyRepository: PropertyRepository = {
-  listAvailable(page, filters = {}) {
+  async listAvailable(page, filters = {}) {
     const params = new URLSearchParams({ ...filtersToQuery(filters), page: String(page) });
-    return apiGet<Paginated<Property>>(`api/v1/properties?${params.toString()}`);
+    // La URL del frontend usa PROPIEDAD/EQUIPO; el backend espera PROPERTY/EQUIPMENT.
+    if (filters.category) params.set("category", apiCategory[filters.category]);
+    const result = await apiGet<ApiPage<ApiPropertyItem>>(`api/v1/properties?${params.toString()}`);
+    return toPropertyPage(result);
   },
 
   async getById(id) {
@@ -145,9 +179,27 @@ export const httpPropertyRepository: PropertyRepository = {
   },
 
   // H4: rutas de lectura del arrendador por confirmar con el backend.
-  listMine(page) {
+  async listMine(page) {
     const params = new URLSearchParams({ page: String(page) });
-    return apiGet<Paginated<Property>>(`api/v1/properties/mine?${params.toString()}`);
+    const result = toPropertyPage(
+      await apiGet<ApiPage<ApiPropertyItem>>(`api/v1/properties/mine?${params.toString()}`),
+    );
+    // shortcut: /properties/mine no devuelve securityDeposit; se pide a /properties/:id/owner por bien
+    // (máx. 12 por página). Quitarlo cuando el backend incluya el depósito en la lista.
+    const deposits = await Promise.all(
+      result.data.map((property) =>
+        apiGet<{ securityDeposit: string }>(
+          `api/v1/properties/${encodeURIComponent(property.id)}/owner`,
+        ),
+      ),
+    );
+    return {
+      ...result,
+      data: result.data.map((property, index) => ({
+        ...property,
+        securityDeposit: deposits[index].securityDeposit,
+      })),
+    };
   },
 
   async getMine(id) {
