@@ -1,5 +1,6 @@
 import Link from "next/link";
-import type { Property } from "@/lib/api/types";
+import type { Property, PropertyStatus } from "@/lib/api/types";
+import { propertyStatusLabels } from "@/lib/messages/my-properties";
 import { categoryLabels, formatPrice, propertyMessages } from "@/lib/messages/properties";
 
 const categoryStyles = {
@@ -7,32 +8,54 @@ const categoryStyles = {
   EQUIPO: "bg-[#EEF0E2] text-zinc-800",
 };
 
-export function PropertyCard({ property }: { property: Property }) {
+const statusStyles: Record<PropertyStatus, string> = {
+  DISPONIBLE: "bg-[#d9f5e3] text-[#14532d]",
+  PAUSADO: "bg-[#ece4fb] text-[#5b3aa8]",
+  ELIMINADO: "bg-zinc-200 text-zinc-600",
+};
+
+type PropertyCardProps = {
+  property: Property;
+  // H4: en "Mis publicaciones" la tarjeta lleva a la pantalla de gestión y muestra el estado.
+  href?: string;
+  showStatus?: boolean;
+};
+
+export function PropertyCard({ property, href, showStatus = false }: PropertyCardProps) {
   const cover = property.images[0];
 
   return (
     <Link
-      href={`/properties/${property.id}`}
+      href={href ?? `/properties/${property.id}`}
       className="flex flex-col overflow-hidden rounded-2xl border border-zinc-200 bg-white transition-shadow hover:shadow-md"
     >
       {cover ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={cover} alt={property.title} className="h-[170px] w-full object-cover" />
+        <img src={cover} alt={property.title} className="aspect-[3/2] w-full object-cover" />
       ) : (
-        <div className="h-[170px] w-full bg-[#DCE2F4]" aria-hidden="true" />
+        <div className="aspect-[3/2] w-full bg-[#DCE2F4]" aria-hidden="true" />
       )}
 
-      <div className="flex flex-col gap-1.5 p-4">
-        <span
-          className={`self-start rounded-md px-2.5 py-0.5 text-xs font-semibold ${categoryStyles[property.category]}`}
-        >
-          {categoryLabels[property.category]}
-        </span>
-        <h3 className="text-[17px] font-semibold text-zinc-900">{property.title}</h3>
-        <p className="text-sm text-zinc-500">
+      <div className="flex flex-col gap-1 p-3">
+        <div className="flex flex-wrap gap-1.5">
+          <span
+            className={`rounded-md px-2.5 py-0.5 text-xs font-semibold ${categoryStyles[property.category]}`}
+          >
+            {categoryLabels[property.category]}
+          </span>
+          {showStatus && (
+            <span
+              className={`rounded-md px-2.5 py-0.5 text-xs font-semibold ${statusStyles[property.status]}`}
+            >
+              {propertyStatusLabels[property.status]}
+            </span>
+          )}
+        </div>
+        <h3 className="line-clamp-2 text-[15px] font-semibold text-zinc-900">{property.title}</h3>
+        <p className="truncate text-sm text-zinc-500">
           {property.municipality}, {property.department}
         </p>
-        <p className="font-bold text-zinc-900">
+        <p className="text-[15px] font-bold text-zinc-900">
           {formatPrice(property.pricePerDay)} {propertyMessages.perDay}
         </p>
 

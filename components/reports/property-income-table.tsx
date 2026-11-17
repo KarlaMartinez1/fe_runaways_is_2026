@@ -95,10 +95,7 @@ export function PropertyIncomeTable({
           </div>
         ) : (
           items.map((item, index) => {
-            const badgeInfo = statusBadgeConfig[item.status] ?? {
-              variant: "neutral",
-              label: item.status,
-            };
+            const badgeInfo = item.status ? statusBadgeConfig[item.status] : null;
 
             return (
               <div
@@ -109,9 +106,11 @@ export function PropertyIncomeTable({
                   <span className="font-bold text-sm sm:text-base text-zinc-900">
                     {item.title}
                   </span>
-                  <Badge variant={badgeInfo.variant} size="sm">
-                    {badgeInfo.label}
-                  </Badge>
+                  {badgeInfo ? (
+                    <Badge variant={badgeInfo.variant} size="sm">
+                      {badgeInfo.label}
+                    </Badge>
+                  ) : null}
                 </div>
 
                 <div className="space-y-1.5 text-xs sm:text-sm">
@@ -182,10 +181,7 @@ export function PropertyIncomeTable({
               </tr>
             ) : (
               items.map((item, index) => {
-                const badgeInfo = statusBadgeConfig[item.status] ?? {
-                  variant: "neutral",
-                  label: item.status,
-                };
+                const badgeInfo = item.status ? statusBadgeConfig[item.status] : null;
 
                 return (
                   <tr
@@ -199,9 +195,13 @@ export function PropertyIncomeTable({
                       {item.lastIncomeDate ?? reportMessages.byProperty.noIncome}
                     </td>
                     <td className="py-4 px-4 text-center">
-                      <Badge variant={badgeInfo.variant} size="sm">
-                        {badgeInfo.label}
-                      </Badge>
+                      {badgeInfo ? (
+                        <Badge variant={badgeInfo.variant} size="sm">
+                          {badgeInfo.label}
+                        </Badge>
+                      ) : (
+                        <span className="text-zinc-400 select-none">—</span>
+                      )}
                     </td>
                     <td className="py-4 px-4 text-right text-zinc-700 font-medium">
                       {reportMessages.formatCurrency(item.rentalIncome)}

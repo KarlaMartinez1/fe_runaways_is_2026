@@ -44,7 +44,6 @@ export default async function OwnerReportsPage({
 
   let forbidden = false;
 
-  // Verificación de acceso para rol OWNER (se puede omitir en desarrollo con ?bypass=true o ?dev=true)
   if (!bypass) {
     try {
       const profile = await profileRepository.getUserProfile(scenario);
@@ -133,6 +132,7 @@ export default async function OwnerReportsPage({
     <div className="flex min-h-screen flex-col bg-[#F9FAFB]">
       <Navbar />
       <ReportsPageBody
+        key={`${from ?? ""}_${to ?? ""}_${order}_${page}`}
         initialSummary={initialSummary}
         initialPropertyIncome={initialPropertyIncome}
         initialFrom={from ?? ""}

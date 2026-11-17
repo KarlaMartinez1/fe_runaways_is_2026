@@ -1,31 +1,30 @@
 'use client';
 
 import * as React from 'react';
-import type { UserProfile, RoleRequirements, UserRole } from '@/types/models';
+import type { UserProfile, UserRole } from '@/types/models';
 import { profileMessages, roleDisplayLabels } from '@/lib/messages/profile';
 import { ProfileInfoCard } from './profile-info-card';
 import { RoleManagementCard } from './role-management-card';
-import { RoleRequirementsCard } from './role-requirements-card';
 
 export interface ProfilePageBodyProps {
   initialProfile: UserProfile;
-  roleRequirements: RoleRequirements;
-  onUpdateRole?: (newRole: UserRole) => Promise<{ success: boolean; message?: string }>;
+  onUpdateRole?: (newRole: UserRole) => Promise<{ success: boolean; message?: string; code?: string }>;
 }
 
 export function ProfilePageBody({
   initialProfile,
-  roleRequirements,
   onUpdateRole,
 }: ProfilePageBodyProps) {
   const [profile, setProfile] = React.useState<UserProfile>(initialProfile);
   const [isLoading, setIsLoading] = React.useState(false);
   const [notice, setNotice] = React.useState<{
-    type: 'success' | 'error';
+    type: 'success';
     text: string;
   } | null>(null);
 
-  const handleRoleChange = async (newRole: UserRole) => {
+  const handleRoleChange = async (
+    newRole: UserRole
+  ): Promise<{ success: boolean; message?: string; code?: string }> => {
     setIsLoading(true);
     setNotice(null);
 
@@ -33,12 +32,8 @@ export function ProfilePageBody({
       if (onUpdateRole) {
         const result = await onUpdateRole(newRole);
         if (!result.success) {
-          setNotice({
-            type: 'error',
-            text: result.message || profileMessages.roleChangeError,
-          });
           setIsLoading(false);
-          return;
+          return result;
         }
       }
 
@@ -52,11 +47,9 @@ export function ProfilePageBody({
         type: 'success',
         text: profileMessages.roleChangeSuccess(roleDisplayLabels[newRole]),
       });
+      return { success: true };
     } catch {
-      setNotice({
-        type: 'error',
-        text: profileMessages.roleChangeError,
-      });
+      return { success: false, message: profileMessages.roleChangeError };
     } finally {
       setIsLoading(false);
     }
@@ -76,12 +69,8 @@ export function ProfilePageBody({
 
         {notice && (
           <div
-            role="alert"
-            className={`mb-6 flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium transition-all ${
-              notice.type === 'success'
-                ? 'bg-emerald-50 border border-emerald-200 text-emerald-800'
-                : 'bg-red-50 border border-red-200 text-red-800'
-            }`}
+            role="status"
+            className="mb-6 flex items-center justify-between rounded-xl px-4 py-3 text-sm font-medium bg-emerald-50 border border-emerald-200 text-emerald-800 transition-all"
           >
             <span>{notice.text}</span>
             <button
@@ -109,12 +98,9 @@ export function ProfilePageBody({
             <RoleManagementCard
               currentRole={profile.role}
               accountStatus={profile.accountStatus}
-              roleRequirements={roleRequirements}
               onRoleChange={handleRoleChange}
               isLoading={isLoading}
             />
-
-            <RoleRequirementsCard roleRequirements={roleRequirements} />
           </section>
         </div>
       </div>

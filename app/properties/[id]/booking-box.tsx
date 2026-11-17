@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { createBookingAction } from "@/app/actions/bookings";
+import { startConversation } from "@/app/actions/messages";
 import { AvailabilitySection } from "@/components/availability/availability-section";
 import { Button, Card } from "@/components/ui";
 import type { PropertyAvailabilityState } from "@/lib/api/types";
@@ -117,6 +118,12 @@ export function BookingBox({
         return;
       }
 
+      // H21: el servidor rechazó la reserva por cuenta sin verificar.
+      if (result.verificationRequired) {
+        setShowVerificationError(true);
+        return;
+      }
+
       setError(result.message);
       if (result.conflict) {
         resetSelection();
@@ -151,7 +158,8 @@ export function BookingBox({
         </div>
       )}
 
-      <p className="rounded-lg bg-[#EEF0E2] px-3 py-2 text-sm text-zinc-800">
+      <p className="flex items-center gap-2 rounded-lg border border-[#FDE68A] bg-[#FEF9E7] px-3 py-2 text-sm font-medium text-[#92400E]">
+        <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#D97706]" />
         {bookingBoxMessages.requiresVerification}
       </p>
 
@@ -168,17 +176,26 @@ export function BookingBox({
       )}
 
       {showVerificationError && (
-        <p role="alert" className="text-sm text-red-700">
-          {bookingBoxMessages.verificationRequired}{" "}
-          <Link href="/profile/verification" className="font-semibold underline">
-            {bookingBoxMessages.verifyAccount}
-          </Link>
-        </p>
+        <div
+          role="alert"
+          className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm"
+        >
+          <span aria-hidden="true" className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-red-600" />
+          <div className="flex flex-col gap-1">
+            <p className="font-medium text-red-700">{bookingBoxMessages.verificationRequired}</p>
+            <Link href="/profile/verification" className="font-semibold text-[#1d4ed8] hover:underline">
+              {bookingBoxMessages.verifyAccount} <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+        </div>
       )}
 
-      <Button asChild variant="outline" fullWidth size="lg">
-        <Link href="/messages">{bookingBoxMessages.askOwner}</Link>
-      </Button>
+           {/* H15: abre el hilo de conversación de este bien con su arrendador. */}
+      <form action={startConversation.bind(null, propertyId)}>
+        <Button type="submit" variant="outline" fullWidth size="lg">
+          {bookingBoxMessages.askOwner}
+        </Button>
+      </form>
     </Card>
   );
 }

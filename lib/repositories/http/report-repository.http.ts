@@ -25,23 +25,44 @@ export const httpReportRepository: ReportRepository = {
       from: params?.from,
       to: params?.to,
     });
-    const url = query ? `api/v1/lessor/reports/income?${query}` : "api/v1/lessor/reports/income";
+    const url = query ? `income/reports?${query}` : "income/reports";
     return apiGet<IncomeSummary>(url);
   },
 
-  getIncomeByProperty(params?: GetPropertyIncomeParams) {
+  async getIncomeByProperty(params?: GetPropertyIncomeParams): Promise<PropertyIncomeListResult> {
+    const page = params?.page ?? 1;
+    const pageSize = params?.pageSize ?? 10;
     const query = buildQuery({
       from: params?.from,
       to: params?.to,
       order: params?.order ?? "desc",
-      page: params?.page ?? 1,
-      pageSize: params?.pageSize ?? 10,
+      page,
+      pageSize,
     });
-    return apiGet<PropertyIncomeListResult>(`api/v1/lessor/reports/income/by-property?${query}`);
+    const result = await apiGet<PropertyIncomeListResult>(`income/reports/by-property?${query}`);
+    const total = result.total ?? result.data?.length ?? 0;
+    const computedPageSize = result.pageSize ?? pageSize;
+    const totalPages =
+      result.totalPages ?? Math.max(1, Math.ceil(total / (computedPageSize || 10)));
+
+    return {
+      from: result.from ?? params?.from ?? null,
+      to: result.to ?? params?.to ?? null,
+      data: result.data ?? [],
+      rentalIncome: result.rentalIncome ?? "0.00",
+      retainedDepositIncome: result.retainedDepositIncome ?? "0.00",
+      totalIncome: result.totalIncome ?? "0.00",
+      total,
+      page: result.page ?? page,
+      pageSize: computedPageSize,
+      totalPages,
+    };
   },
 
   getPropertyRatings(params?: GetPropertyRatingsParams) {
     const query = buildQuery({
+      from: params?.from,
+      to: params?.to,
       order: params?.order ?? "desc",
       page: params?.page ?? 1,
       pageSize: params?.pageSize ?? 10,

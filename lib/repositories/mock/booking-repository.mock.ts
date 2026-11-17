@@ -13,6 +13,9 @@ import type { BookingRepository, CreateBookingInput, ListBookingsParams } from "
 import { buildMockAvailability } from "./fixtures/availability";
 import { propertyFixtures } from "./fixtures/properties";
 import { getMockBlockedDates } from "./block-store";
+import { isMockUserVerified } from "./identity-document-repository.mock";
+import { isReservationRated } from "./review-store";
+import { MOCK_CURRENT_USER_ID, rateableReservationSeeds } from "./fixtures/rateable-reservations";
 
 const PAGE_SIZE = 10;
 
@@ -92,6 +95,30 @@ function toListItem(booking: StoredBooking): BookingListItem {
   };
 }
 
+function toRateableListItems(): BookingListItem[] {
+  return rateableReservationSeeds
+    .filter((seed) => seed.lesseeId === MOCK_CURRENT_USER_ID)
+    .map((seed) => {
+      const property = propertyFixtures.find((item) => item.id === seed.propertyId);
+      return {
+        id: seed.id,
+        propertyId: seed.propertyId,
+        propertyTitle: property?.title ?? "Bien",
+        startDate: seed.startDate,
+        endDate: seed.endDate,
+        days: seed.days,
+        subtotal: property ? calculateSubtotal(property.pricePerDay, seed.days) : "0.00",
+        status: seed.status,
+        expiresAt: null,
+        cancelReason: null,
+        deliveredAt: null,
+        returnedAt: null,
+        finalizedAt: seed.finalizedAt,
+        ratedByMe: isReservationRated(seed.id),
+      };
+    });
+}
+
 function paginate<T>(items: T[], page: number): Paginated<T> {
   const total = items.length;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
@@ -103,7 +130,8 @@ export const mockBookingRepository: BookingRepository = {
   async create(input: CreateBookingInput): Promise<CreatedBooking> {
     expireStalePending();
 
-    if (process.env.MOCK_ACCOUNT_STATUS !== "VERIFICADA") {
+       // H21: el servidor revisa la verificación del usuario de la sesión.
+    if (!(await isMockUserVerified())) {
       throw new ApiError(403, "VERIFICATION_REQUIRED", bookingMessages.verificationRequired);
     }
 
@@ -157,10 +185,13 @@ export const mockBookingRepository: BookingRepository = {
 
   async listMine({ page, status }: ListBookingsParams): Promise<BookingListResult> {
     expireStalePending();
-    const items = bookingsStore
-      .filter((booking) => !status || booking.status === status)
-      .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
-      .map(toListItem);
+    const items = [
+      ...bookingsStore
+        .slice()
+        .sort((a, b) => b.createdAt.localeCompare(a.createdAt))
+        .map(toListItem),
+      ...toRateableListItems(),
+    ].filter((booking) => !status || booking.status === status);
     return paginate(items, page);
   },
 

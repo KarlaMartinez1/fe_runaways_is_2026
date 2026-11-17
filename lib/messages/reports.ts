@@ -13,6 +13,7 @@ export const reportMessages = {
     clearButton: "Limpiar",
     invalidDateRange: "La fecha final no puede ser anterior a la inicial.",
     periodExceeded: "El período no puede superar 365 días.",
+    futureDateNotAllowed: "No se pueden seleccionar fechas futuras.",
   },
   summary: {
     title: "Ingresos totales",
@@ -49,11 +50,13 @@ export const reportMessages = {
     orderAsc: "Orden: Menor a mayor",
     headers: {
       property: "Bien",
+      reviewDate: "Fecha",
       status: "Estado",
       averageRating: "Calificación promedio",
     },
     cardRatingLabel: "Calificación",
     noRatings: "Sin calificaciones",
+    noReviewsDate: "Sin reseñas",
     readOnlyNotice:
       "Solo lectura: las reseñas no se pueden editar, ocultar ni eliminar desde el panel.",
     formatRatingWithReviews: (rating: number | null, reviewCount: number): string => {

@@ -136,6 +136,7 @@ export function ReportsPageBody({
       </div>
 
       <ReportsDateFilter
+        key={`${from}_${to}`}
         initialFrom={from}
         initialTo={to}
         onApply={handleApplyFilter}

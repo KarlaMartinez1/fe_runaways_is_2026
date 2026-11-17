@@ -5,6 +5,8 @@ import { formatDeadline, formatShortRange } from "@/lib/bookings/format";
 import type { BookingListItem, BookingStatus } from "@/lib/api/types";
 import { bookingMessages } from "@/lib/messages/bookings";
 import { formatPrice } from "@/lib/messages/properties";
+import { reviewMessages } from "@/lib/messages/reviews";
+import { getRatingBlockReason } from "@/lib/reviews/rules";
 
 type BookingListProps = {
   items: BookingListItem[];
@@ -18,6 +20,17 @@ const statusVariant: Record<BookingStatus, BadgeVariant> = {
   FINALIZADA: "info",
   CANCELADA: "danger",
 };
+
+// Misma regla que la pantalla de calificaciÃ³n: finalizada, sin reseÃ±a y dentro de 14 dÃ­as.
+function canRate(booking: BookingListItem) {
+  return (
+    getRatingBlockReason({
+      status: booking.status,
+      finalizedAt: booking.finalizedAt ?? null,
+      ratedByMe: booking.ratedByMe ?? false,
+    }) === null
+  );
+}
 
 export function BookingList({ items, variant, emptyMessage }: BookingListProps) {
   if (items.length === 0) {
@@ -48,7 +61,7 @@ export function BookingList({ items, variant, emptyMessage }: BookingListProps) 
             )}
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
             <Badge variant={statusVariant[booking.status]}>{booking.status}</Badge>
             {variant === "mine" && booking.status === "PENDIENTE" && (
               <Link
@@ -56,6 +69,14 @@ export function BookingList({ items, variant, emptyMessage }: BookingListProps) 
                 className="rounded-lg bg-[#1f4fb8] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e40af]"
               >
                 {bookingMessages.mine.pay}
+              </Link>
+            )}
+            {variant === "mine" && canRate(booking) && (
+              <Link
+                href={`/reservations/${booking.id}/rate-property`}
+                className="rounded-lg border border-[#cfd3da] px-4 py-2 text-sm font-semibold text-[#1f2330] hover:bg-gray-50"
+              >
+                {reviewMessages.rateButton}
               </Link>
             )}
           </div>

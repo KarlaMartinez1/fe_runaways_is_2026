@@ -72,6 +72,17 @@ export const searchMessages = {
   priceDecimals: "Máximo 2 decimales.",
   priceTooHigh: "El precio no puede superar $9999.99.",
   priceRange: "El precio mínimo no puede ser mayor que el precio máximo.",
+  datesLabel: "Fechas",
+  datesPlaceholder: "Inicio - Fin",
+  dateChooseEnd: "elige el fin",
+  clearDates: "Limpiar fechas",
+  startDateLabel: "Fecha de inicio",
+  endDateLabel: "Fecha de fin",
+  datesBoth: "Seleccione ambas fechas.",
+  dateStartBeforeToday: "La fecha de inicio no puede ser anterior a hoy.",
+  dateEndBeforeStart: "La fecha de fin no puede ser anterior a la de inicio.",
+  dateTooLong: "El rango no puede superar 30 días.",
+  dateOutsideWindow: "Las fechas deben estar dentro de los próximos 90 días.",
 };
 export const filterMessages = {
   categoryChips: { PROPIEDAD: "Propiedades", EQUIPO: "Equipo" },
@@ -87,6 +98,13 @@ export const filterMessages = {
     if (min !== undefined && max !== undefined) return `${format(min)} – ${format(max)}`;
     if (min !== undefined) return `Desde ${format(min)}`;
     return `Hasta ${format(max ?? 0)}`;
+  },
+  dateChip: (startDate: string, endDate: string) => {
+    const toDisplay = (iso: string) => {
+      const [year, month, day] = iso.split("-");
+      return `${day}/${month}/${year}`;
+    };
+    return `Del ${toDisplay(startDate)} al ${toDisplay(endDate)}`;
   },
 };
 export const availabilityMessages = {

@@ -27,6 +27,17 @@ export type PropertyDetail = Property & {
   securityDeposit: string;
   ownerName: string;
   reviewCount: number;
+  ownerAverageRating?: number | null;
+  ownerReviewCount?: number;
+  propertyReviews?: ReviewListItem[];
+};
+
+export type ReviewListItem = {
+  id: string;
+  reviewerName: string;
+  rating: number;
+  comment?: string | null;
+  createdAt: string;
 };
 
 export type PropertyAvailability = {
@@ -56,7 +67,10 @@ export type PropertyFilters = {
   noDeposit?: boolean;
   minPrice?: number;
   maxPrice?: number;
+  startDate?: string;
+  endDate?: string;
 };
+
 export type BookingStatus = "PENDIENTE" | "PAGADA" | "FINALIZADA" | "CANCELADA";
 
 export type CreatedBooking = {
@@ -87,6 +101,8 @@ export type BookingListItem = {
   deliveredAt: string | null;
   returnedAt: string | null;
   lesseeName?: string;
+  finalizedAt?: string | null;
+  ratedByMe?: boolean;
 };
 
 export type BookingListResult = Paginated<BookingListItem>;
@@ -98,3 +114,184 @@ export type NoAvailabilityBlock = {
   endDate: string;
   createdAt: string;
 };
+
+// Cuerpo de POST /api/v1/properties (H1). Los montos van como texto con 2 decimales
+// y las fotos como URLs ya subidas a Firebase Storage.
+export type NewPropertyInput = {
+  title: string;
+  description: string;
+  category: PropertyCategory;
+  department: string;
+  municipality: string;
+  address: string;
+  pricePerDay: string;
+  securityDeposit: string;
+  images: string[];
+};
+
+// H4: bien del arrendador en "Mis publicaciones" y en la pantalla de gestión.
+// Incluye la dirección exacta, que solo ve el dueño.
+export type OwnerProperty = PropertyDetail & {
+  address: string;
+};
+
+// Cuerpo de PUT /api/v1/properties/:id (H4): los mismos campos de H1 para reemplazo integral.
+// images es la lista final de fotos (las que se conservan más las nuevas ya subidas).
+export type UpdatePropertyInput = NewPropertyInput;
+
+export type ReviewBlockReason = "NOT_FINALIZED" | "ALREADY_REVIEWED" | "WINDOW_CLOSED";
+
+// Reserva con los datos necesarios para la pantalla "Calificar mi renta".
+export type ReservationForReview = {
+  id: string;
+  propertyId: string;
+  propertyTitle: string;
+  propertyImage: string | null;
+  startDate: string;
+  endDate: string;
+  days: number;
+  subtotal: string;
+  securityDeposit: string;
+  status: BookingStatus;
+  finalizedAt: string | null;
+  ratedByMe: boolean;
+};
+
+// Cuerpo de POST /api/v1/reservations/:id/reviews/property.
+export type PropertyReviewInput = {
+  propertyRating: number;
+  userRating: number;
+  comment?: string;
+};
+
+// Resultado de publicar una reseña de bien.
+export type PropertyReviewResult = {
+  propertyId: string;
+  averageRating: number | null;
+  reviewCount: number;
+  createdAt: string;
+};
+
+// Respuesta de PATCH /api/v1/properties/:id/status (H5).
+export type PropertyStatusChange = {
+  id: string;
+  status: PropertyStatus;
+  statusChangedAt: string;
+};
+
+// H19: tipo de documento de identidad.
+export type DocumentType = "DUI" | "PASAPORTE";
+
+// H19: respuesta de GET /api/v1/profile/document.
+export type IdentityDocumentInfo = ProfileDocument & {
+  documentType?: DocumentType;
+  documentSubmittedAt?: string;
+  rejectionReason?: string;
+};
+
+// H19: datos para POST /api/v1/profile/document (se envían como multipart/form-data).
+export type IdentityDocumentInput = {
+  documentType: DocumentType;
+  documentNumber: string;
+  file: File;
+};
+
+// H19: respuesta 201 de POST /api/v1/profile/document.
+export type SubmittedIdentityDocument = {
+  documentType: DocumentType;
+  documentStatus: "PENDIENTE";
+  documentSubmittedAt: string;
+};
+
+// H20: estado del documento en la revisión del ADMIN.
+export type IdentityDocumentStatus = "PENDIENTE" | "APROBADO" | "RECHAZADO";
+
+// H20: elemento de GET /api/v1/profile/document/admin.
+export type PendingIdentityDocument = {
+  userId: string;
+  name: string;
+  email: string;
+  documentType: DocumentType;
+  documentNumber: string;
+  documentSubmittedAt: string;
+};
+
+// H20: respuesta de GET /api/v1/profile/document/admin.
+export type PendingIdentityDocumentList = {
+  data: PendingIdentityDocument[];
+  total: number;
+  page: number;
+};
+
+// H20: respuesta de GET /api/v1/profile/document/admin/:userId.
+// fileUrl es un enlace firmado válido por 5 minutos (expiresAt).
+export type IdentityDocumentReview = PendingIdentityDocument & {
+  documentStatus: IdentityDocumentStatus;
+  fileUrl: string;
+  expiresAt: string;
+};
+
+// H20: respuesta de PATCH .../approve y .../reject.
+export type IdentityDocumentDecision = {
+  userId: string;
+  documentStatus: IdentityDocumentStatus;
+  isVerified?: boolean;
+  rejectionReason?: string;
+  reviewedAt: string;
+};
+
+export type BackendRoleChangeResponse = {
+  userId: string;
+  previousRole: "TENANT" | "OWNER" | "ADMIN";
+  role: "TENANT" | "OWNER" | "ADMIN";
+  changedAt: string;
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+};
+
+export type BackendUserResponse = {
+  id: string;
+  email: string;
+  role: "TENANT" | "OWNER" | "ADMIN";
+  isActive: boolean;
+  createdAt: string;
+};
+
+// H15: reserva del arrendatario con ese bien, si existe (se muestra en el encabezado del chat).
+export type ConversationBooking = {
+  startDate: string;
+  endDate: string;
+  status: BookingStatus;
+};
+
+// H15: elemento de GET /api/v1/conversations (un hilo por bien y arrendatario).
+// Supuesto: el backend devuelve el título del bien, el nombre de la otra persona y el último mensaje.
+export type ConversationSummary = {
+  id: string;
+  propertyId: string;
+  propertyTitle: string;
+  otherParticipantName: string;
+  lastMessage: string | null;
+  lastMessageAt: string | null;
+  lastMessageIsMine: boolean;
+  hasUnread: boolean;
+  booking: ConversationBooking | null;
+};
+
+// H15: mensaje de GET y POST /api/v1/conversations/:id/messages.
+export type ChatMessage = {
+  id: string;
+  senderId: string;
+  content: string;
+  isRead: boolean;
+  createdAt: string;
+};
+
+export type NotificationStatus = "UNREAD" | "READ";
+
+export type NotificationCategory =
+  | "MESSAGING"
+  | "BOOKING"
+  | "PAYMENT"
+  | "VERIFICATION";
