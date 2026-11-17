@@ -8,6 +8,8 @@ export type NotificationCategory =
 
 export interface NotificationItem {
   id: string;
+  userId?: string;
+  targetRole?: "TENANT" | "OWNER" | "ADMIN";
   title: string;
   category: NotificationCategory;
   message: string;
