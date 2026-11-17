@@ -1,6 +1,6 @@
 import { cookies } from "next/headers";
 import { buildApiUrl } from "@/lib/api/url";
-import { SESSION_COOKIE } from "@/lib/session";
+import { parseSession, SESSION_COOKIE } from "@/lib/session";
 
 export class ApiError extends Error {
   constructor(
@@ -58,7 +58,7 @@ export async function apiWithSession<T = void>(
   options: Omit<RequestOptions, "accessToken"> = {},
 ): Promise<T> {
   const store = await cookies();
-  const accessToken = store.get(SESSION_COOKIE)?.value;
+  const accessToken = parseSession(store.get(SESSION_COOKIE)?.value)?.accessToken;
   return apiRequest<T>(path, { ...options, accessToken });
 }
 

@@ -3,6 +3,7 @@ import type { OwnerProperty, Property, PropertyDetail, PropertyFilters } from "@
 import { rangeOverlapsOccupied } from "@/lib/bookings/rules";
 import { normalizeText } from "@/lib/filters/property-filters";
 import { propertyFormMessages } from "@/lib/messages/property-form";
+import { mockImageStorage } from "@/lib/storage/mock-image-storage";
 import { PROPERTIES_PAGE_SIZE, type PropertyRepository } from "../property-repository";
 import { propertyFixtures } from "./fixtures/properties";
 import { defaultDetailExtras, propertyDetailExtras } from "./fixtures/property-details";
@@ -141,7 +142,8 @@ export const mockPropertyRepository: PropertyRepository = {
       department: input.department,
       municipality: input.municipality,
       pricePerDay: input.pricePerDay,
-      images: input.images,
+      // El mock no guarda archivos: cada foto se reemplaza por un link de prueba.
+      images: await Promise.all(input.images.map((file) => mockImageStorage.uploadPropertyImage(file))),
       status: "DISPONIBLE",
       createdAt: new Date().toISOString(),
       averageRating: null,
@@ -170,7 +172,10 @@ export const mockPropertyRepository: PropertyRepository = {
     const start = (page - 1) * PROPERTIES_PAGE_SIZE;
 
     return {
-      data: mine.slice(start, start + PROPERTIES_PAGE_SIZE),
+      data: mine.slice(start, start + PROPERTIES_PAGE_SIZE).map((property) => ({
+        ...property,
+        securityDeposit: (propertyDetailExtras[property.id] ?? defaultDetailExtras).securityDeposit,
+      })),
       page,
       totalPages,
       total,

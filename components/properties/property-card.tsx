@@ -1,7 +1,12 @@
 import Link from "next/link";
 import type { Property, PropertyStatus } from "@/lib/api/types";
 import { propertyStatusLabels } from "@/lib/messages/my-properties";
-import { categoryLabels, formatPrice, propertyMessages } from "@/lib/messages/properties";
+import {
+  bookingBoxMessages,
+  categoryLabels,
+  formatPrice,
+  propertyMessages,
+} from "@/lib/messages/properties";
 
 const categoryStyles = {
   PROPIEDAD: "bg-[#E5EBFB] text-[#2449c6]",
@@ -58,6 +63,13 @@ export function PropertyCard({ property, href, showStatus = false }: PropertyCar
         <p className="text-[15px] font-bold text-zinc-900">
           {formatPrice(property.pricePerDay)} {propertyMessages.perDay}
         </p>
+        {property.securityDeposit !== undefined && (
+          <p className="text-sm text-zinc-600">
+            {Number(property.securityDeposit) > 0
+              ? `${bookingBoxMessages.depositLabel}: ${formatPrice(property.securityDeposit)}`
+              : bookingBoxMessages.noDeposit}
+          </p>
+        )}
 
         {property.averageRating !== undefined && (
           <span className="self-start rounded-md bg-[#EEF0E2] px-2.5 py-0.5 text-sm text-zinc-700">
