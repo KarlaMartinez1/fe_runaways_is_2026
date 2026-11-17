@@ -210,7 +210,21 @@ export function PropertyForm({ property, actions }: PropertyFormProps) {
       return;
     }
 
-    // Se suben solo las fotos nuevas; las ya guardadas conservan su URL.
+    if (!property) {
+      // H1: los archivos van al backend, que los sube a Cloudinary.
+      // Si se publica con éxito, la acción redirige a "Mis publicaciones".
+      const photoData = new FormData();
+      for (const photo of photos) {
+        if (photo.file) photoData.append("images", photo.file);
+      }
+      const result = await createProperty(values, photoData);
+      if (result && !result.ok) {
+        setServerError(result.message);
+      }
+      return;
+    }
+
+    // H4: se suben solo las fotos nuevas; las ya guardadas conservan su URL.
     let imageUrls: string[];
     try {
       imageUrls = await Promise.all(
@@ -221,15 +235,6 @@ export function PropertyForm({ property, actions }: PropertyFormProps) {
     } catch (error) {
       console.error("Error al subir las fotos:", error);
       setServerError(m.saveError);
-      return;
-    }
-
-    if (!property) {
-      // Si se publica con éxito, la acción redirige a "Mis publicaciones".
-      const result = await createProperty(values, imageUrls);
-      if (result && !result.ok) {
-        setServerError(result.message);
-      }
       return;
     }
 

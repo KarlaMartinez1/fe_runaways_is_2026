@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { PropertyCard } from "@/components/properties/property-card";
 import { SearchBar } from "@/components/properties/search-bar";
+import { getCurrentUser } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import type { Paginated, Property } from "@/lib/api/types";
 import { catalogMessages, homeMessages } from "@/lib/messages/properties";
@@ -16,6 +17,12 @@ export const metadata: Metadata = {
 const RECENT_COUNT = 5;
 
 export default async function Home() {
+  // El catálogo (H2) es solo para TENANT; el arrendador va a sus publicaciones.
+  const user = await getCurrentUser();
+  if (user?.role === "OWNER") {
+    redirect("/properties/mine");
+  }
+
   let result: Paginated<Property> | null = null;
   let unauthorized = false;
 
