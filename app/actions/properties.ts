@@ -9,6 +9,7 @@ import { propertyFormMessages as m } from "@/lib/messages/property-form";
 import { propertyRepository } from "@/lib/repositories";
 import {
   getPhotoCountError,
+  getPhotoFileError,
   propertyFormSchema,
   toMoney,
   type PropertyFormData,
@@ -21,16 +22,22 @@ export type CreatePropertyResult = {
 
 // H1: publica un bien. Si todo sale bien, redirige a "Mis publicaciones";
 // si algo falla, devuelve el mensaje para mostrarlo en el formulario.
+// Las fotos llegan como archivos en photos ("images") y el backend las sube a Cloudinary.
 export async function createProperty(
   values: PropertyFormData,
-  images: string[],
+  photos: FormData,
 ): Promise<CreatePropertyResult> {
   const parsed = propertyFormSchema.safeParse(values);
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message ?? m.saveError };
   }
 
-  const photoError = getPhotoCountError(images.length);
+  const entries = photos.getAll("images");
+  const images = entries.filter((entry): entry is File => entry instanceof File);
+  const photoError =
+    (images.length !== entries.length ? m.photoType : undefined) ??
+    getPhotoCountError(images.length) ??
+    images.map(getPhotoFileError).find(Boolean);
   if (photoError) {
     return { ok: false, message: photoError };
   }

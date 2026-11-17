@@ -115,9 +115,8 @@ export type NoAvailabilityBlock = {
   createdAt: string;
 };
 
-// Cuerpo de POST /api/v1/properties (H1). Los montos van como texto con 2 decimales
-// y las fotos como URLs ya subidas a Firebase Storage.
-export type NewPropertyInput = {
+// Campos de texto de un bien (H1 y H4). Los montos van como texto con 2 decimales.
+type PropertyFields = {
   title: string;
   description: string;
   category: PropertyCategory;
@@ -126,7 +125,11 @@ export type NewPropertyInput = {
   address: string;
   pricePerDay: string;
   securityDeposit: string;
-  images: string[];
+};
+
+// Cuerpo de POST /api/v1/properties (H1): multipart/form-data con los archivos en "images".
+export type NewPropertyInput = PropertyFields & {
+  images: File[];
 };
 
 // H4: bien del arrendador en "Mis publicaciones" y en la pantalla de gestión.
@@ -137,7 +140,9 @@ export type OwnerProperty = PropertyDetail & {
 
 // Cuerpo de PUT /api/v1/properties/:id (H4): los mismos campos de H1 para reemplazo integral.
 // images es la lista final de fotos (las que se conservan más las nuevas ya subidas).
-export type UpdatePropertyInput = NewPropertyInput;
+export type UpdatePropertyInput = PropertyFields & {
+  images: string[];
+};
 
 export type ReviewBlockReason = "NOT_FINALIZED" | "ALREADY_REVIEWED" | "WINDOW_CLOSED";
 
