@@ -21,8 +21,6 @@ import { bookingBoxMessages, formatPrice, propertyMessages } from "@/lib/message
 type BookingBoxProps = {
   propertyId: string;
   pricePerDay: string;
-  securityDeposit: string;
-  isVerified: boolean;
   availability: PropertyAvailabilityState;
 };
 

@@ -50,8 +50,7 @@ export type PropertyAvailability = {
 export type PropertyAvailabilityState =
   | { status: "ready"; from: string; to: string; occupiedDates: string[] }
   | { status: "unavailable" }
-  | { status: "error" }
-  | { status: "hidden" };
+  | { status: "error" };
 
 export type AccountStatus = "SIN_VERIFICAR" | "PENDIENTE" | "VERIFICADA" | "RECHAZADA";
 

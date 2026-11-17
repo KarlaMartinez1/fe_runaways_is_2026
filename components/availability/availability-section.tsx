@@ -25,10 +25,6 @@ export function AvailabilitySection({
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
 
-  if (state.status === "hidden") {
-    return null;
-  }
-
   if (state.status === "unavailable") {
     return (
       <p role="alert" className="rounded-lg bg-zinc-100 px-3 py-2 text-sm text-zinc-700">
