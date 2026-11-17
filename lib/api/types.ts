@@ -287,3 +287,11 @@ export type ChatMessage = {
   isRead: boolean;
   createdAt: string;
 };
+
+export type NotificationStatus = "UNREAD" | "READ";
+
+export type NotificationCategory =
+  | "MESSAGING"
+  | "BOOKING"
+  | "PAYMENT"
+  | "VERIFICATION";

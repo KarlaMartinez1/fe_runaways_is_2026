@@ -1,3 +1,5 @@
+import { ApiError } from "@/lib/api/client";
+import { bookingMessages } from "@/lib/messages/bookings";
 import type { ReservationRepository } from "../reservation-repository";
 import {
   defaultReservationFixture,
@@ -5,6 +7,7 @@ import {
 } from "./fixtures/reservations";
 import { reservationMovementsFixtures } from "./fixtures/movements";
 import { paymentReceiptFixtures } from "./fixtures/receipts";
+import { isMockUserVerified } from "./identity-document-repository.mock";
 
 export const mockReservationRepository: ReservationRepository = {
   async getReservationById(id: string) {
@@ -26,6 +29,10 @@ export const mockReservationRepository: ReservationRepository = {
   },
 
   async payReservation(reservationId: string) {
+    // H21: no se puede pagar una reserva sin cuenta verificada.
+    if (!(await isMockUserVerified())) {
+      throw new ApiError(403, "VERIFICATION_REQUIRED", bookingMessages.verificationRequired);
+    }
     return {
       success: true,
       transactionId: `TRX-${Math.random().toString(36).substring(2, 10).toUpperCase()}`,
