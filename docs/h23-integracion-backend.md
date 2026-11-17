@@ -42,3 +42,6 @@ Para soportar tanto la navegación de usuario con sesión en cookies como petici
 - Se implementó la captura de errores `ApiError`:
   - En caso de código 401 (`Unauthorized`), redirige al usuario a `/login`.
   - En caso de código 403 (`Forbidden`), despliega el mensaje amigable de acceso denegado correspondiente a la historia (`notificationMessages.forbidden`).
+
+### 2.4. Sondeo Periódico (Polling) de la Bandeja (`components/notifications/notifications-page-body.tsx`)
+- Se implementó en `NotificationsPageBody` el refresco automático cada 30 segundos y al enfocar la pestaña (`focus`), consultando `GET /api/v1/notifications` a través de `fetchNotificationsAction` para mantener la lista actualizada en tiempo real sin recargar la página completa.
