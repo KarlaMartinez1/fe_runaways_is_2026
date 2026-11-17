@@ -7,7 +7,14 @@ import { bookingRepository } from "@/lib/repositories";
 
 export type CreateBookingResult =
   | { ok: true; bookingId: string }
-  | { ok: false; message: string; conflict?: boolean; sessionExpired?: boolean };
+  | {
+      ok: false;
+      message: string;
+      conflict?: boolean;
+      sessionExpired?: boolean;
+      // H21: la cuenta no está verificada; la pantalla muestra el enlace "Verificar mi cuenta".
+      verificationRequired?: boolean;
+    };
 
 export async function createBookingAction(input: {
   propertyId: string;
@@ -28,7 +35,7 @@ export async function createBookingAction(input: {
         return { ok: false, message: bookingMessages.sessionExpired, sessionExpired: true };
       }
       if (error.code === "VERIFICATION_REQUIRED") {
-        return { ok: false, message: bookingMessages.verificationRequired };
+        return { ok: false, message: bookingMessages.verificationRequired, verificationRequired: true };
       }
       if (error.status === 409) {
         return { ok: false, message: bookingMessages.unavailableDates, conflict: true };

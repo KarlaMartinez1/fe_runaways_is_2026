@@ -47,6 +47,16 @@ async function requireUser() {
   return user;
 }
 
+// H21: indica si el usuario de la sesión tiene la cuenta verificada.
+// La usan los mocks de reservas (H10) y pagos (H13), igual que el backend revisa al usuario del token.
+export async function isMockUserVerified() {
+  const user = await getCurrentUser();
+  if (!user) return false;
+  const document = mockIdentityDocuments.get(user.id);
+  const status = document ? accountStatusByDocument[document.status] : statusWithoutDocument(user.role);
+  return status === "VERIFICADA";
+}
+
 export const mockIdentityDocumentRepository: IdentityDocumentRepository = {
   async getMine() {
     const user = await requireUser();

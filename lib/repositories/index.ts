@@ -20,6 +20,8 @@ import { httpReviewRepository } from "./http/review-repository.http";
 import { mockReviewRepository } from "./mock/review-repository.mock";
 import { httpConversationRepository } from "./http/conversation-repository.http";
 import { mockConversationRepository } from "./mock/conversation-repository.mock";
+import { httpNotificationRepository } from "./http/notification-repository.http";
+import { mockNotificationRepository } from "./mock/notification-repository.mock";
 
 const useMocks = process.env.USE_MOCKS === "true";
 
@@ -66,3 +68,7 @@ export const reviewRepository = useMocks
 export const conversationRepository = useMocks
   ? mockConversationRepository
   : httpConversationRepository;
+
+export const notificationRepository = useMocks
+  ? mockNotificationRepository
+  : httpNotificationRepository;

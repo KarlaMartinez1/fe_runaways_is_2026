@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
 import { cn } from "@/lib/utils/cn";
+import { NotificationBell } from "@/components/notifications";
 
 const links = [
   { href: "/", label: "Inicio" },
@@ -77,16 +78,7 @@ export function Navbar() {
           </svg>
         </Link>
 
-        <button
-          type="button"
-          aria-label="Notificaciones"
-          className="p-1.5 text-zinc-800 hover:text-[#1E4DB7] transition-colors cursor-pointer"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-            <path d="M6 10a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7" />
-            <path d="M10 20a2 2 0 0 0 4 0" />
-          </svg>
-        </button>
+        <NotificationBell />
 
         {/* Desktop user account dropdown */}
         <details className="relative hidden md:block">
