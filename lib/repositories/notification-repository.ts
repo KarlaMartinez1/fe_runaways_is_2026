@@ -3,18 +3,24 @@ export type NotificationStatus = "UNREAD" | "READ";
 export type NotificationCategory =
   | "MESSAGING"
   | "BOOKING"
+  | "RESERVATIONS"
   | "PAYMENT"
+  | "PAYMENTS"
   | "VERIFICATION";
 
 export interface NotificationItem {
   id: string;
   userId?: string;
+  recipientId?: string;
   targetRole?: "TENANT" | "OWNER" | "ADMIN";
   title: string;
   category: NotificationCategory;
+  originModule?: string;
+  eventType?: string;
   message: string;
   createdAt: string;
   status: NotificationStatus;
+  referenceId?: string | null;
   link?: string;
 }
 
