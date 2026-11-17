@@ -117,6 +117,12 @@ export function BookingBox({
         return;
       }
 
+      // H21: el servidor rechazó la reserva por cuenta sin verificar.
+      if (result.verificationRequired) {
+        setShowVerificationError(true);
+        return;
+      }
+
       setError(result.message);
       if (result.conflict) {
         resetSelection();
@@ -151,7 +157,8 @@ export function BookingBox({
         </div>
       )}
 
-      <p className="rounded-lg bg-[#EEF0E2] px-3 py-2 text-sm text-zinc-800">
+      <p className="flex items-center gap-2 rounded-lg border border-[#FDE68A] bg-[#FEF9E7] px-3 py-2 text-sm font-medium text-[#92400E]">
+        <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#D97706]" />
         {bookingBoxMessages.requiresVerification}
       </p>
 
@@ -168,12 +175,18 @@ export function BookingBox({
       )}
 
       {showVerificationError && (
-        <p role="alert" className="text-sm text-red-700">
-          {bookingBoxMessages.verificationRequired}{" "}
-          <Link href="/profile/verification" className="font-semibold underline">
-            {bookingBoxMessages.verifyAccount}
-          </Link>
-        </p>
+        <div
+          role="alert"
+          className="flex items-start gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-2.5 text-sm"
+        >
+          <span aria-hidden="true" className="mt-1 h-2.5 w-2.5 shrink-0 rounded-full bg-red-600" />
+          <div className="flex flex-col gap-1">
+            <p className="font-medium text-red-700">{bookingBoxMessages.verificationRequired}</p>
+            <Link href="/profile/verification" className="font-semibold text-[#1d4ed8] hover:underline">
+              {bookingBoxMessages.verifyAccount} <span aria-hidden="true">→</span>
+            </Link>
+          </div>
+        </div>
       )}
 
       <Button asChild variant="outline" fullWidth size="lg">

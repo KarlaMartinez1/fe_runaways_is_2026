@@ -6,9 +6,9 @@ import { PropertyGallery } from "@/components/properties/property-gallery";
 import { PropertyReviewsTabs } from "@/components/reviews/property-reviews-tabs";
 import { ApiError } from "@/lib/api/client";
 import type { PropertyAvailabilityState, PropertyDetail } from "@/lib/api/types";
-import { categoryLabels, detailMessages } from "@/lib/messages/properties";
+import { bookingBoxMessages, categoryLabels, detailMessages } from "@/lib/messages/properties";
 import { reviewMessages } from "@/lib/messages/reviews";
-import { profileRepository, propertyRepository } from "@/lib/repositories";
+import { identityDocumentRepository, propertyRepository } from "@/lib/repositories";
 import { BookingBox } from "./booking-box";
 
 export const metadata: Metadata = {
@@ -28,9 +28,11 @@ function getInitials(name: string) {
     .join("");
 }
 
+// H21: estado real de la verificación (H19). Si no se puede consultar, se trata como no verificada;
+// de todos modos el servidor vuelve a revisar al crear la reserva.
 async function loadIsVerified() {
   try {
-    return (await profileRepository.getAccountStatus()) === "VERIFICADA";
+    return (await identityDocumentRepository.getMine()).accountStatus === "VERIFICADA";
   } catch {
     return false;
   }
@@ -103,7 +105,8 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     );
   }
 
-  const [isVerified, availability] = await Promise.all([loadIsVerified(), loadAvailability(id)]);  const rating = property.averageRating;
+  const [isVerified, availability] = await Promise.all([loadIsVerified(), loadAvailability(id)]);
+  const rating = property.averageRating;
   const categoryStyle =
     property.category === "PROPIEDAD" ? "bg-[#E5EBFB] text-[#2449c6]" : "bg-[#EEF0E2] text-zinc-800";
 
@@ -117,11 +120,16 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
           <section className="flex min-w-0 flex-1 flex-col gap-5">
             <PropertyGallery images={property.images} title={property.title} />
 
-            <span className={`self-start rounded-md px-2.5 py-0.5 text-xs font-semibold ${categoryStyle}`}>
-              {categoryLabels[property.category]}
-            </span>
-
-            <h1 className="text-3xl font-bold text-zinc-900">{property.title}</h1>
+            <div className="flex flex-wrap items-center gap-3">
+              <h1 className="text-3xl font-bold text-zinc-900">{property.title}</h1>
+              <span className={`rounded-md px-2.5 py-0.5 text-xs font-semibold ${categoryStyle}`}>
+                {categoryLabels[property.category]}
+              </span>
+              {/* H21: la regla aplica a todos los bienes, así que la etiqueta se muestra siempre. */}
+              <span className="rounded-md bg-[#FDE7D3] px-2.5 py-0.5 text-xs font-semibold text-[#9a3412]">
+                {bookingBoxMessages.requiresVerification}
+              </span>
+            </div>
 
             <p className="text-sm text-zinc-500">
               {property.municipality}, {property.department} ·{" "}
