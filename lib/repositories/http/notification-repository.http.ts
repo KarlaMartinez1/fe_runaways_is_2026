@@ -82,11 +82,11 @@ export const httpNotificationRepository: NotificationRepository = {
       // El DTO del backend (NotificationQueryDto) únicamente valida `page` y `limit`.
       // Con forbidNonWhitelisted: true, enviar parámetros adicionales lanza un error 400.
       const query = buildQuery({ page, limit });
-      const url = query ? `api/v1/notifications?${query}` : "api/v1/notifications";
+      const url = query ? `notifications?${query}` : "notifications";
 
       const [res, unreadRes] = await Promise.all([
         apiGet<BackendNotificationListResponse>(url),
-        apiGet<{ unreadCount: number }>("api/v1/notifications/unread-count").catch(
+        apiGet<{ unreadCount: number }>("notifications/unread-count").catch(
           () => ({ unreadCount: 0 })
         ),
       ]);
@@ -114,7 +114,7 @@ export const httpNotificationRepository: NotificationRepository = {
   async getUnreadCount(): Promise<number> {
     try {
       const res = await apiGet<{ unreadCount: number }>(
-        "api/v1/notifications/unread-count"
+        "notifications/unread-count"
       );
       if (typeof res?.unreadCount === "number") {
         return res.unreadCount;
@@ -131,7 +131,7 @@ export const httpNotificationRepository: NotificationRepository = {
   async markAsRead(id: string): Promise<NotificationItem> {
     try {
       const res = await apiPatch<BackendNotification, Record<string, never>>(
-        `api/v1/notifications/${encodeURIComponent(id)}/read`,
+        `notifications/${encodeURIComponent(id)}/read`,
         {}
       );
       return mapBackendToNotificationItem(res);
@@ -146,7 +146,7 @@ export const httpNotificationRepository: NotificationRepository = {
   async markAllAsRead(): Promise<void> {
     try {
       await apiPatch<{ updatedCount: number }, Record<string, never>>(
-        "api/v1/notifications/read-all",
+        "notifications/read-all",
         {}
       );
     } catch (error) {
