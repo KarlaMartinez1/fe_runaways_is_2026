@@ -16,6 +16,24 @@ export const reportDateFilterSchema = z
   })
   .refine(
     (data) => {
+      if (!data.from || !data.to) return true;
+      return data.to >= data.from;
+    },
+    {
+      message: reportMessages.filter.invalidDateRange,
+      path: ["to"],
+    }
+  );
+
+export type ReportDateFilterFormData = z.infer<typeof reportDateFilterSchema>;
+
+export const ratingsReportFilterSchema = z
+  .object({
+    from: z.string().optional(),
+    to: z.string().optional(),
+  })
+  .refine(
+    (data) => {
       const today = getTodayString();
       if (data.from && data.from > today) return false;
       if (data.to && data.to > today) return false;
@@ -37,7 +55,7 @@ export const reportDateFilterSchema = z
     }
   );
 
-export type ReportDateFilterFormData = z.infer<typeof reportDateFilterSchema>;
+export type RatingsReportFilterFormData = z.infer<typeof ratingsReportFilterSchema>;
 
 export const occupancyReportFilterSchema = z
   .object({

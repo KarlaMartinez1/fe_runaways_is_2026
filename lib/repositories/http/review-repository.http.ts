@@ -1,6 +1,5 @@
 import { ApiError, apiGet, apiPost } from "@/lib/api/client";
 import type {
-  PropertyReviewInput,
   PropertyReviewResult,
   ReservationForReview,
 } from "@/lib/api/types";
