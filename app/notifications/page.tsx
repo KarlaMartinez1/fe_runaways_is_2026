@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { NotificationsPageBody } from "@/components/notifications";
-import { notificationRepository, profileRepository } from "@/lib/repositories";
+import { getCurrentUser } from "@/lib/api/auth";
 import { ApiError } from "@/lib/api/client";
 import { notificationMessages } from "@/lib/messages/notifications";
+import { notificationRepository } from "@/lib/repositories";
 import type { NotificationListResult } from "@/lib/repositories/notification-repository";
 
 export const metadata: Metadata = {
@@ -37,12 +38,14 @@ export default async function NotificationsPage({
   // Validación de acceso (Roles permitidos: TENANT, OWNER, ADMIN)
   if (!isBypass) {
     try {
-      const profile = await profileRepository.getUserProfile(scenario);
+      const user = await getCurrentUser();
+      if (!user) {
+        redirect("/login");
+      }
       if (
-        !profile ||
-        (profile.role !== "TENANT" &&
-          profile.role !== "OWNER" &&
-          profile.role !== "ADMIN")
+        user.role !== "TENANT" &&
+        user.role !== "OWNER" &&
+        user.role !== "ADMIN"
       ) {
         forbidden = true;
       }
@@ -56,7 +59,7 @@ export default async function NotificationsPage({
         }
       }
       if (process.env.USE_MOCKS !== "true") {
-        console.error("Error al validar perfil para notificaciones:", error);
+        console.error("Error al validar sesión para notificaciones:", error);
       }
     }
   }
@@ -82,7 +85,6 @@ export default async function NotificationsPage({
     if (error instanceof ApiError && error.status === 401) {
       redirect("/login");
     }
-    // Fallback seguro en caso de error
     result = {
       data: [],
       total: 0,
