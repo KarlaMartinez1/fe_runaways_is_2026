@@ -2,11 +2,9 @@
 
 import * as React from "react";
 import { cn } from "@/lib/utils/cn";
-import { Badge, type BadgeVariant } from "@/components/ui/badge";
 import { Select } from "@/components/ui/select";
 import { reportMessages } from "@/lib/messages/reports";
 import type { PropertyIncomeItem } from "@/lib/repositories/report-repository";
-import type { PropertyStatus } from "@/lib/api/types";
 
 export interface PropertyIncomeTableProps {
   items: PropertyIncomeItem[];
@@ -20,21 +18,6 @@ export interface PropertyIncomeTableProps {
   hasDateFilter?: boolean;
   className?: string;
 }
-
-const statusBadgeConfig: Record<PropertyStatus, { variant: BadgeVariant; label: string }> = {
-  DISPONIBLE: {
-    variant: "success",
-    label: reportMessages.statuses.DISPONIBLE,
-  },
-  PAUSADO: {
-    variant: "warning",
-    label: reportMessages.statuses.PAUSADO,
-  },
-  ELIMINADO: {
-    variant: "neutral",
-    label: reportMessages.statuses.ELIMINADO,
-  },
-};
 
 export function PropertyIncomeTable({
   items,
@@ -101,22 +84,15 @@ export function PropertyIncomeTable({
           </div>
         ) : (
           items.map((item, index) => {
-            const badgeInfo = item.status ? statusBadgeConfig[item.status] : null;
-
             return (
               <div
-                key={`${item.propertyId}-${item.lastIncomeDate ?? "sin-fecha"}-${index}`}
+                key={`${item.propertyId}-${index}`}
                 className="rounded-2xl bg-[#F9FAFB] p-4 sm:p-5 space-y-2.5 transition-shadow"
               >
                 <div className="flex items-center justify-between gap-2">
                   <span className="font-bold text-sm sm:text-base text-zinc-900">
                     {item.title}
                   </span>
-                  {badgeInfo ? (
-                    <Badge variant={badgeInfo.variant} size="sm">
-                      {badgeInfo.label}
-                    </Badge>
-                  ) : null}
                 </div>
 
                 <div className="space-y-1.5 text-xs sm:text-sm">
@@ -154,12 +130,6 @@ export function PropertyIncomeTable({
               <th scope="col" className="py-3 px-4 sm:px-2 font-semibold">
                 {reportMessages.byProperty.headers.property}
               </th>
-              <th scope="col" className="py-3 px-4 font-semibold text-center">
-                {reportMessages.byProperty.headers.lastIncome}
-              </th>
-              <th scope="col" className="py-3 px-4 font-semibold text-center">
-                {reportMessages.byProperty.headers.status}
-              </th>
               <th scope="col" className="py-3 px-4 font-semibold text-right">
                 {reportMessages.byProperty.headers.rentals}
               </th>
@@ -175,13 +145,13 @@ export function PropertyIncomeTable({
           <tbody className="divide-y divide-zinc-100">
             {isLoading ? (
               <tr>
-                <td colSpan={6} className="py-8 text-center text-sm text-zinc-400 animate-pulse">
+                <td colSpan={4} className="py-8 text-center text-sm text-zinc-400 animate-pulse">
                   Cargando información...
                 </td>
               </tr>
             ) : items.length === 0 ? (
               <tr>
-                <td colSpan={6} className="py-10 text-center text-sm text-zinc-500">
+                <td colSpan={4} className="py-10 text-center text-sm text-zinc-500">
                   {hasDateFilter
                     ? reportMessages.byProperty.noPeriodData
                     : "Selecciona un rango de fechas en el filtro para consultar los ingresos por bien."}
@@ -189,27 +159,13 @@ export function PropertyIncomeTable({
               </tr>
             ) : (
               items.map((item, index) => {
-                const badgeInfo = item.status ? statusBadgeConfig[item.status] : null;
-
                 return (
                   <tr
-                    key={`${item.propertyId}-${item.lastIncomeDate ?? "sin-fecha"}-${index}`}
+                    key={`${item.propertyId}-${index}`}
                     className="hover:bg-zinc-50/70 transition-colors"
                   >
                     <td className="py-4 px-4 sm:px-2 font-medium text-zinc-900">
                       {item.title}
-                    </td>
-                    <td className="py-4 px-4 text-center text-zinc-600">
-                      {item.lastIncomeDate ?? reportMessages.byProperty.noIncome}
-                    </td>
-                    <td className="py-4 px-4 text-center">
-                      {badgeInfo ? (
-                        <Badge variant={badgeInfo.variant} size="sm">
-                          {badgeInfo.label}
-                        </Badge>
-                      ) : (
-                        <span className="text-zinc-400 select-none">—</span>
-                      )}
                     </td>
                     <td className="py-4 px-4 text-right text-zinc-700 font-medium">
                       {reportMessages.formatCurrency(item.rentalIncome)}
