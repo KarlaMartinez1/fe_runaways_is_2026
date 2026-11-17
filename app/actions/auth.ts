@@ -23,7 +23,7 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
 
   try {
     const result = await loginRequest(email, password);
-    await createSession(result.accessToken, result.expiresIn, result.refreshToken);
+    await createSession(result.accessToken, result.expiresIn, result.refreshToken, result.user.role);
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 401) return { error: "Correo o contraseña incorrectos.", email };

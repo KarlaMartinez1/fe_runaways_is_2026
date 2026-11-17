@@ -1,6 +1,6 @@
 // Servidor únicamente: lee cookies y nunca expone tokens al navegador.
 import { cookies } from "next/headers";
-import { SESSION_COOKIE } from "@/lib/session";
+import { parseSession, SESSION_COOKIE } from "@/lib/session";
 import { buildApiUrl } from "@/lib/api/url";
 export { buildApiUrl } from "@/lib/api/url";
 
@@ -19,7 +19,7 @@ async function parseError(response: Response): Promise<ApiError> {
 
 export async function apiFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const cookieStore = await cookies();
-  const accessToken = cookieStore.get(SESSION_COOKIE)?.value;
+  const accessToken = parseSession(cookieStore.get(SESSION_COOKIE)?.value)?.accessToken;
   const send = (token?: string) => {
     const headers = new Headers(init.headers);
     if (token) headers.set("Authorization", `Bearer ${token}`);

@@ -46,9 +46,19 @@ export async function logout(refreshToken: string): Promise<void> {
   });
 }
 
-export async function refresh(refreshToken: string): Promise<{ accessToken: string; refreshToken: string; expiresIn: number }> {
+export async function refresh(refreshToken: string): Promise<{
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  user?: AuthUser;
+}> {
   if (mocksEnabled()) return mockRefresh(refreshToken);
-  return apiRequest("auth/refresh", { method: "POST", body: { refreshToken } });
+  return apiRequest<{
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+    user?: AuthUser;
+  }>("auth/refresh", { method: "POST", body: { refreshToken } });
 }
 
 export async function me(accessToken: string): Promise<AuthUser> {

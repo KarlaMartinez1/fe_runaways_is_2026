@@ -1,7 +1,12 @@
 import { buildApiUrl } from "@/lib/api/url";
 import { refresh as refreshRequest } from "@/lib/api/auth";
 
-export type RotatedTokens = { accessToken: string; refreshToken: string; expiresIn: number };
+export type RotatedTokens = {
+  accessToken: string;
+  refreshToken: string;
+  expiresIn: number;
+  user?: { role: "TENANT" | "OWNER" | "ADMIN" };
+};
 const inFlight = new Map<string, Promise<RotatedTokens | null>>();
 
 export function rotateRefreshToken(refreshToken: string): Promise<RotatedTokens | null> {
