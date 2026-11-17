@@ -23,8 +23,8 @@ export default async function ConversationPage({ params }: ConversationPageProps
   if (!user) {
     redirect("/login");
   }
-  // H15: mensajería del arrendatario. H16 habilita al arrendador.
-  if (user.role !== "TENANT") {
+  // H15: el arrendatario pregunta. H16: el arrendador responde. El ADMIN no usa mensajería.
+  if (user.role !== "TENANT" && user.role !== "OWNER") {
     redirect("/access-denied");
   }
 
@@ -43,7 +43,7 @@ export default async function ConversationPage({ params }: ConversationPageProps
     if (error instanceof ApiError && error.status === 401) {
       unauthorized = true;
     } else if (error instanceof ApiError && error.status === 403) {
-      // H15: los terceros no pueden ver el hilo.
+      // Los terceros ajenos a la renta no pueden ver el hilo.
       redirect("/access-denied");
     } else if (error instanceof ApiError && error.status === 404) {
       notFound = true;
@@ -87,8 +87,9 @@ export default async function ConversationPage({ params }: ConversationPageProps
                 conversation={conversation}
                 messages={messages}
                 currentUserId={user.id}
-                // H15: solo entra el arrendatario, que no ve el estado de la reserva. H16 lo activa para el arrendador.
-                showBookingStatus={false}              />            ) : (
+                showBookingStatus={user.role === "OWNER"}
+              />
+            ) : (
               <p role="alert" className="py-16 text-center text-zinc-600">
                 {notFound || (messages && !conversation) ? m.notFound : m.loadError}
               </p>
