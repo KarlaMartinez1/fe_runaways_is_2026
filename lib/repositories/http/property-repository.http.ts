@@ -124,8 +124,16 @@ export const httpPropertyRepository: PropertyRepository = {
 
   async getById(id) {
     try {
-      const data = await apiGet<ApiPropertyDetail>(`api/v1/properties/${encodeURIComponent(id)}`);
-      return toPropertyDetail(data);
+      const data = await apiGet<PropertyDetail & { owner?: { name?: string } }>(
+        `api/v1/properties/${encodeURIComponent(id)}`,
+      );
+      // La API puede incluir el nombre como ownerName o dentro de owner.name.
+      // Normalizar aquí mantiene el modelo que consume la pantalla.
+      return {
+        ...data,
+        ownerName: data.ownerName ?? data.owner?.name ?? "",
+      };
+
     } catch (error) {
       if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {
         return null;

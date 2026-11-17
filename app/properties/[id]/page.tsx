@@ -8,7 +8,7 @@ import { ApiError } from "@/lib/api/client";
 import type { PropertyAvailabilityState, PropertyDetail } from "@/lib/api/types";
 import { bookingBoxMessages, categoryLabels, detailMessages } from "@/lib/messages/properties";
 import { reviewMessages } from "@/lib/messages/reviews";
-import { identityDocumentRepository, propertyRepository } from "@/lib/repositories";
+import { propertyRepository } from "@/lib/repositories";
 import { BookingBox } from "./booking-box";
 
 export const metadata: Metadata = {
@@ -19,23 +19,13 @@ type PropertyDetailPageProps = {
   params: Promise<{ id: string }>;
 };
 
-function getInitials(name: string) {
-  return name
+function getInitials(name?: string) {
+  return (name ?? "")
     .split(" ")
     .filter(Boolean)
     .slice(0, 2)
     .map((part) => part[0].toUpperCase())
     .join("");
-}
-
-// H21: estado real de la verificación (H19). Si no se puede consultar, se trata como no verificada;
-// de todos modos el servidor vuelve a revisar al crear la reserva.
-async function loadIsVerified() {
-  try {
-    return (await identityDocumentRepository.getMine()).accountStatus === "VERIFICADA";
-  } catch {
-    return false;
-  }
 }
 
 async function loadAvailability(id: string): Promise<PropertyAvailabilityState> {
@@ -52,7 +42,7 @@ async function loadAvailability(id: string): Promise<PropertyAvailabilityState> 
     };
   } catch (error) {
     if (error instanceof ApiError && error.status === 403) {
-      return { status: "hidden" };
+      return { status: "unavailable" };
     }
     console.error("Error al cargar la disponibilidad:", error);
     return { status: "error" };
@@ -105,7 +95,7 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
     );
   }
 
-  const [isVerified, availability] = await Promise.all([loadIsVerified(), loadAvailability(id)]);
+  const availability = await loadAvailability(id);
   const rating = property.averageRating;
   const categoryStyle =
     property.category === "PROPIEDAD" ? "bg-[#E5EBFB] text-[#2449c6]" : "bg-[#EEF0E2] text-zinc-800";
@@ -142,10 +132,12 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
 
             <div className="flex items-center gap-3 self-start rounded-2xl border border-zinc-200 px-5 py-4">
               <span className="flex h-11 w-11 items-center justify-center rounded-full bg-[#E5EBFB] text-sm font-semibold text-[#2449c6]">
-                {getInitials(property.ownerName)}
+                {getInitials(property.ownerName || detailMessages.ownerRole)}
               </span>
               <div>
-                <p className="font-semibold text-zinc-900">{property.ownerName}</p>
+                <p className="font-semibold text-zinc-900">
+                  {property.ownerName || detailMessages.ownerRole}
+                </p>
                 <p className="text-sm text-zinc-500">{detailMessages.ownerRole}</p>
                 <p className="text-sm text-zinc-500">
                   {reviewMessages.ownerRatingLine(
@@ -166,7 +158,6 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               propertyId={property.id}
               pricePerDay={property.pricePerDay}
               securityDeposit={property.securityDeposit}
-              isVerified={isVerified}
               availability={availability}
             />
           </aside>
