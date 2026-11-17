@@ -6,6 +6,7 @@ import { Pagination } from "@/components/ui/pagination";
 import { NotificationCard } from "./notification-card";
 import { notificationMessages } from "@/lib/messages/notifications";
 import {
+  fetchNotificationsAction,
   markAllNotificationsAsReadAction,
   markNotificationAsReadAction,
 } from "@/app/actions/notifications";
@@ -31,6 +32,38 @@ export function NotificationsPageBody({
     setPrevInitialData(initialData);
     setData(initialData);
   }
+
+  // Sondeo cada 30 segundos y actualización al enfocar la pestaña
+  React.useEffect(() => {
+    let isCancelled = false;
+
+    const refreshNotifications = () => {
+      if (isPending) return;
+
+      void fetchNotificationsAction({
+        page: data.page,
+        pageSize: data.pageSize,
+      })
+        .then((fresh) => {
+          if (!isCancelled && fresh && Array.isArray(fresh.data)) {
+            setData(fresh);
+          }
+        })
+        .catch((error) => {
+          // Ignorar fallos de red en sondeo secundario
+          console.error("Error al sondear notificaciones:", error);
+        });
+    };
+
+    const interval = setInterval(refreshNotifications, 30000);
+    window.addEventListener("focus", refreshNotifications);
+
+    return () => {
+      isCancelled = true;
+      clearInterval(interval);
+      window.removeEventListener("focus", refreshNotifications);
+    };
+  }, [data.page, data.pageSize, isPending]);
 
   const handleMarkAsRead = (id: string) => {
     startTransition(async () => {
