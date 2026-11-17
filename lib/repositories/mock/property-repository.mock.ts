@@ -172,7 +172,10 @@ export const mockPropertyRepository: PropertyRepository = {
     const start = (page - 1) * PROPERTIES_PAGE_SIZE;
 
     return {
-      data: mine.slice(start, start + PROPERTIES_PAGE_SIZE),
+      data: mine.slice(start, start + PROPERTIES_PAGE_SIZE).map((property) => ({
+        ...property,
+        securityDeposit: (propertyDetailExtras[property.id] ?? defaultDetailExtras).securityDeposit,
+      })),
       page,
       totalPages,
       total,

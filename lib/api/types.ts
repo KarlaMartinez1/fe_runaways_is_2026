@@ -13,6 +13,8 @@ export type Property = {
   status: PropertyStatus;
   createdAt: string;
   averageRating?: number | null;
+  // H4: solo en "Mis publicaciones"; "0.00" significa sin depósito.
+  securityDeposit?: string;
 };
 
 export type Paginated<T> = {
