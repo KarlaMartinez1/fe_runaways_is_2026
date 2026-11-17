@@ -1,8 +1,11 @@
 import type { NotificationItem } from "@/lib/repositories/notification-repository";
 
 export const notificationFixtures: NotificationItem[] = [
+  // Notificaciones para rol TENANT (Arrendatario)
   {
     id: "notif-01",
+    userId: "00000000-0000-4000-8000-000000000001",
+    targetRole: "TENANT",
     title: "Nuevo mensaje",
     category: "MESSAGING",
     message: "Roberto Díaz te respondió sobre Casa de playa.",
@@ -12,6 +15,8 @@ export const notificationFixtures: NotificationItem[] = [
   },
   {
     id: "notif-02",
+    userId: "00000000-0000-4000-8000-000000000001",
+    targetRole: "TENANT",
     title: "Reserva creada",
     category: "BOOKING",
     message:
@@ -22,6 +27,8 @@ export const notificationFixtures: NotificationItem[] = [
   },
   {
     id: "notif-03",
+    userId: "00000000-0000-4000-8000-000000000001",
+    targetRole: "TENANT",
     title: "Pago confirmado",
     category: "PAYMENT",
     message:
@@ -32,6 +39,8 @@ export const notificationFixtures: NotificationItem[] = [
   },
   {
     id: "notif-04",
+    userId: "00000000-0000-4000-8000-000000000001",
+    targetRole: "TENANT",
     title: "Reserva cancelada",
     category: "BOOKING",
     message:
@@ -42,11 +51,97 @@ export const notificationFixtures: NotificationItem[] = [
   },
   {
     id: "notif-05",
+    userId: "00000000-0000-4000-8000-000000000001",
+    targetRole: "TENANT",
     title: "Cuenta verificada",
     category: "VERIFICATION",
     message: "Tu documento de identidad fue aprobado. Ya puedes reservar.",
     createdAt: "2026-10-20T15:02:00-06:00",
     status: "READ",
     link: "/profile/verification",
+  },
+
+  // Notificaciones para rol OWNER (Arrendador)
+  {
+    id: "notif-owner-01",
+    userId: "00000000-0000-4000-8000-000000000002",
+    targetRole: "OWNER",
+    title: "Reserva creada",
+    category: "BOOKING",
+    message:
+      "Tienes una nueva solicitud de reserva para Casa de playa del 12 al 14 nov.",
+    createdAt: "2026-11-01T21:15:00-06:00",
+    status: "UNREAD",
+    link: "/lessor/bookings",
+  },
+  {
+    id: "notif-owner-02",
+    userId: "00000000-0000-4000-8000-000000000002",
+    targetRole: "OWNER",
+    title: "Nuevo mensaje",
+    category: "MESSAGING",
+    message: "Carlos López te escribió sobre Quinta Las Palmas.",
+    createdAt: "2026-11-01T18:40:00-06:00",
+    status: "UNREAD",
+    link: "/messages",
+  },
+  {
+    id: "notif-owner-03",
+    userId: "00000000-0000-4000-8000-000000000002",
+    targetRole: "OWNER",
+    title: "Pago confirmado",
+    category: "PAYMENT",
+    message:
+      "Se confirmó el pago de la reserva de Casa de playa del 5 al 6 dic.",
+    createdAt: "2026-10-30T16:12:00-06:00",
+    status: "READ",
+    link: "/lessor/bookings",
+  },
+  {
+    id: "notif-owner-04",
+    userId: "00000000-0000-4000-8000-000000000002",
+    targetRole: "OWNER",
+    title: "Cuenta verificada",
+    category: "VERIFICATION",
+    message:
+      "Tu documento de identidad fue aprobado. Ya puedes gestionar tus bienes.",
+    createdAt: "2026-10-20T15:02:00-06:00",
+    status: "READ",
+    link: "/profile/verification",
+  },
+
+  // Notificaciones para rol ADMIN (Administrador)
+  {
+    id: "notif-admin-01",
+    userId: "00000000-0000-4000-8000-000000000003",
+    targetRole: "ADMIN",
+    title: "Cuenta verificada",
+    category: "VERIFICATION",
+    message: "Andrea Flores envió su documento de identidad para revisión.",
+    createdAt: "2026-10-28T15:12:00-06:00",
+    status: "UNREAD",
+    link: "/admin/verifications",
+  },
+  {
+    id: "notif-admin-02",
+    userId: "00000000-0000-4000-8000-000000000003",
+    targetRole: "ADMIN",
+    title: "Cuenta verificada",
+    category: "VERIFICATION",
+    message: "Kevin Morales envió su documento de identidad para revisión.",
+    createdAt: "2026-10-29T22:40:00-06:00",
+    status: "UNREAD",
+    link: "/admin/verifications",
+  },
+  {
+    id: "notif-admin-03",
+    userId: "00000000-0000-4000-8000-000000000003",
+    targetRole: "ADMIN",
+    title: "Cuenta verificada",
+    category: "VERIFICATION",
+    message: "Se completó la revisión del documento de Sofía Rivera.",
+    createdAt: "2026-10-31T17:03:00-06:00",
+    status: "READ",
+    link: "/admin/verifications",
   },
 ];
