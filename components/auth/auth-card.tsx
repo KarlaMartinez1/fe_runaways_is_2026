@@ -16,7 +16,7 @@ function RunawaysBrand() {
         aria-hidden="true"
         alt=""
         className={styles.logo}
-        src="/logo-runaways.svg"
+        src="/icon-runaways.svg"
         width={80}
         height={76}
       />
