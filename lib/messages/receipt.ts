@@ -1,8 +1,8 @@
 import type { MovementType, PaymentReceiptDetail } from "@/types";
 
 export const receiptMessages = {
-  pageTitle: "Historial de pagos",
-  pageSubtitle: "Movimientos y recibos de tu reserva.",
+  pageTitle: "Historial de movimientos y recibos de pago",
+  pageSubtitle: "Acá encontraras el comprobante de tu transaccion y el registro de tu historial",
   movementsTitle: "Movimientos",
   backToReservations: "Volver a mis reservas",
   receiptCardTitle: "Recibo de pago de reserva",
