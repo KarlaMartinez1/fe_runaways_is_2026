@@ -80,29 +80,39 @@ export async function createProperty(
   redirect("/properties/mine?published=1");
 }
 
-export type UpdatePropertyResult = { ok: true } | { ok: false; message: string };
+export type UpdatePropertyResult = { ok: true; images: string[] } | { ok: false; message: string };
 
-// H4: guarda los cambios de un bien del arrendador. Devuelve si se guardó o el mensaje de error.
+// H4: guarda los cambios de un bien del arrendador. Devuelve las fotos guardadas o el mensaje de error.
+// keptImages son las URLs que se conservan, imagesToRemove las que se quitan y photos ("images")
+// los archivos nuevos, que el backend sube a Cloudinary.
 export async function updateProperty(
   id: string,
   values: PropertyFormData,
-  images: string[],
+  keptImages: string[],
+  imagesToRemove: string[],
+  photos: FormData,
 ): Promise<UpdatePropertyResult> {
   const parsed = propertyFormSchema.safeParse(values);
   if (!parsed.success) {
     return { ok: false, message: parsed.error.issues[0]?.message ?? m.saveError };
   }
 
-  const photoError = getPhotoCountError(images.length);
+  const entries = photos.getAll("images");
+  const images = entries.filter((entry): entry is File => entry instanceof File);
+  const photoError =
+    (images.length !== entries.length ? m.photoType : undefined) ??
+    getPhotoCountError(keptImages.length + images.length) ??
+    images.map(getPhotoFileError).find(Boolean);
   if (photoError) {
     return { ok: false, message: photoError };
   }
 
   const data = parsed.data;
   let unauthorized = false;
+  let savedImages: string[] = [];
 
   try {
-    await propertyRepository.update(id, {
+    const updated = await propertyRepository.update(id, {
       title: data.title,
       description: data.description,
       category: data.category as PropertyCategory,
@@ -111,8 +121,10 @@ export async function updateProperty(
       address: data.address,
       pricePerDay: toMoney(data.pricePerDay),
       securityDeposit: toMoney(data.securityDeposit),
+      imagesToRemove,
       images,
     });
+    savedImages = updated.images;
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
       unauthorized = true;
@@ -140,5 +152,5 @@ export async function updateProperty(
   revalidatePath("/properties");
   revalidatePath("/properties/mine");
   revalidatePath(`/properties/${id}`);
-  return { ok: true };
+  return { ok: true, images: savedImages };
 }

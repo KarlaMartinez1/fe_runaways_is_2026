@@ -140,9 +140,10 @@ export type OwnerProperty = PropertyDetail & {
 };
 
 // Cuerpo de PUT /api/v1/properties/:id (H4): los mismos campos de H1 para reemplazo integral.
-// images es la lista final de fotos (las que se conservan más las nuevas ya subidas).
+// Va como multipart/form-data: imagesToRemove son las URLs que se quitan e images los archivos nuevos.
 export type UpdatePropertyInput = PropertyFields & {
-  images: string[];
+  imagesToRemove: string[];
+  images: File[];
 };
 
 export type ReviewBlockReason = "NOT_FINALIZED" | "ALREADY_REVIEWED" | "WINDOW_CLOSED";
