@@ -1,4 +1,4 @@
-import { ApiError, apiDelete, apiGet, apiPatch, apiPut } from "@/lib/api/client";
+import { ApiError, apiDelete, apiGet, apiPatch } from "@/lib/api/client";
 import { apiFetch } from "@/lib/api/server-client";
 import type {
   OwnerProperty,
@@ -9,7 +9,7 @@ import type {
   PropertyDetail,
   PropertyStatus,
   PropertyStatusChange,
-  UpdatePropertyInput,
+  NewPropertyInput,
 } from "@/lib/api/types";
 import { filtersToQuery } from "@/lib/filters/property-filters";
 import type { ManageableStatus, PropertyRepository } from "../property-repository";
@@ -113,6 +113,68 @@ function toPropertyDetail(data: ApiPropertyDetail): PropertyDetail {
   };
 }
 
+// H1/H4: respuesta de POST /properties, PUT /properties/:id y GET /properties/:id/owner.
+type ApiOwnerProperty = {
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  department: string;
+  municipality: string;
+  address: string;
+  pricePerDay: string;
+  securityDeposit: string;
+  images: string[];
+  status: string;
+  createdAt: string;
+};
+
+function toOwnerProperty(data: ApiOwnerProperty): OwnerProperty {
+  return {
+    id: data.id,
+    title: data.title,
+    description: data.description,
+    category: fromApiCategory[data.category],
+    department: data.department,
+    municipality: data.municipality,
+    address: data.address,
+    pricePerDay: data.pricePerDay,
+    securityDeposit: data.securityDeposit,
+    images: data.images,
+    status: fromApiStatus[data.status],
+    createdAt: data.createdAt,
+    // La vista del dueño no trae arrendador ni reseñas; la pantalla de gestión no los usa.
+    ownerName: "",
+    reviewCount: 0,
+  };
+}
+
+function toPropertyFormData(input: NewPropertyInput) {
+  const formData = new FormData();
+  formData.append("title", input.title);
+  formData.append("description", input.description);
+  formData.append("category", apiCategory[input.category]);
+  formData.append("department", input.department);
+  formData.append("municipality", input.municipality);
+  formData.append("address", input.address);
+  formData.append("pricePerDay", input.pricePerDay);
+  formData.append("securityDeposit", input.securityDeposit);
+  for (const image of input.images) formData.append("images", image);
+  return formData;
+}
+
+// El backend recibe multipart/form-data con las fotos en "images" y las sube a Cloudinary.
+// Se usa apiFetch (fetch con la sesión) porque los helpers de client.ts solo envían JSON.
+async function sendPropertyForm(path: string, method: "POST" | "PUT", body: FormData) {
+  const response = await apiFetch(path, { method, body });
+  if (!response.ok) {
+    const data = await response.json().catch(() => ({}));
+    const message = Array.isArray(data.message) ? data.message.join(", ") : data.message;
+    throw new ApiError(response.status, data.code, typeof message === "string" ? message : undefined);
+  }
+  return (await response.json()) as ApiOwnerProperty;
+}
+
 export const httpPropertyRepository: PropertyRepository = {
   async listAvailable(page, filters = {}) {
     const params = new URLSearchParams({ ...filtersToQuery(filters), page: String(page) });
@@ -164,29 +226,11 @@ export const httpPropertyRepository: PropertyRepository = {
   // H1: el backend recibe multipart/form-data con las fotos en "images" y las sube a Cloudinary.
   // Se usa apiFetch (fetch con la sesión) porque los helpers de client.ts solo envían JSON.
   async create(input) {
-    const formData = new FormData();
-    formData.append("title", input.title);
-    formData.append("description", input.description);
-    formData.append("category", apiCategory[input.category]);
-    formData.append("department", input.department);
-    formData.append("municipality", input.municipality);
-    formData.append("address", input.address);
-    formData.append("pricePerDay", input.pricePerDay);
-    formData.append("securityDeposit", input.securityDeposit);
-    for (const image of input.images) formData.append("images", image);
-
-    const response = await apiFetch("api/v1/properties", { method: "POST", body: formData });
-    if (!response.ok) {
-      const body = await response.json().catch(() => ({}));
-      const message = Array.isArray(body.message) ? body.message.join(", ") : body.message;
-      throw new ApiError(response.status, body.code, typeof message === "string" ? message : undefined);
-    }
-    // shortcut: category/status llegan en inglés (PROPERTY, AVAILABLE); la acción de H1 no usa la respuesta.
-    // Mapearlos al integrar H2/H4, que sí los muestran.
-    return (await response.json()) as Property;
+    return toOwnerProperty(
+      await sendPropertyForm("api/v1/properties", "POST", toPropertyFormData(input)),
+    );
   },
 
-  // H4: rutas de lectura del arrendador por confirmar con el backend.
   async listMine(page) {
     const params = new URLSearchParams({ page: String(page) });
     const result = toPropertyPage(
@@ -212,7 +256,9 @@ export const httpPropertyRepository: PropertyRepository = {
 
   async getMine(id) {
     try {
-      return await apiGet<OwnerProperty>(`api/v1/properties/mine/${encodeURIComponent(id)}`);
+      return toOwnerProperty(
+        await apiGet<ApiOwnerProperty>(`api/v1/properties/${encodeURIComponent(id)}/owner`),
+      );
     } catch (error) {
       if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {
         return null;
@@ -221,10 +267,12 @@ export const httpPropertyRepository: PropertyRepository = {
     }
   },
 
-  update(id, input) {
-    return apiPut<Property, UpdatePropertyInput>(
-      `api/v1/properties/${encodeURIComponent(id)}`,
-      input,
+  // H4: reemplazo integral en multipart/form-data, igual que H1, más las URLs a quitar.
+  async update(id, input) {
+    const formData = toPropertyFormData(input);
+    formData.append("imagesToRemove", JSON.stringify(input.imagesToRemove));
+    return toOwnerProperty(
+      await sendPropertyForm(`api/v1/properties/${encodeURIComponent(id)}`, "PUT", formData),
     );
   },
 
