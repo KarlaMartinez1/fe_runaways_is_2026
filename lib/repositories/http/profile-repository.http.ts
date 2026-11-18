@@ -1,8 +1,8 @@
 import { apiGet, apiPatch, ApiError } from "@/lib/api/client";
 import type {
   AccountStatus,
+  BackendProfileResponse,
   BackendRoleChangeResponse,
-  BackendUserResponse,
 } from "@/lib/api/types";
 import type {
   UserProfile,
@@ -12,67 +12,84 @@ import type {
 } from "@/types/models";
 import type { ProfileRepository } from "../profile-repository";
 
-function formatMemberSince(dateStr: string): string {
+function formatMemberSince(dateStr?: string): string {
   try {
-    const date = new Date(dateStr);
+    const date = dateStr ? new Date(dateStr) : new Date();
     const month = date.toLocaleDateString("es-ES", { month: "long" });
     const capitalizedMonth = month.charAt(0).toUpperCase() + month.slice(1);
     return `${capitalizedMonth} ${date.getFullYear()}`;
   } catch {
-    return dateStr;
+    return dateStr ?? "Noviembre 2026";
   }
 }
 
 export const httpProfileRepository: ProfileRepository = {
   async getAccountStatus(): Promise<AccountStatus> {
-    // TODO: falta este dato en el backend (el endpoint GET /api/v1/profile/document no existe aún en el backend)
     try {
-      const user = await apiGet<BackendUserResponse>("api/v1/auth/me");
-      // TODO: falta este dato en el backend (la propiedad isVerified no está expuesta en auth/me)
-      return user.role === "OWNER" ? "VERIFICADA" : "SIN_VERIFICAR";
+      const profile = await apiGet<BackendProfileResponse>("api/v1/profile");
+      if (profile.isVerified || profile.document?.status === "APPROVED") {
+        return "VERIFICADA";
+      }
+      if (profile.document?.status === "PENDING") {
+        return "PENDIENTE";
+      }
+      if (profile.document?.status === "REJECTED") {
+        return "RECHAZADA";
+      }
+      return "SIN_VERIFICAR";
     } catch {
       return "SIN_VERIFICAR";
     }
   },
 
   async getUserProfile(): Promise<UserProfile> {
-    // El backend no tiene GET /api/v1/profile, consumimos GET /api/v1/auth/me
-    const user = await apiGet<BackendUserResponse>("api/v1/auth/me");
+    const profile = await apiGet<BackendProfileResponse>("api/v1/profile");
 
-    const emailName = user.email.split("@")[0] ?? "Usuario";
-    const formattedName = emailName.charAt(0).toUpperCase() + emailName.slice(1);
+    const initials = profile.name
+      ? profile.name
+          .trim()
+          .split(/\s+/)
+          .map((part) => part[0])
+          .filter(Boolean)
+          .slice(0, 2)
+          .join("")
+          .toUpperCase()
+      : profile.email.slice(0, 2).toUpperCase();
+
+    let accountStatus: AccountStatus = "SIN_VERIFICAR";
+    if (profile.isVerified || profile.document?.status === "APPROVED") {
+      accountStatus = "VERIFICADA";
+    } else if (profile.document?.status === "PENDING") {
+      accountStatus = "PENDIENTE";
+    } else if (profile.document?.status === "REJECTED") {
+      accountStatus = "RECHAZADA";
+    }
 
     return {
-      id: user.id,
-      // TODO: falta este dato en el backend (el nombre completo del usuario no se retorna en auth/me ni hay endpoint GET /api/v1/profile)
-      fullName: formattedName,
-      email: user.email,
-      role: user.role,
-      // TODO: falta este dato en el backend (el estado de verificación no está en auth/me ni hay endpoint de perfil)
-      accountStatus: user.role === "OWNER" ? "VERIFICADA" : "SIN_VERIFICAR",
-      // TODO: falta este dato en el backend (el backend no cuenta con endpoint para calificación promedio del usuario)
-      rating: 0,
-      // TODO: falta este dato en el backend (el backend no cuenta con endpoint para el conteo de reseñas recibidas)
-      ratingCount: 0,
-      // TODO: falta este dato en el backend (el tipo de documento de identidad no está expuesto)
-      documentType: "DUI",
-      // TODO: falta este dato en el backend (el número de documento de identidad no está expuesto)
-      documentNumber: "---",
-      memberSince: formatMemberSince(user.createdAt),
-      avatarInitials: formattedName.slice(0, 2).toUpperCase(),
+      id: profile.userId,
+      fullName: profile.name,
+      email: profile.email,
+      role: profile.role,
+      accountStatus,
+      rating: profile.rating?.average ?? 0,
+      ratingCount: profile.rating?.count ?? 0,
+      documentType:
+        profile.document?.type === "PASSPORT"
+          ? "PASAPORTE"
+          : profile.document?.type ?? null,
+      documentNumber: profile.document?.number ?? null,
+      memberSince: formatMemberSince(profile.createdAt),
+      avatarInitials: initials,
     };
   },
 
   async getRoleRequirements(): Promise<RoleRequirements> {
-    // TODO: falta este dato en el backend (el backend no expone GET /api/v1/profile/role-requirements;
-    // la validación de bloqueos por reservas activas y depósitos pendientes se realiza atómicamente
-    // en el backend al invocar PATCH /api/v1/profile/role respondiendo con ROLE_CHANGE_BLOCKED o ACCOUNT_NOT_VERIFIED)
-    let currentRole: UserRole = "TENANT";
+    let isVerified = false;
     try {
-      const user = await apiGet<BackendUserResponse>("api/v1/auth/me");
-      currentRole = user.role;
+      const profile = await apiGet<BackendProfileResponse>("api/v1/profile");
+      isVerified = profile.isVerified || profile.role === "OWNER";
     } catch {
-      // Si falla la consulta de sesión, se asume TENANT por defecto
+      // Si falla la consulta de sesión, se asume no verificada por defecto
     }
 
     return {
@@ -81,19 +98,16 @@ export const httpProfileRepository: ProfileRepository = {
         {
           id: "verifiedAccount",
           label: "Cuenta verificada",
-          // TODO: falta este dato en el backend (verificación de cuenta se valida en el backend retornando 403 ACCOUNT_NOT_VERIFIED)
-          met: currentRole === "OWNER",
+          met: isVerified,
         },
         {
           id: "noPendingPayments",
           label: "Sin pagos pendientes",
-          // TODO: falta este dato en el backend (se valida en PATCH /api/v1/profile/role retornando 409 ROLE_CHANGE_BLOCKED)
           met: true,
         },
         {
           id: "noPendingDeposits",
           label: "Sin depósitos pendientes de decisión",
-          // TODO: falta este dato en el backend (se valida en PATCH /api/v1/profile/role retornando 409 ROLE_CHANGE_BLOCKED)
           met: true,
         },
       ],

@@ -210,7 +210,10 @@ export const mockPropertyRepository: PropertyRepository = {
     property.department = input.department;
     property.municipality = input.municipality;
     property.pricePerDay = input.pricePerDay;
-    property.images = input.images;
+    property.images = [
+      ...property.images.filter((url) => !input.imagesToRemove.includes(url)),
+      ...(await Promise.all(input.images.map((file) => mockImageStorage.uploadPropertyImage(file)))),
+    ];
 
     propertyDetailExtras[id] = {
       description: input.description,

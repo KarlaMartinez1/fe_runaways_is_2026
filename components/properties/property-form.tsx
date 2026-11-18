@@ -11,7 +11,6 @@ import type { OwnerProperty } from "@/lib/api/types";
 import { departments, getMunicipalities } from "@/lib/locations/el-salvador";
 import { categoryLabels, formatPrice, propertyMessages } from "@/lib/messages/properties";
 import { propertyFormMessages as m } from "@/lib/messages/property-form";
-import { imageStorage } from "@/lib/storage";
 import { cn } from "@/lib/utils/cn";
 import {
   ADDRESS_MAX,
@@ -224,22 +223,18 @@ export function PropertyForm({ property, actions }: PropertyFormProps) {
       return;
     }
 
-    // H4: se suben solo las fotos nuevas; las ya guardadas conservan su URL.
-    let imageUrls: string[];
-    try {
-      imageUrls = await Promise.all(
-        photos.map((photo) =>
-          photo.file ? imageStorage.uploadPropertyImage(photo.file) : Promise.resolve(photo.previewUrl),
-        ),
-      );
-    } catch (error) {
-      console.error("Error al subir las fotos:", error);
-      setServerError(m.saveError);
-      return;
+    // H4: las fotos nuevas van como archivos; de las guardadas se envían las URLs que se quitaron.
+    const keptImages = photos.filter((photo) => !photo.file).map((photo) => photo.previewUrl);
+    const imagesToRemove = savedPhotos
+      .map((photo) => photo.previewUrl)
+      .filter((url) => !keptImages.includes(url));
+    const photoData = new FormData();
+    for (const photo of photos) {
+      if (photo.file) photoData.append("images", photo.file);
     }
 
     // H4: al guardar, vuelve a solo lectura con los datos nuevos.
-    const result = await updateProperty(property.id, values, imageUrls);
+    const result = await updateProperty(property.id, values, keptImages, imagesToRemove, photoData);
     if (!result.ok) {
       setServerError(result.message);
       return;
@@ -248,7 +243,7 @@ export function PropertyForm({ property, actions }: PropertyFormProps) {
     for (const photo of photos) {
       if (photo.file) URL.revokeObjectURL(photo.previewUrl);
     }
-    const newPhotos = toSavedPhotos(imageUrls);
+    const newPhotos = toSavedPhotos(result.images);
     reset({
       ...values,
       pricePerDay: toMoney(values.pricePerDay),

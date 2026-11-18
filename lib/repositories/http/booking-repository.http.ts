@@ -5,18 +5,26 @@ import type { BookingRepository, ListBookingsParams } from "../booking-repositor
 
 type ApiBookingStatus = "PENDING" | "PAID" | "COMPLETED" | "CANCELED";
 
-const toApiStatus: Record<BookingStatus, ApiBookingStatus> = {
+const toApiStatus: Record<string, ApiBookingStatus> = {
   PENDIENTE: "PENDING",
   PAGADA: "PAID",
   FINALIZADA: "COMPLETED",
   CANCELADA: "CANCELED",
+  PENDING: "PENDING",
+  PAID: "PAID",
+  COMPLETED: "COMPLETED",
+  CANCELED: "CANCELED",
 };
 
-const fromApiStatus: Record<ApiBookingStatus, BookingStatus> = {
+const fromApiStatus: Record<string, BookingStatus> = {
   PENDING: "PENDIENTE",
   PAID: "PAGADA",
   COMPLETED: "FINALIZADA",
   CANCELED: "CANCELADA",
+  PENDIENTE: "PENDIENTE",
+  PAGADA: "PAGADA",
+  FINALIZADA: "FINALIZADA",
+  CANCELADA: "CANCELADA",
 };
 
 type ApiBookingItem = {
@@ -57,8 +65,24 @@ const fromApiCategory: Record<string, PropertyCategory> = {
   EQUIPO: "EQUIPO",
 };
 
-function fromApiBooking<T extends { status: ApiBookingStatus }>(booking: T) {
-  return { ...booking, status: fromApiStatus[booking.status] };
+function mapBookingItem(raw: RawBackendBooking): BookingListItem {
+  return {
+    id: raw.id,
+    propertyId: raw.propertyId,
+    propertyTitle: raw.propertyTitle || raw.property?.title || "Bien en renta",
+    startDate: raw.startDate,
+    endDate: raw.endDate,
+    days: raw.days || calculateDays(raw.startDate, raw.endDate),
+    subtotal: raw.subtotal,
+    status: fromApiStatus[raw.status] || "PENDIENTE",
+    expiresAt: raw.expiresAt || null,
+    cancelReason: raw.cancelReason || (raw.status === "CANCELED" ? "VENCIDA" : null),
+    deliveredAt: raw.deliveredAt || null,
+    returnedAt: raw.returnedAt || null,
+    lesseeName: raw.lesseeName || raw.tenant?.name,
+    finalizedAt: raw.finalizedAt || null,
+    ratedByMe: raw.ratedByMe || false,
+  };
 }
 
 function fromApiList(result: ApiBookingListResult): BookingListResult {

@@ -141,9 +141,10 @@ export type OwnerProperty = PropertyDetail & {
 };
 
 // Cuerpo de PUT /api/v1/properties/:id (H4): los mismos campos de H1 para reemplazo integral.
-// images es la lista final de fotos (las que se conservan más las nuevas ya subidas).
+// Va como multipart/form-data: imagesToRemove son las URLs que se quitan e images los archivos nuevos.
 export type UpdatePropertyInput = PropertyFields & {
-  images: string[];
+  imagesToRemove: string[];
+  images: File[];
 };
 
 export type ReviewBlockReason = "NOT_FINALIZED" | "ALREADY_REVIEWED" | "WINDOW_CLOSED";
@@ -257,6 +258,28 @@ export type BackendRoleChangeResponse = {
   expiresIn: number;
 };
 
+export type BackendProfileDocument = {
+  type: string;
+  number: string;
+  status: string;
+};
+
+export type BackendProfileRating = {
+  average: number | null;
+  count: number;
+};
+
+export type BackendProfileResponse = {
+  userId: string;
+  name: string;
+  email: string;
+  role: "TENANT" | "OWNER" | "ADMIN";
+  isVerified: boolean;
+  document: BackendProfileDocument | null;
+  rating: BackendProfileRating;
+  createdAt?: string;
+};
+
 export type BackendUserResponse = {
   id: string;
   email: string;
@@ -302,3 +325,36 @@ export type NotificationCategory =
   | "BOOKING"
   | "PAYMENT"
   | "VERIFICATION";
+
+export type BackendPaymentSummary = {
+  bookingId: string;
+  propertyTitle: string;
+  startDate: string;
+  endDate: string;
+  days: number;
+  pricePerDay: string;
+  rentalAmount: string;
+  depositAmount: string;
+  totalAmount: string;
+  expiresAt: string;
+};
+
+export type CreatePaymentInput = {
+  bookingId: string;
+  last4Digits: string;
+};
+
+export type BackendPaymentReceipt = {
+  receiptNumber: string;
+  bookingId: string;
+  paymentDate: string;
+  propertyTitle: string;
+  startDate: string;
+  endDate: string;
+  days: number;
+  pricePerDay: string;
+  rentalAmount: string;
+  depositAmount: string;
+  totalAmount: string;
+  last4Digits: string;
+};

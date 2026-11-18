@@ -8,13 +8,17 @@ import type { ReservationDetail } from '@/types';
 
 export interface PaymentPageBodyProps {
   reservation?: ReservationDetail;
+  bookingId?: string;
   className?: string;
 }
 
 export function PaymentPageBody({
   reservation,
+  bookingId,
   className,
 }: PaymentPageBodyProps) {
+  const effectiveBookingId = reservation?.id || bookingId;
+
   return (
     <div className="w-full flex-1 bg-[#f9fafb]">
       <main
@@ -36,7 +40,7 @@ export function PaymentPageBody({
 
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-5 lg:gap-8 items-start">
           <ReservationSummary reservation={reservation} className="w-full" />
-          <PaymentMethodForm className="w-full" />
+          <PaymentMethodForm bookingId={effectiveBookingId} className="w-full" />
         </div>
       </main>
     </div>
