@@ -3,7 +3,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { OccupancyPageBody } from "@/components/reports/occupancy-page-body";
-import { profileRepository, reportRepository } from "@/lib/repositories";
+import { getCurrentUser } from "@/lib/api/auth";
+import { reportRepository } from "@/lib/repositories";
 import { ApiError } from "@/lib/api/client";
 import { reportMessages } from "@/lib/messages/reports";
 import type { PropertyOccupancyListResult } from "@/lib/repositories/report-repository";
@@ -19,9 +20,6 @@ interface OwnerOccupancyPageProps {
     to?: string;
     order?: string;
     page?: string;
-    scenario?: string;
-    bypass?: string;
-    dev?: string;
   }>;
 }
 
@@ -33,31 +31,27 @@ export default async function OwnerOccupancyPage({
   const to = resolvedParams.to || undefined;
   const order = resolvedParams.order === "asc" ? "asc" : "desc";
   const page = Math.max(1, Number(resolvedParams.page) || 1);
-  const scenario = resolvedParams.scenario || undefined;
-  const bypass =
-    resolvedParams.bypass === "true" ||
-    resolvedParams.dev === "true" ||
-    scenario === "owner";
 
   let forbidden = false;
 
-  if (!bypass) {
-    try {
-      const profile = await profileRepository.getUserProfile(scenario);
-      if (!profile || profile.role !== "OWNER") {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      redirect("/login");
+    }
+    if (user.role !== "OWNER") {
+      forbidden = true;
+    }
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 401) {
+        redirect("/login");
+      }
+      if (error.status === 403) {
         forbidden = true;
       }
-    } catch (error) {
-      if (error instanceof ApiError) {
-        if (error.status === 401) {
-          redirect("/login");
-        }
-        if (error.status === 403) {
-          forbidden = true;
-        }
-      }
-      console.error("Error al verificar perfil de usuario:", error);
     }
+    console.error("Error al verificar perfil de usuario:", error);
   }
 
   let occupancy: PropertyOccupancyListResult | null = null;
@@ -123,7 +117,6 @@ export default async function OwnerOccupancyPage({
         initialFrom={from ?? ""}
         initialTo={to ?? ""}
         initialOrder={order}
-        bypass={bypass}
       />
     </div>
   );
