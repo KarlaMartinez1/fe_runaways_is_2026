@@ -164,6 +164,7 @@ export function ReportsPageBody({
         totalPages={propertyIncome.totalPages}
         onPageChange={handlePageChange}
         isLoading={isLoading}
+        hasDateFilter={Boolean(from || to)}
       />
     </main>
   );

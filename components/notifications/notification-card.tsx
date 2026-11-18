@@ -16,7 +16,9 @@ export interface NotificationCardProps {
 const categoryStyles: Record<NotificationCategory, string> = {
   MESSAGING: "bg-[#F3E8FF] text-[#7E22CE]",
   BOOKING: "bg-[#E0E7FF] text-[#4338CA]",
+  RESERVATIONS: "bg-[#E0E7FF] text-[#4338CA]",
   PAYMENT: "bg-[#DCFCE7] text-[#15803D]",
+  PAYMENTS: "bg-[#DCFCE7] text-[#15803D]",
   VERIFICATION: "bg-[#FEF3C7] text-[#B45309]",
 };
 

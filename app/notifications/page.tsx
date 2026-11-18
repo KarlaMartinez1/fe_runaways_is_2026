@@ -16,9 +16,6 @@ export const metadata: Metadata = {
 interface NotificationsPageProps {
   searchParams?: Promise<{
     page?: string;
-    scenario?: string;
-    bypass?: string;
-    dev?: string;
   }>;
 }
 
@@ -27,40 +24,33 @@ export default async function NotificationsPage({
 }: NotificationsPageProps) {
   const resolvedParams = searchParams ? await searchParams : {};
   const page = Math.max(1, Number(resolvedParams.page) || 1);
-  const scenario = resolvedParams.scenario || undefined;
-  const isBypass =
-    resolvedParams.bypass === "true" ||
-    resolvedParams.dev === "true" ||
-    Boolean(scenario);
 
   let forbidden = false;
 
   // Validación de acceso (Roles permitidos: TENANT, OWNER, ADMIN)
-  if (!isBypass) {
-    try {
-      const user = await getCurrentUser();
-      if (!user) {
+  try {
+    const user = await getCurrentUser();
+    if (!user) {
+      redirect("/login");
+    }
+    if (
+      user.role !== "TENANT" &&
+      user.role !== "OWNER" &&
+      user.role !== "ADMIN"
+    ) {
+      forbidden = true;
+    }
+  } catch (error) {
+    if (error instanceof ApiError) {
+      if (error.status === 401) {
         redirect("/login");
       }
-      if (
-        user.role !== "TENANT" &&
-        user.role !== "OWNER" &&
-        user.role !== "ADMIN"
-      ) {
+      if (error.status === 403) {
         forbidden = true;
       }
-    } catch (error) {
-      if (error instanceof ApiError) {
-        if (error.status === 401) {
-          redirect("/login");
-        }
-        if (error.status === 403) {
-          forbidden = true;
-        }
-      }
-      if (process.env.USE_MOCKS !== "true") {
-        console.error("Error al validar sesión para notificaciones:", error);
-      }
+    }
+    if (process.env.USE_MOCKS !== "true") {
+      console.error("Error al validar sesión para notificaciones:", error);
     }
   }
 
@@ -82,8 +72,22 @@ export default async function NotificationsPage({
     result = await notificationRepository.list({ page, pageSize: 10 });
   } catch (error) {
     console.error("Error al obtener notificaciones:", error);
-    if (error instanceof ApiError && error.status === 401) {
-      redirect("/login");
+    if (error instanceof ApiError) {
+      if (error.status === 401) {
+        redirect("/login");
+      }
+      if (error.status === 403) {
+        return (
+          <>
+            <Navbar />
+            <main className="mx-auto flex w-full max-w-5xl flex-col items-center justify-center gap-4 px-6 py-20 text-center">
+              <h1 className="text-2xl font-bold text-zinc-900">
+                {notificationMessages.forbidden}
+              </h1>
+            </main>
+          </>
+        );
+      }
     }
     result = {
       data: [],
