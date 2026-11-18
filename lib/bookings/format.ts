@@ -25,5 +25,8 @@ export function formatShortRange(startDate: string, endDate: string): string {
 }
 
 export function formatDeadline(iso: string): string {
-  return deadlineFormatter.format(new Date(iso));
+  if (!iso) return "";
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return iso;
+  return deadlineFormatter.format(d);
 }
