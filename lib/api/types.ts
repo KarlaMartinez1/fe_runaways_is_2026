@@ -92,6 +92,7 @@ export type BookingListItem = {
   id: string;
   propertyId: string;
   propertyTitle: string;
+  propertyCategory?: PropertyCategory;
   startDate: string;
   endDate: string;
   days: number;

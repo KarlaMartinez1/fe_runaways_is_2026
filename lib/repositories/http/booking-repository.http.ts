@@ -1,5 +1,5 @@
 import { apiGet, apiPost } from "@/lib/api/client";
-import type { BookingListResult, CreatedBooking } from "@/lib/api/types";
+import type { BookingListItem, BookingListResult, CreatedBooking, PropertyCategory } from "@/lib/api/types";
 import type { BookingStatus } from "@/lib/api/types";
 import type { BookingRepository, ListBookingsParams } from "../booking-repository";
 
@@ -19,8 +19,42 @@ const fromApiStatus: Record<ApiBookingStatus, BookingStatus> = {
   CANCELED: "CANCELADA",
 };
 
-type ApiBookingListResult = Omit<BookingListResult, "data"> & {
-  data: Array<Omit<BookingListResult["data"][number], "status"> & { status: ApiBookingStatus }>;
+type ApiBookingItem = {
+  id: string;
+  status: ApiBookingStatus;
+  propertyId?: string;
+  propertyTitle?: string;
+  propertyCategory?: PropertyCategory;
+  property?: { id?: string; title?: string; name?: string; category?: string };
+  tenant?: { name?: string };
+  startDate: string;
+  endDate: string;
+  days: number;
+  subtotal: string;
+  expiresAt?: string | null;
+  cancelReason?: "VENCIDA" | null;
+  deliveredAt?: string | null;
+  returnedAt?: string | null;
+  finalizedAt?: string | null;
+  ratedByMe?: boolean;
+  lesseeName?: string;
+};
+
+type ApiBookingListResult = {
+  data: ApiBookingItem[];
+  total: number;
+  page: number;
+  pageSize?: number;
+  totalPages?: number;
+};
+
+const BOOKING_PAGE_SIZE = 10;
+
+const fromApiCategory: Record<string, PropertyCategory> = {
+  PROPERTY: "PROPIEDAD",
+  EQUIPMENT: "EQUIPO",
+  PROPIEDAD: "PROPIEDAD",
+  EQUIPO: "EQUIPO",
 };
 
 function fromApiBooking<T extends { status: ApiBookingStatus }>(booking: T) {
@@ -28,7 +62,25 @@ function fromApiBooking<T extends { status: ApiBookingStatus }>(booking: T) {
 }
 
 function fromApiList(result: ApiBookingListResult): BookingListResult {
-  return { ...result, data: result.data.map(fromApiBooking) };
+  const pageSize = result.pageSize ?? BOOKING_PAGE_SIZE;
+  return {
+    data: result.data.map((item) => {
+      const normalized: Omit<ApiBookingItem, "status"> & { status: BookingStatus } = {
+        ...item,
+        status: fromApiStatus[item.status],
+      };
+      return {
+        ...normalized,
+        propertyId: item.propertyId ?? item.property?.id ?? "",
+        propertyTitle: item.propertyTitle ?? item.property?.title ?? item.property?.name ?? "",
+        propertyCategory: item.propertyCategory ?? (item.property?.category ? fromApiCategory[item.property.category] : undefined),
+        lesseeName: item.lesseeName ?? item.tenant?.name,
+      } as BookingListItem;
+    }),
+    total: result.total,
+    page: result.page,
+    totalPages: result.totalPages ?? Math.max(1, Math.ceil(result.total / pageSize)),
+  };
 }
 
 function buildQuery(params: Record<string, string | number | undefined>) {
@@ -49,12 +101,12 @@ export const httpBookingRepository: BookingRepository = {
   },
 
   async listMine({ page, status }: ListBookingsParams) {
-    const query = buildQuery({ page, status: status ? toApiStatus[status] : undefined, pageSize: 10 });
+    const query = buildQuery({ page, status: status ? toApiStatus[status] : undefined, pageSize: BOOKING_PAGE_SIZE });
     return fromApiList(await apiGet<ApiBookingListResult>(`api/v1/bookings/mine?${query}`));
   },
 
   async listLessor({ page, status, propertyId }: ListBookingsParams) {
-    const query = buildQuery({ page, status: status ? toApiStatus[status] : undefined, propertyId, pageSize: 10 });
-    return fromApiList(await apiGet<ApiBookingListResult>(`api/v1/lessor/bookings?${query}`));
+    const query = buildQuery({ page, status: status ? toApiStatus[status] : undefined, propertyId, pageSize: BOOKING_PAGE_SIZE });
+    return fromApiList(await apiGet<ApiBookingListResult>(`api/v1/owner/bookings?${query}`));
   },
 };
