@@ -2,9 +2,35 @@ import { apiGet, apiPost } from "@/lib/api/client";
 import type { ChatMessage, ConversationSummary } from "@/lib/api/types";
 import type { ConversationRepository } from "../conversation-repository";
 
+// Elemento de GET /api/v1/conversations.
+type ApiConversationSummary = {
+  id: string;
+  propertyId: string;
+  propertyTitle: string;
+  participantId: string;
+  participantName: string;
+  unreadCount: number;
+  lastMessageAt: string | null;
+};
+
 export const httpConversationRepository: ConversationRepository = {
-  list() {
-    return apiGet<ConversationSummary[]>("api/v1/conversations");
+  // H15: el backend no envía el texto del último mensaje ni la reserva del hilo; la lista
+  // muestra nombre, bien, fecha y el indicador de no leído.
+  async list() {
+    const conversations = await apiGet<ApiConversationSummary[]>("api/v1/conversations");
+    return conversations.map(
+      (item): ConversationSummary => ({
+        id: item.id,
+        propertyId: item.propertyId,
+        propertyTitle: item.propertyTitle,
+        otherParticipantName: item.participantName,
+        lastMessage: null,
+        lastMessageAt: item.lastMessageAt,
+        lastMessageIsMine: false,
+        hasUnread: item.unreadCount > 0,
+        booking: null,
+      }),
+    );
   },
 
   getMessages(conversationId) {
