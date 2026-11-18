@@ -35,6 +35,6 @@ export const bookingMessages = {
     forbidden: "No tienes permiso para ver esta página.",
     loadError: "No se pudieron cargar las reservas. Intente de nuevo.",
   },
-  cancelReasonVencida: "Vencida",
+  cancelReasonVencida: "Cancelada por no pagar dentro de las 24 horas.",
   createdBanner: "Reserva creada. Tienes 24 horas para pagarla.",
 };
