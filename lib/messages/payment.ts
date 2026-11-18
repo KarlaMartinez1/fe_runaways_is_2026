@@ -1,4 +1,5 @@
 import type { PaymentReceiptDetail } from "@/types";
+import { formatDeadline } from "@/lib/bookings/format";
 
 export const paymentMessages = {
   pageTitle: "Pagar reserva",
@@ -12,7 +13,7 @@ export const paymentMessages = {
   depositLabel: "Depósito de garantía",
   totalLabel: "Total a pagar",
   formulaNote: "Total = costo del alquiler + depósito de garantía",
-  dueNotice: (date: string) => `Pagar antes de: ${date}`,
+  dueNotice: (date: string) => `Pagar antes de: ${formatDeadline(date)}`,
   daysText: (count: number) => `${count} ${count === 1 ? "día" : "días"}`,
   formatCurrency: (amount: number) => `$${amount.toFixed(2)}`,
   formatRentalDateRange: (startDate: string | Date, endDate: string | Date) => {
@@ -54,6 +55,15 @@ export const paymentFormMessages = {
   submittingButton: "Procesando pago...",
   successFeedback: "¡Pago realizado con éxito! Redirigiendo a tu reserva...",
   errorFeedback: "Ocurrió un error al procesar el pago. Por favor, intenta nuevamente.",
+
+  declinedFunds: "Fondos insuficientes. Intenta con otra tarjeta",
+  invalidCard: "Tarjeta no válida",
+  missingBooking: "Debes seleccionar una reserva válida para proceder al pago.",
+  alreadyPaid: "Esta reserva ya fue pagada.",
+  bookingNotFound: "Reserva no encontrada o no pertenece a tu cuenta.",
+  bookingExpired: "La reserva ha vencido o no está disponible para pago.",
+  emptyPendingBookings: "No tienes ninguna reserva pendiente de pago.",
+  viewMyBookings: "Ver mis reservas",
 
   // Validation messages
   cardHolderMinError: "El nombre del titular debe tener al menos 3 caracteres",
