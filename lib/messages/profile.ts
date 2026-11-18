@@ -9,10 +9,18 @@ export const profileMessages = {
   emailLabel: 'Correo electrónico',
   documentLabel: 'Documento',
   memberSinceLabel: 'Miembro desde',
-  formatDocument: (type: string, number: string) => `${type} · ${number}`,
+  noDocumentRegistered: 'Documento no registrado',
+  formatDocument: (type?: string | null, number?: string | null) =>
+    type && number && number !== '---'
+      ? `${type} · ${number}`
+      : 'Documento no registrado',
   formatRating: (rating: number, count: number) =>
     count > 0 ? `★ ${rating.toFixed(1)} · ${count} calificaciones` : '☆ Sin calificaciones',
   verifyAccountButton: 'Verificar mi cuenta',
+  loadErrorTitle: 'No se pudo cargar el perfil',
+  loadErrorMessage:
+    'Ocurrió un error al consultar tu información de perfil. Por favor, intenta de nuevo.',
+  retryButton: 'Reintentar',
 
   // Role Management Card
   roleCardTitle: 'Rol de la cuenta',
