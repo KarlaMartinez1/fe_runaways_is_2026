@@ -30,6 +30,18 @@ export function BlockManager({ propertyId, from, to, occupiedDates, blocks }: Bl
   const [feedback, setFeedback] = useState<Feedback | null>(null);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
 
+  // Los bloqueos ocupan ambos extremos de la fecha, igual que los muestra la lista.
+  const blockedDates = blocks.flatMap((block) => {
+    const dates: string[] = [];
+    for (let date = block.startDate; date <= block.endDate; ) {
+      dates.push(date);
+      const [year, month, day] = date.split("-").map(Number);
+      date = new Date(Date.UTC(year, month - 1, day + 1)).toISOString().slice(0, 10);
+    }
+    return dates;
+  });
+  const unavailableDates = [...new Set([...occupiedDates, ...blockedDates])];
+
   const resetSelection = () => {
     setStartDate(null);
     setEndDate(null);
@@ -44,7 +56,7 @@ export function BlockManager({ propertyId, from, to, occupiedDates, blocks }: Bl
       return;
     }
 
-    if (overlaps(startDate, iso, occupiedDates)) {
+    if (overlaps(startDate, iso, unavailableDates)) {
       setFeedback({ type: "error", message: blockMessages.conflict });
       setStartDate(iso);
       setEndDate(null);
@@ -121,7 +133,7 @@ export function BlockManager({ propertyId, from, to, occupiedDates, blocks }: Bl
         <AvailabilityCalendar
           from={from}
           to={to}
-          occupiedDates={occupiedDates}
+          occupiedDates={unavailableDates}
           selectedStart={startDate}
           selectedEnd={endDate}
           onSelectDate={handleSelectDate}
