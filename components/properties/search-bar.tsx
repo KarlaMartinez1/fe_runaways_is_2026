@@ -225,14 +225,15 @@ export function SearchBar({ filters, showPrice = true }: SearchBarProps) {
 
         {showPrice && (
           <div role="group" aria-label={searchMessages.priceLabel} className="flex flex-col gap-1.5 md:items-end">
-            <div className="flex items-center gap-3">
-              <span className="text-sm text-zinc-500">{searchMessages.priceLabel}</span>
+            {/* En móvil los campos se reparten el ancho disponible para no desbordar la pantalla. */}
+            <div className="flex w-full items-center gap-3 md:w-auto">
+              <span className="shrink-0 text-sm text-zinc-500">{searchMessages.priceLabel}</span>
               <Input
                 aria-label={searchMessages.priceMin}
                 placeholder={searchMessages.priceMin}
                 inputMode="decimal"
                 autoComplete="off"
-                containerClassName="w-32"
+                containerClassName="min-w-0 flex-1 md:w-32 md:flex-none"
                 {...register("minPrice")}
               />
               <span aria-hidden="true" className="text-zinc-400">
@@ -243,7 +244,7 @@ export function SearchBar({ filters, showPrice = true }: SearchBarProps) {
                 placeholder={searchMessages.priceMax}
                 inputMode="decimal"
                 autoComplete="off"
-                containerClassName="w-32"
+                containerClassName="min-w-0 flex-1 md:w-32 md:flex-none"
                 {...register("maxPrice")}
               />
             </div>
