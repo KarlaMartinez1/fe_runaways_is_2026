@@ -12,7 +12,7 @@ import type {
   NewPropertyInput,
 } from "@/lib/api/types";
 import { filtersToQuery } from "@/lib/filters/property-filters";
-import type { ManageableStatus, PropertyRepository } from "../property-repository";
+import type { PropertyRepository } from "../property-repository";
 
 // El backend usa el enum PropertyCategory en inglés.
 const apiCategory: Record<PropertyCategory, string> = {
@@ -276,11 +276,13 @@ export const httpPropertyRepository: PropertyRepository = {
     );
   },
 
-  changeStatus(id, status) {
-    return apiPatch<PropertyStatusChange, { status: ManageableStatus }>(
+  // H5: el backend recibe y devuelve el estado en inglés (AVAILABLE, PAUSED).
+  async changeStatus(id, status) {
+    const result = await apiPatch<PropertyStatusChange & { status: string }, { status: string }>(
       `api/v1/properties/${encodeURIComponent(id)}/status`,
-      { status },
+      { status: status === "PAUSADO" ? "PAUSED" : "AVAILABLE" },
     );
+    return { ...result, status: fromApiStatus[result.status] };
   },
 
   remove(id) {
