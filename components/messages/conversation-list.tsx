@@ -51,7 +51,8 @@ export function ConversationList({ conversations, activeId }: ConversationListPr
                   )}
                 </span>
                 <span className="truncate text-xs text-zinc-500">{conversation.propertyTitle}</span>
-                {conversation.lastMessage && (
+                {/* El indicador de no leído se muestra aunque el backend no envíe el texto del último mensaje. */}
+                {(conversation.lastMessage || conversation.hasUnread) && (
                   <span className="flex items-center justify-between gap-2">
                     <span
                       className={cn(
