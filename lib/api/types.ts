@@ -323,3 +323,36 @@ export type NotificationCategory =
   | "BOOKING"
   | "PAYMENT"
   | "VERIFICATION";
+
+export type BackendPaymentSummary = {
+  bookingId: string;
+  propertyTitle: string;
+  startDate: string;
+  endDate: string;
+  days: number;
+  pricePerDay: string;
+  rentalAmount: string;
+  depositAmount: string;
+  totalAmount: string;
+  expiresAt: string;
+};
+
+export type CreatePaymentInput = {
+  bookingId: string;
+  last4Digits: string;
+};
+
+export type BackendPaymentReceipt = {
+  receiptNumber: string;
+  bookingId: string;
+  paymentDate: string;
+  propertyTitle: string;
+  startDate: string;
+  endDate: string;
+  days: number;
+  pricePerDay: string;
+  rentalAmount: string;
+  depositAmount: string;
+  totalAmount: string;
+  last4Digits: string;
+};
