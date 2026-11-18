@@ -52,8 +52,8 @@ export interface UserProfile {
   accountStatus: AccountStatus;
   rating: number;
   ratingCount: number;
-  documentType: string;
-  documentNumber: string;
+  documentType?: string | null;
+  documentNumber?: string | null;
   memberSince: string;
   avatarInitials?: string;
 }
