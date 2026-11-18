@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { ProfilePageBody } from "@/components/profile/profile-page-body";
@@ -76,7 +77,27 @@ export default async function ProfilePage({ searchParams }: ProfilePageProps) {
   }
 
   if (!profile) {
-    return null;
+    return (
+      <div className="flex min-h-screen flex-col bg-[#F9FAFB]">
+        <Navbar />
+        <main className="flex flex-1 items-center justify-center p-6 text-center">
+          <div className="max-w-md rounded-2xl bg-white p-8 shadow-xs border border-gray-100">
+            <h2 className="text-lg font-bold text-gray-900 mb-2">
+              {profileMessages.loadErrorTitle}
+            </h2>
+            <p className="text-sm text-gray-600 mb-4">
+              {profileMessages.loadErrorMessage}
+            </p>
+            <Link
+              href="/profile"
+              className="inline-flex rounded-xl bg-[#1E4DB7] px-4 py-2 text-sm font-semibold text-white hover:bg-[#163c91]"
+            >
+              {profileMessages.retryButton}
+            </Link>
+          </div>
+        </main>
+      </div>
+    );
   }
 
   return (
