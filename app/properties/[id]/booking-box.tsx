@@ -52,11 +52,6 @@ export function BookingBox({
         </div>
       )}
 
-      <p className="flex items-center gap-2 rounded-lg border border-[#FDE68A] bg-[#FEF9E7] px-3 py-2 text-sm font-medium text-[#92400E]">
-        <span aria-hidden="true" className="h-2.5 w-2.5 shrink-0 rounded-full bg-[#D97706]" />
-        {bookingBoxMessages.requiresVerification}
-      </p>
-
       {available && (
         <Button fullWidth size="lg" disabled>
           {bookingMessages.confirm}
