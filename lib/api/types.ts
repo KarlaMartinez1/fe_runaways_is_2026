@@ -256,6 +256,28 @@ export type BackendRoleChangeResponse = {
   expiresIn: number;
 };
 
+export type BackendProfileDocument = {
+  type: string;
+  number: string;
+  status: string;
+};
+
+export type BackendProfileRating = {
+  average: number | null;
+  count: number;
+};
+
+export type BackendProfileResponse = {
+  userId: string;
+  name: string;
+  email: string;
+  role: "TENANT" | "OWNER" | "ADMIN";
+  isVerified: boolean;
+  document: BackendProfileDocument | null;
+  rating: BackendProfileRating;
+  createdAt?: string;
+};
+
 export type BackendUserResponse = {
   id: string;
   email: string;
