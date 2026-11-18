@@ -15,6 +15,8 @@ export const metadata: Metadata = {
   title: "Mis reservas | Runaways",
 };
 
+export const dynamic = "force-dynamic";
+
 const STATUSES: BookingStatus[] = ["PENDIENTE", "PAGADA", "FINALIZADA", "CANCELADA"];
 
 type MyBookingsPageProps = {
@@ -64,6 +66,8 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
         <nav aria-label="Filtrar por estado" className="flex flex-wrap gap-2">
           <Link
             href="/bookings/mine"
+            prefetch={false}
+            aria-current={!status ? "page" : undefined}
             className={`rounded-full px-3 py-1 text-sm ${!status ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-800 hover:bg-zinc-200"}`}
           >
             {bookingMessages.mine.all}
@@ -72,6 +76,8 @@ export default async function MyBookingsPage({ searchParams }: MyBookingsPagePro
             <Link
               key={value}
               href={`/bookings/mine?status=${value}`}
+              prefetch={false}
+              aria-current={status === value ? "page" : undefined}
               className={`rounded-full px-3 py-1 text-sm ${status === value ? "bg-zinc-900 text-white" : "bg-zinc-100 text-zinc-800 hover:bg-zinc-200"}`}
             >
               {value}
