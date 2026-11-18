@@ -56,7 +56,7 @@ export function BookingList({ items, variant, emptyMessage }: BookingListProps) 
                 {bookingMessages.mine.payBefore} {formatDeadline(booking.expiresAt)}
               </p>
             )}
-            {booking.status === "CANCELADA" && booking.cancelReason === "VENCIDA" && (
+            {booking.status === "CANCELADA" && (
               <p className="text-sm text-zinc-500">{bookingMessages.cancelReasonVencida}</p>
             )}
           </div>
@@ -65,8 +65,8 @@ export function BookingList({ items, variant, emptyMessage }: BookingListProps) 
             <Badge variant={statusVariant[booking.status]}>{booking.status}</Badge>
             {variant === "mine" && booking.status === "PENDIENTE" && (
               <Link
-                href={`/bookings/${booking.id}/payment`}
-                className="rounded-lg bg-[#1f4fb8] px-4 py-2 text-sm font-semibold text-white hover:bg-[#1e40af]"
+                href={`/payment?reservationId=${encodeURIComponent(booking.id)}`}
+                className="inline-flex h-7 items-center rounded-full bg-violet-100 px-2.5 text-xs font-semibold text-violet-800 transition-colors hover:bg-violet-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-violet-500 focus-visible:ring-offset-2"
               >
                 {bookingMessages.mine.pay}
               </Link>

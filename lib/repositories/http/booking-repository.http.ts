@@ -1,8 +1,10 @@
 import { apiGet, apiPost } from "@/lib/api/client";
-import type { BookingListItem, BookingStatus, CreatedBooking } from "@/lib/api/types";
+import type { BookingListItem, BookingListResult, BookingStatus, CreatedBooking } from "@/lib/api/types";
 import type { BookingRepository, ListBookingsParams } from "../booking-repository";
 
-const toBackendStatus: Record<string, string> = {
+type ApiBookingStatus = "PENDING" | "PAID" | "COMPLETED" | "CANCELED";
+
+const toApiStatus: Record<string, ApiBookingStatus> = {
   PENDIENTE: "PENDING",
   PAGADA: "PAID",
   FINALIZADA: "COMPLETED",
@@ -13,7 +15,7 @@ const toBackendStatus: Record<string, string> = {
   CANCELED: "CANCELED",
 };
 
-const toFrontendStatus: Record<string, BookingStatus> = {
+const fromApiStatus: Record<string, BookingStatus> = {
   PENDING: "PENDIENTE",
   PAID: "PAGADA",
   COMPLETED: "FINALIZADA",
@@ -67,7 +69,7 @@ function mapBookingItem(raw: RawBackendBooking): BookingListItem {
     endDate: raw.endDate,
     days: raw.days || calculateDays(raw.startDate, raw.endDate),
     subtotal: raw.subtotal,
-    status: toFrontendStatus[raw.status] || "PENDIENTE",
+    status: fromApiStatus[raw.status] || "PENDIENTE",
     expiresAt: raw.expiresAt || null,
     cancelReason: raw.cancelReason || (raw.status === "CANCELED" ? "VENCIDA" : null),
     deliveredAt: raw.deliveredAt || null,
@@ -76,6 +78,10 @@ function mapBookingItem(raw: RawBackendBooking): BookingListItem {
     finalizedAt: raw.finalizedAt || null,
     ratedByMe: raw.ratedByMe || false,
   };
+}
+
+function fromApiBooking<T extends { status: ApiBookingStatus }>(booking: T): T & { status: BookingStatus } {
+  return { ...booking, status: fromApiStatus[booking.status] || "PENDIENTE" };
 }
 
 function buildQuery(params: Record<string, string | number | undefined>) {
@@ -87,12 +93,16 @@ function buildQuery(params: Record<string, string | number | undefined>) {
 }
 
 export const httpBookingRepository: BookingRepository = {
-  create(input) {
-    return apiPost<CreatedBooking>("api/v1/bookings", input);
+  async create(input) {
+    const booking = await apiPost<Omit<CreatedBooking, "status"> & { status: ApiBookingStatus }>(
+      "api/v1/bookings",
+      input,
+    );
+    return fromApiBooking(booking);
   },
 
-  async listMine({ page, status }: ListBookingsParams) {
-    const backendStatus = status ? toBackendStatus[status] || status : undefined;
+  async listMine({ page, status }: ListBookingsParams): Promise<BookingListResult> {
+    const backendStatus = status ? toApiStatus[status] || status : undefined;
     const query = buildQuery({ page, status: backendStatus, pageSize: 10 });
     const rawResult = await apiGet<{ data: RawBackendBooking[]; total: number; page: number }>(
       `api/v1/bookings/mine?${query}`
@@ -106,8 +116,8 @@ export const httpBookingRepository: BookingRepository = {
     };
   },
 
-  async listLessor({ page, status, propertyId }: ListBookingsParams) {
-    const backendStatus = status ? toBackendStatus[status] || status : undefined;
+  async listLessor({ page, status, propertyId }: ListBookingsParams): Promise<BookingListResult> {
+    const backendStatus = status ? toApiStatus[status] || status : undefined;
     const query = buildQuery({ page, status: backendStatus, propertyId, pageSize: 10 });
     const rawResult = await apiGet<{ data: RawBackendBooking[]; total: number; page: number }>(
       `api/v1/lessor/bookings?${query}`
