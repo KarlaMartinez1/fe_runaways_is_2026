@@ -16,9 +16,14 @@ export function ConversationList({ conversations, activeId }: ConversationListPr
     return <p className="py-10 text-center text-sm text-zinc-600">{m.emptyList}</p>;
   }
 
+  // H16: de la conversación con el mensaje más reciente a la más antigua; las que no tienen mensajes, al final.
+  const sorted = [...conversations].sort((a, b) =>
+    (b.lastMessageAt ?? "").localeCompare(a.lastMessageAt ?? ""),
+  );
+
   return (
     <ul className="flex flex-col gap-1">
-      {conversations.map((conversation) => {
+      {sorted.map((conversation) => {
         const isActive = conversation.id === activeId;
         const initial = conversation.otherParticipantName.trim().charAt(0).toUpperCase();
 
