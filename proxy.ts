@@ -82,7 +82,6 @@ function cookieValue(setCookie: string, name: string) {
 
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
-  if (pathname.includes("/deposit/decision")) return NextResponse.next();
   const publicRoute = isPublicPath(pathname);
   const sessionValue = request.cookies.get(SESSION_COOKIE)?.value;
   const session = readSession(sessionValue);
@@ -134,5 +133,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!api|payments|bookings/.*/deposit/decision|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
+  matcher: ["/((?!api|payments|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)"],
 };
