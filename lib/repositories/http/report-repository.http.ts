@@ -6,6 +6,7 @@ import type {
   GetPropertyRatingsParams,
   IncomeSummary,
   PropertyIncomeListResult,
+  PropertyOccupancyItem,
   PropertyOccupancyListResult,
   PropertyRatingListResult,
   ReportRepository,
@@ -115,14 +116,64 @@ export const httpReportRepository: ReportRepository = {
     };
   },
 
-  getPropertyOccupancy(params?: GetPropertyOccupancyParams) {
+  async getPropertyOccupancy(
+    params?: GetPropertyOccupancyParams
+  ): Promise<PropertyOccupancyListResult> {
+    const page = params?.page ?? 1;
+    const pageSize = params?.pageSize ?? 10;
+    const order = params?.order === "asc" ? "asc" : "desc";
+    const hasValidDateRange = Boolean(params?.from && params?.to);
     const query = buildQuery({
-      from: params?.from,
-      to: params?.to,
-      order: params?.order ?? "desc",
-      page: params?.page ?? 1,
-      pageSize: params?.pageSize ?? 10,
+      from: hasValidDateRange ? params?.from : undefined,
+      to: hasValidDateRange ? params?.to : undefined,
+      order,
+      page,
+      pageSize,
     });
-    return apiGet<PropertyOccupancyListResult>(`api/v1/lessor/reports/occupancy?${query}`);
+
+    const result = await apiGet<{
+      from: string;
+      to: string;
+      periodDays: number;
+      data?: Array<{
+        propertyId: string;
+        title: string;
+        status?: string;
+        occupiedDays?: number;
+        occupancyRate?: number;
+      }>;
+      total?: number;
+      page?: number;
+      pageSize?: number;
+      totalPages?: number;
+    }>(`owner/reports/occupancy?${query}`);
+
+    const total = result.total ?? result.data?.length ?? 0;
+    const computedPageSize = result.pageSize ?? pageSize;
+    const totalPages =
+      result.totalPages ?? Math.max(1, Math.ceil(total / (computedPageSize || 10)));
+    const periodDays = result.periodDays ?? 30;
+
+    const data: PropertyOccupancyItem[] = (result.data ?? []).map((item) => ({
+      propertyId: item.propertyId,
+      title: item.title,
+      status: (item.status && fromApiStatus[item.status]
+        ? fromApiStatus[item.status]
+        : (item.status as PropertyStatus)) || "DISPONIBLE",
+      occupiedDays: item.occupiedDays ?? 0,
+      periodDays,
+      occupancyRate: item.occupancyRate ?? 0,
+    }));
+
+    return {
+      from: hasValidDateRange ? (result.from ?? params?.from ?? "") : "",
+      to: hasValidDateRange ? (result.to ?? params?.to ?? "") : "",
+      periodDays,
+      data,
+      total,
+      page: result.page ?? page,
+      pageSize: computedPageSize,
+      totalPages,
+    };
   },
 };
