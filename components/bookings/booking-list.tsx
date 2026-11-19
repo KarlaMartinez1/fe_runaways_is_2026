@@ -71,6 +71,14 @@ export function BookingList({ items, variant, emptyMessage }: BookingListProps) 
                 {bookingMessages.mine.pay}
               </Link>
             )}
+            {variant === "lessor" && (
+              <Link
+                href={`/deposit?reservationId=${encodeURIComponent(booking.id)}`}
+                className="inline-flex h-8 items-center rounded-lg bg-zinc-900 px-3 text-xs font-semibold text-white transition-colors hover:bg-zinc-800"
+              >
+                Gestionar depósito
+              </Link>
+            )}
             {variant === "mine" && canRate(booking) && (
               <Link
                 href={`/reservations/${booking.id}/rate-property`}
