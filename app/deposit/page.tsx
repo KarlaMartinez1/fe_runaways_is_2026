@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { Navbar } from "@/components/layout/navbar";
 import { DepositPageBody } from "@/components/deposit";
 import { ApiError } from "@/lib/api/client";
-import { bookingRepository, depositRepository } from "@/lib/repositories";
-import { defaultDepositInfo } from "@/lib/repositories/mock/fixtures/deposits";
+import { depositRepository } from "@/lib/repositories";
 import type { DepositInfo, DepositMovement } from "@/types";
 
 export const metadata: Metadata = {
@@ -22,48 +22,30 @@ type DepositPageProps = {
 
 export default async function DepositPage({ searchParams }: DepositPageProps) {
   const params = await searchParams;
-  let reservationId = params.bookingId || params.reservationId || params.id;
+  const reservationId = params.bookingId || params.reservationId || params.id;
 
-  let unauthorized = false;
-
+  // Si no se especifica el ID de la reserva, redirigir al panel de reservas del arrendador
   if (!reservationId) {
-    try {
-      const lessorBookings = await bookingRepository.listLessor({
-        page: 1,
-        status: "FINALIZADA",
-      });
-      if (lessorBookings.data && lessorBookings.data.length > 0) {
-        const uuidRegex =
-          /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
-        const validBooking = lessorBookings.data.find((b) => uuidRegex.test(b.id));
-        reservationId = validBooking ? validBooking.id : lessorBookings.data[0].id;
-      }
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 401) {
-        unauthorized = true;
-      }
-    }
+    redirect("/lessor/bookings");
   }
 
-  const activeId = reservationId || "res-01";
+  let unauthorized = false;
   let depositInfo: DepositInfo | null = null;
   let movements: DepositMovement[] = [];
 
-  if (!unauthorized) {
-    try {
-      const [fetchedInfo, fetchedMovements] = await Promise.all([
-        depositRepository.getDepositInfo(activeId),
-        depositRepository.getDepositMovements(activeId),
-      ]);
+  try {
+    const [fetchedInfo, fetchedMovements] = await Promise.all([
+      depositRepository.getDepositInfo(reservationId),
+      depositRepository.getDepositMovements(reservationId),
+    ]);
 
-      depositInfo = fetchedInfo;
-      movements = fetchedMovements;
-    } catch (error) {
-      if (error instanceof ApiError && error.status === 401) {
-        unauthorized = true;
-      } else {
-        console.error("Error al cargar la información del depósito:", error);
-      }
+    depositInfo = fetchedInfo;
+    movements = fetchedMovements;
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) {
+      unauthorized = true;
+    } else {
+      console.error("Error al cargar la información del depósito:", error);
     }
   }
 
@@ -71,13 +53,37 @@ export default async function DepositPage({ searchParams }: DepositPageProps) {
     redirect("/login");
   }
 
+  if (!depositInfo) {
+    return (
+      <>
+        <Navbar />
+        <div className="w-full flex-1 bg-[#f9fafb]">
+          <main className="mx-auto flex w-full max-w-[1320px] flex-col items-center justify-center gap-4 px-4 py-16 text-center">
+            <h1 className="text-xl font-bold text-gray-900">
+              Reserva no encontrada
+            </h1>
+            <p className="max-w-md text-sm text-gray-600">
+              No se encontró información del depósito de garantía para la reserva seleccionada o no tienes permisos para gestionarla.
+            </p>
+            <Link
+              href="/lessor/bookings"
+              className="mt-2 inline-flex items-center justify-center rounded-xl bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700 transition-colors"
+            >
+              Volver a mis reservas
+            </Link>
+          </main>
+        </div>
+      </>
+    );
+  }
+
   return (
     <>
       <Navbar />
       <DepositPageBody
-        depositInfo={depositInfo ?? defaultDepositInfo}
+        depositInfo={depositInfo}
         initialMovements={movements}
-        bookingId={activeId}
+        bookingId={reservationId}
       />
     </>
   );
