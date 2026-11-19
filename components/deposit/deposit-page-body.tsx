@@ -7,6 +7,7 @@ import { depositMessages } from '@/lib/messages/deposit';
 import { DepositOrderInfoCard } from './deposit-order-info-card';
 import { RetainDepositForm } from './retain-deposit-form';
 import { DepositMovementsTable } from './deposit-movements-table';
+import { ConfirmRefundModal } from './confirm-refund-modal';
 import {
   refundDepositAction,
   retainDepositAction,
@@ -35,6 +36,7 @@ export function DepositPageBody({
   const [currentDeposit, setCurrentDeposit] =
     React.useState<DepositInfo>(depositInfo);
   const [isRefunding, setIsRefunding] = React.useState(false);
+  const [isConfirmRefundOpen, setIsConfirmRefundOpen] = React.useState(false);
   const [showRetentionForm, setShowRetentionForm] = React.useState(false);
   const [actionNotice, setActionNotice] = React.useState<{
     type: 'success' | 'error';
@@ -46,8 +48,13 @@ export function DepositPageBody({
     currentDeposit.bookingStatus === 'FINALIZADA' ||
     currentDeposit.paymentStatus === 'Finalizada';
 
-  const handleRefund = async () => {
+  const handleRefundClick = () => {
     if (!isFinalized) return;
+    setActionNotice(null);
+    setIsConfirmRefundOpen(true);
+  };
+
+  const handleConfirmRefund = async () => {
     setIsRefunding(true);
     setActionNotice(null);
     setShowRetentionForm(false);
@@ -62,6 +69,7 @@ export function DepositPageBody({
             type: 'error',
             text: result.message,
           });
+          setIsConfirmRefundOpen(false);
           return;
         }
       }
@@ -87,12 +95,14 @@ export function DepositPageBody({
         type: 'success',
         text: depositMessages.refundSuccessNotice,
       });
+      setIsConfirmRefundOpen(false);
     } catch (error) {
       const msg = error instanceof Error ? error.message : depositMessages.errorNotice;
       setActionNotice({
         type: 'error',
         text: msg,
       });
+      setIsConfirmRefundOpen(false);
     } finally {
       setIsRefunding(false);
     }
@@ -190,7 +200,7 @@ export function DepositPageBody({
         <div className="flex flex-col lg:grid lg:grid-cols-2 gap-5 lg:gap-8 items-start">
           <DepositOrderInfoCard
             depositInfo={currentDeposit}
-            onRefundClick={handleRefund}
+            onRefundClick={handleRefundClick}
             onRetainClick={() => {
               if (isFinalized) {
                 setShowRetentionForm((prev) => !prev);
@@ -199,6 +209,14 @@ export function DepositPageBody({
             isRefunding={isRefunding}
             isRetaining={showRetentionForm && isFinalized}
             className="w-full"
+          />
+
+          <ConfirmRefundModal
+            isOpen={isConfirmRefundOpen}
+            amount={currentDeposit.depositAmount}
+            onConfirm={handleConfirmRefund}
+            onCancel={() => setIsConfirmRefundOpen(false)}
+            isLoading={isRefunding}
           />
 
           {showRetentionForm && isFinalized && (
