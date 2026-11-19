@@ -8,8 +8,9 @@ export const retainDepositSchema = z.object({
     .positive('El monto a retener debe ser mayor a 0'),
   reason: z
     .string()
+    .trim()
     .min(10, 'El motivo de retención debe tener al menos 10 caracteres')
-    .max(500, 'El motivo no puede exceder los 500 caracteres'),
+    .max(250, 'El motivo no puede superar 250 caracteres'),
 });
 
 export type RetainDepositFormValues = z.infer<typeof retainDepositSchema>;
