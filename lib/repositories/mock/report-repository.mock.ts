@@ -40,11 +40,11 @@ function parseFixtureDate(dateStr?: string | null): Date | null {
   return new Date(dateStr);
 }
 
-function formatDateToDDMMYYYY(date: Date): string {
-  const d = String(date.getDate()).padStart(2, "0");
-  const m = String(date.getMonth() + 1).padStart(2, "0");
+function formatDateToYYYYMMDD(date: Date): string {
   const y = date.getFullYear();
-  return `${d}/${m}/${y}`;
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 export const mockReportRepository: ReportRepository = {
@@ -201,8 +201,8 @@ export const mockReportRepository: ReportRepository = {
     const page = Math.max(1, params?.page ?? 1);
     const pageSize = params?.pageSize ?? 10;
 
-    let fromFormatted = "05/10/2026";
-    let toFormatted = "03/11/2026";
+    let fromFormatted = "";
+    let toFormatted = "";
     let periodDays = 30;
 
     if (params?.from && params?.to) {
@@ -211,8 +211,8 @@ export const mockReportRepository: ReportRepository = {
       if (fromDate && toDate) {
         const diffMs = toDate.getTime() - fromDate.getTime();
         periodDays = Math.max(1, Math.round(diffMs / (1000 * 60 * 60 * 24)) + 1);
-        fromFormatted = formatDateToDDMMYYYY(fromDate);
-        toFormatted = formatDateToDDMMYYYY(toDate);
+        fromFormatted = formatDateToYYYYMMDD(fromDate);
+        toFormatted = formatDateToYYYYMMDD(toDate);
       }
     }
 
