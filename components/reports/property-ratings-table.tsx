@@ -7,7 +7,6 @@ import { Button } from "@/components/ui/button";
 import { Select } from "@/components/ui/select";
 import { reportMessages } from "@/lib/messages/reports";
 import type { PropertyRatingItem } from "@/lib/repositories/report-repository";
-import type { PropertyStatus } from "@/lib/api/types";
 
 export interface PropertyRatingsTableProps {
   items: PropertyRatingItem[];
@@ -21,8 +20,12 @@ export interface PropertyRatingsTableProps {
   className?: string;
 }
 
-const statusBadgeConfig: Record<PropertyStatus, { variant: BadgeVariant; label: string }> = {
+const statusBadgeConfig: Record<string, { variant: BadgeVariant; label: string }> = {
   DISPONIBLE: {
+    variant: "success",
+    label: reportMessages.statuses.DISPONIBLE,
+  },
+  AVAILABLE: {
     variant: "success",
     label: reportMessages.statuses.DISPONIBLE,
   },
@@ -30,7 +33,15 @@ const statusBadgeConfig: Record<PropertyStatus, { variant: BadgeVariant; label: 
     variant: "warning",
     label: reportMessages.statuses.PAUSADO,
   },
+  PAUSED: {
+    variant: "warning",
+    label: reportMessages.statuses.PAUSADO,
+  },
   ELIMINADO: {
+    variant: "neutral",
+    label: reportMessages.statuses.ELIMINADO,
+  },
+  DELETED: {
     variant: "neutral",
     label: reportMessages.statuses.ELIMINADO,
   },

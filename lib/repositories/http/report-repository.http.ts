@@ -10,6 +10,13 @@ import type {
   PropertyRatingListResult,
   ReportRepository,
 } from "../report-repository";
+import type { PropertyStatus } from "@/lib/api/types";
+
+const fromApiStatus: Record<string, PropertyStatus> = {
+  AVAILABLE: "DISPONIBLE",
+  PAUSED: "PAUSADO",
+  DELETED: "ELIMINADO",
+};
 
 function buildQuery(params: Record<string, string | number | undefined>) {
   const search = new URLSearchParams();
@@ -59,15 +66,53 @@ export const httpReportRepository: ReportRepository = {
     };
   },
 
-  getPropertyRatings(params?: GetPropertyRatingsParams) {
+  async getPropertyRatings(params?: GetPropertyRatingsParams): Promise<PropertyRatingListResult> {
+    const page = params?.page ?? 1;
+    const pageSize = params?.pageSize ?? 10;
+    const order = params?.order === "asc" ? "asc" : "desc";
     const query = buildQuery({
-      from: params?.from,
-      to: params?.to,
-      order: params?.order ?? "desc",
-      page: params?.page ?? 1,
-      pageSize: params?.pageSize ?? 10,
+      order,
+      page,
+      pageSize,
     });
-    return apiGet<PropertyRatingListResult>(`api/v1/lessor/reports/ratings?${query}`);
+    const result = await apiGet<{
+      data?: Array<{
+        propertyId: string;
+        title: string;
+        status?: string;
+        averageRating?: number | null;
+        reviewCount?: number;
+        lastReviewDate?: string | null;
+      }>;
+      total?: number;
+      page?: number;
+      pageSize?: number;
+      totalPages?: number;
+    }>(`owner/reports/ratings?${query}`);
+
+    const total = result.total ?? result.data?.length ?? 0;
+    const computedPageSize = result.pageSize ?? pageSize;
+    const totalPages =
+      result.totalPages ?? Math.max(1, Math.ceil(total / (computedPageSize || 10)));
+
+    const data = (result.data ?? []).map((item) => ({
+      propertyId: item.propertyId,
+      title: item.title,
+      status: (item.status && fromApiStatus[item.status]
+        ? fromApiStatus[item.status]
+        : (item.status as PropertyStatus)) || "DISPONIBLE",
+      averageRating: item.averageRating ?? null,
+      reviewCount: item.reviewCount ?? 0,
+      lastReviewDate: item.lastReviewDate ?? null,
+    }));
+
+    return {
+      data,
+      total,
+      page: result.page ?? page,
+      pageSize: computedPageSize,
+      totalPages,
+    };
   },
 
   getPropertyOccupancy(params?: GetPropertyOccupancyParams) {
