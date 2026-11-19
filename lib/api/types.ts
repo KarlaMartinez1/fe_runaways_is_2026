@@ -304,7 +304,7 @@ export type ConversationSummary = {
   lastMessage: string | null;
   lastMessageAt: string | null;
   lastMessageIsMine: boolean;
-  hasUnread: boolean;
+  unreadCount: number;
   booking: ConversationBooking | null;
 };
 

@@ -27,7 +27,7 @@ export const httpConversationRepository: ConversationRepository = {
         lastMessage: null,
         lastMessageAt: item.lastMessageAt,
         lastMessageIsMine: false,
-        hasUnread: item.unreadCount > 0,
+        unreadCount: item.unreadCount,
         booking: null,
       }),
     );
