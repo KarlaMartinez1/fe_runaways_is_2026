@@ -120,7 +120,7 @@ export const httpBookingRepository: BookingRepository = {
     const backendStatus = status ? toApiStatus[status] || status : undefined;
     const query = buildQuery({ page, status: backendStatus, propertyId, pageSize: 10 });
     const rawResult = await apiGet<{ data: RawBackendBooking[]; total: number; page: number }>(
-      `api/v1/lessor/bookings?${query}`
+      `api/v1/owner/bookings?${query}`
     );
     const total = rawResult?.total || 0;
     return {
