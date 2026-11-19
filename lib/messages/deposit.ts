@@ -1,4 +1,5 @@
 import type { DepositDecisionStatus } from "@/types";
+import type { BackendDepositStatus } from "@/lib/api/types";
 
 export const depositMessages = {
   pageTitle: "Gestión de depósito de garantía",
@@ -14,6 +15,9 @@ export const depositMessages = {
   retainButton: "Retener depósito",
   refundingState: "Procesando devolución...",
   refundSuccessNotice: "¡Depósito devuelto con éxito al arrendatario!",
+  notFinalizedNoticeTitle: "Retención",
+  notFinalizedNotice:
+    "retener y devolver el depósito estarán disponibles únicamente cuando la reserva esté finalizada",
 
   // Formulario de retención
   retentionCardTitle: "Retener depósito de garantía",
@@ -74,3 +78,24 @@ export const depositStatusBadges: Record<
     variant: "warning",
   },
 };
+
+export const backendDepositStateLabels: Record<
+  BackendDepositStatus,
+  DepositDecisionStatus
+> = {
+  PENDING: "Pendiente de decisión",
+  RETURNED: "Devuelto",
+  RETAINED: "Retenido",
+  PARTIALLY_RETAINED: "Retenido parcialmente",
+};
+
+export const depositErrorMessages: Record<string, string> = {
+  DEPOSIT_NOT_FOUND: "El depósito no existe o no pertenece al arrendador.",
+  BOOKING_NOT_FINALIZED: "Solo se puede decidir el depósito de una reserva finalizada.",
+  DEPOSIT_ALREADY_DECIDED: "Este depósito ya tiene una decisión registrada.",
+  DEPOSIT_NOT_ELIGIBLE: "La reserva no tiene un depósito disponible para decidir.",
+  VALIDATION_ERROR: "El monto a retener debe ser mayor que cero y no superar el depósito.",
+  UNAUTHORIZED: "Se requiere una sesión válida.",
+  FORBIDDEN: "Solo el arrendador dueño de la reserva puede tomar una decisión sobre el depósito.",
+};
+

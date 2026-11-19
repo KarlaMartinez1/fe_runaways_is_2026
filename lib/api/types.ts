@@ -357,3 +357,51 @@ export type BackendPaymentReceipt = {
   totalAmount: string;
   last4Digits: string;
 };
+
+// H14: Decisión y gestión del depósito de garantía
+export type DepositDecisionType = "DEVOLVER" | "RETENER";
+
+export type CreateDepositDecisionInput = {
+  decisionType: DepositDecisionType;
+  retentionAmount?: string;
+  retentionReason?: string;
+};
+
+export type BackendDepositStatus =
+  | "PENDING"
+  | "RETURNED"
+  | "RETAINED"
+  | "PARTIALLY_RETAINED";
+
+export type BackendDepositDecisionResponse = {
+  id: string;
+  bookingId: string;
+  state: BackendDepositStatus;
+  amount: string;
+  retainedAmount: string;
+  returnedAmount: string;
+  decidedAt: string;
+};
+
+export type BackendDepositDetail = {
+  id: string;
+  amount: string;
+  state: BackendDepositStatus;
+  retainedAmount: string;
+  returnedAmount: string;
+  decidedAt: string | null;
+};
+
+export type BackendTransactionItem = {
+  id: string;
+  type: "COBRO" | "DEVOLUCION" | "RETENCION";
+  amount: string;
+  reason: string;
+  createdAt: string;
+};
+
+export type BackendTransactionHistoryResponse = {
+  bookingId: string;
+  data: BackendTransactionItem[];
+};
+

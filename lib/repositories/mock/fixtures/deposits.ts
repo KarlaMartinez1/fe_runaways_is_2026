@@ -7,7 +7,8 @@ export const defaultDepositInfo: DepositInfo = {
   rentalPeriod: "Del 10/11/2026 al 12/11/2026",
   depositAmount: 50.0,
   status: "Pendiente de decisión",
-  paymentStatus: "Pagada",
+  paymentStatus: "Finalizada",
+  bookingStatus: "FINALIZADA",
   decisionDeadline: "19/11/2026",
   daysRemaining: 7,
 };

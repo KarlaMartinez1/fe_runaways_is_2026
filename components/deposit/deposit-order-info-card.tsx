@@ -22,14 +22,33 @@ export function DepositOrderInfoCard({
   isRetaining = false,
   className,
 }: DepositOrderInfoCardProps) {
+  const isFinalized =
+    depositInfo.bookingStatus === 'FINALIZADA' ||
+    depositInfo.paymentStatus === 'Finalizada';
+
+  const isPendingDecision =
+    depositInfo.status === 'Pendiente de decisión';
+
+  const canDecide = isPendingDecision && isFinalized;
+
   return (
     <Card padding="md" className={cn('w-full', className)}>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle as="h2" className="text-base sm:text-lg font-bold text-gray-950">
           {depositMessages.orderInfoTitle}
         </CardTitle>
-        <Badge variant="success" size="sm" className="px-2.5 py-0.5">
-          {depositInfo.paymentStatus}
+        <Badge
+          variant={
+            isFinalized
+              ? 'info'
+              : depositInfo.paymentStatus === 'Pagada'
+                ? 'success'
+                : 'neutral'
+          }
+          size="sm"
+          className="px-2.5 py-0.5"
+        >
+          {isFinalized ? 'Finalizada' : depositInfo.paymentStatus}
         </Badge>
       </CardHeader>
 
@@ -83,33 +102,46 @@ export function DepositOrderInfoCard({
           </div>
         )}
 
-        <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 pt-1">
-          <Button
-            type="button"
-            variant="solid"
-            size="md"
-            onClick={onRefundClick}
-            isLoading={isRefunding}
-            className="flex-1 bg-[#1d4ed8] hover:bg-blue-800 text-white font-medium shadow-xs"
-          >
-            {isRefunding
-              ? depositMessages.refundingState
-              : depositMessages.refundButton}
-          </Button>
+        {canDecide ? (
+          <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 pt-1">
+            <Button
+              type="button"
+              variant="solid"
+              size="md"
+              onClick={onRefundClick}
+              isLoading={isRefunding}
+              className="flex-1 bg-[#1d4ed8] hover:bg-blue-800 text-white font-medium shadow-xs"
+            >
+              {isRefunding
+                ? depositMessages.refundingState
+                : depositMessages.refundButton}
+            </Button>
 
-          <Button
-            type="button"
-            variant="outline"
-            size="md"
-            onClick={onRetainClick}
-            className={cn(
-              'flex-1 border-[#f3b2b2] text-[#c53030] hover:bg-red-50 hover:border-red-400 font-medium transition-colors',
-              isRetaining && 'bg-red-50 border-red-400 ring-2 ring-red-200/60'
-            )}
-          >
-            {depositMessages.retainButton}
-          </Button>
-        </div>
+            <Button
+              type="button"
+              variant="outline"
+              size="md"
+              onClick={onRetainClick}
+              className={cn(
+                'flex-1 border-[#f3b2b2] text-[#c53030] hover:bg-red-50 hover:border-red-400 font-medium transition-colors',
+                isRetaining && 'bg-red-50 border-red-400 ring-2 ring-red-200/60'
+              )}
+            >
+              {depositMessages.retainButton}
+            </Button>
+          </div>
+        ) : isPendingDecision && !isFinalized ? (
+          <div className="rounded-xl bg-amber-50 border border-amber-200 p-3.5 text-xs sm:text-sm text-amber-900">
+            <p className="font-semibold">{depositMessages.notFinalizedNoticeTitle}</p>
+            <p className="mt-1 text-amber-800">
+              {depositMessages.notFinalizedNotice}
+            </p>
+          </div>
+        ) : (
+          <p className="text-center text-xs text-zinc-500 italic pt-1">
+            Este depósito ya fue procesado ({depositInfo.status.toLowerCase()}).
+          </p>
+        )}
       </CardContent>
     </Card>
   );
