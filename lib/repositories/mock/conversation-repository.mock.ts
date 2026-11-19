@@ -109,7 +109,7 @@ function toSummary(conversation: StoredConversation, userId: string): Conversati
     lastMessage: last?.content ?? null,
     lastMessageAt: last?.createdAt ?? null,
     lastMessageIsMine: last?.senderId === userId,
-    hasUnread: thread.some((message) => message.senderId !== userId && !message.isRead),
+    unreadCount: thread.filter((message) => message.senderId !== userId && !message.isRead).length,
     booking: conversation.booking,
   };
 }

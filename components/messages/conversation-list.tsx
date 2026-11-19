@@ -51,23 +51,22 @@ export function ConversationList({ conversations, activeId }: ConversationListPr
                   )}
                 </span>
                 <span className="truncate text-xs text-zinc-500">{conversation.propertyTitle}</span>
-                {/* El indicador de no leído se muestra aunque el backend no envíe el texto del último mensaje. */}
-                {(conversation.lastMessage || conversation.hasUnread) && (
-                  <span className="flex items-center justify-between gap-2">
-                    <span
-                      className={cn(
-                        "line-clamp-2 text-sm",
-                        conversation.hasUnread ? "font-semibold text-zinc-900" : "text-zinc-600",
-                      )}
-                    >
-                      {conversation.lastMessageIsMine && m.youPrefix}
-                      {conversation.lastMessage}
-                    </span>
-                    {conversation.hasUnread && (
-                      <span className="h-2 w-2 shrink-0 rounded-full bg-[#1d4ed8]">
-                        <span className="sr-only">{m.unread}</span>
-                      </span>
+                {conversation.lastMessage && (
+                  <span
+                    className={cn(
+                      "line-clamp-2 text-sm",
+                      conversation.unreadCount > 0 ? "font-semibold text-zinc-900" : "text-zinc-600",
                     )}
+                  >
+                    {conversation.lastMessageIsMine && m.youPrefix}
+                    {conversation.lastMessage}
+                  </span>
+                )}
+                {/* El backend envía la cantidad de mensajes sin leer; se muestra en lugar de la vista previa. */}
+                {conversation.unreadCount > 0 && (
+                  <span className="flex items-center gap-2 text-sm font-semibold text-[#1d4ed8]">
+                    <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-[#1d4ed8]" />
+                    {m.unreadCount(conversation.unreadCount)}
                   </span>
                 )}
               </span>
