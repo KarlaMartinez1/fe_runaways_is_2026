@@ -22,13 +22,32 @@ export function DepositOrderInfoCard({
   isRetaining = false,
   className,
 }: DepositOrderInfoCardProps) {
+  const isFinalized =
+    depositInfo.bookingStatus === 'FINALIZADA' ||
+    depositInfo.paymentStatus === 'Finalizada';
+
+  const isPendingDecision =
+    depositInfo.status === 'Pendiente de decisión';
+
+  const canDecide = isPendingDecision && isFinalized;
+
   return (
     <Card padding="md" className={cn('w-full', className)}>
       <CardHeader className="flex flex-row items-center justify-between">
         <CardTitle as="h2" className="text-base sm:text-lg font-bold text-gray-950">
           {depositMessages.orderInfoTitle}
         </CardTitle>
-        <Badge variant="success" size="sm" className="px-2.5 py-0.5">
+        <Badge
+          variant={
+            isFinalized
+              ? 'info'
+              : depositInfo.paymentStatus === 'Pagada'
+                ? 'success'
+                : 'neutral'
+          }
+          size="sm"
+          className="px-2.5 py-0.5"
+        >
           {depositInfo.paymentStatus}
         </Badge>
       </CardHeader>
@@ -83,7 +102,7 @@ export function DepositOrderInfoCard({
           </div>
         )}
 
-        {depositInfo.status === 'Pendiente de decisión' ? (
+        {canDecide ? (
           <div className="flex flex-col sm:flex-row gap-2.5 sm:gap-3 pt-1">
             <Button
               type="button"
@@ -110,6 +129,13 @@ export function DepositOrderInfoCard({
             >
               {depositMessages.retainButton}
             </Button>
+          </div>
+        ) : isPendingDecision && !isFinalized ? (
+          <div className="rounded-xl bg-amber-50 border border-amber-200 p-3.5 text-xs sm:text-sm text-amber-900">
+            <p className="font-semibold">{depositMessages.notFinalizedNoticeTitle}</p>
+            <p className="mt-1 text-amber-800">
+              {depositMessages.notFinalizedNotice}
+            </p>
           </div>
         ) : (
           <p className="text-center text-xs text-zinc-500 italic pt-1">

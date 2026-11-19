@@ -15,6 +15,9 @@ export const depositMessages = {
   retainButton: "Retener depósito",
   refundingState: "Procesando devolución...",
   refundSuccessNotice: "¡Depósito devuelto con éxito al arrendatario!",
+  notFinalizedNoticeTitle: "Decisión no disponible",
+  notFinalizedNotice:
+    "Los botones de retener y devolver el depósito estarán disponibles únicamente cuando la reserva esté finalizada (la persona ya notificó que devolvió el bien al dueño).",
 
   // Formulario de retención
   retentionCardTitle: "Retener depósito de garantía",

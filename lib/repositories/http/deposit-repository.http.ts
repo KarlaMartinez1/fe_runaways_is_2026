@@ -75,6 +75,15 @@ export const httpDepositRepository: DepositRepository = {
           backendDepositStateLabels[state] || "Pendiente de decisión";
         const { deadline, days } = calculateDaysRemaining(booking.endDate);
 
+        let mappedPaymentStatus: DepositInfo["paymentStatus"] = "Pagada";
+        if (booking.status === "PENDING") {
+          mappedPaymentStatus = "Pendiente";
+        } else if (booking.status === "COMPLETED") {
+          mappedPaymentStatus = "Finalizada";
+        } else if (booking.status === "CANCELED") {
+          mappedPaymentStatus = "Cancelada";
+        }
+
         return {
           id: booking.deposit?.id || `dep-${booking.id}`,
           reservationId: booking.id,
@@ -82,7 +91,15 @@ export const httpDepositRepository: DepositRepository = {
           rentalPeriod: `Del ${new Date(booking.startDate).toLocaleDateString("es-ES")} al ${new Date(booking.endDate).toLocaleDateString("es-ES")}`,
           depositAmount,
           status: statusLabel,
-          paymentStatus: booking.status === "PENDING" ? "Pendiente" : "Pagada",
+          paymentStatus: mappedPaymentStatus,
+          bookingStatus:
+            booking.status === "COMPLETED"
+              ? "FINALIZADA"
+              : booking.status === "PAID"
+                ? "PAGADA"
+                : booking.status === "CANCELED"
+                  ? "CANCELADA"
+                  : "PENDIENTE",
           decisionDeadline: deadline,
           daysRemaining: days,
         };

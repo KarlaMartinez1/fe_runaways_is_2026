@@ -74,9 +74,13 @@ export function BookingList({ items, variant, emptyMessage }: BookingListProps) 
             {variant === "lessor" && (
               <Link
                 href={`/deposit?reservationId=${encodeURIComponent(booking.id)}`}
-                className="inline-flex h-8 items-center rounded-lg bg-zinc-900 px-3 text-xs font-semibold text-white transition-colors hover:bg-zinc-800"
+                className={`inline-flex h-8 items-center rounded-lg px-3 text-xs font-semibold transition-colors ${
+                  booking.status === "FINALIZADA"
+                    ? "bg-zinc-900 text-white hover:bg-zinc-800"
+                    : "bg-zinc-100 text-zinc-700 hover:bg-zinc-200"
+                }`}
               >
-                Gestionar depósito
+                {booking.status === "FINALIZADA" ? "Gestionar depósito" : "Ver depósito"}
               </Link>
             )}
             {variant === "mine" && canRate(booking) && (

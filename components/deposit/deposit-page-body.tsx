@@ -42,8 +42,12 @@ export function DepositPageBody({
   } | null>(null);
 
   const activeBookingId = bookingId || currentDeposit.reservationId;
+  const isFinalized =
+    currentDeposit.bookingStatus === 'FINALIZADA' ||
+    currentDeposit.paymentStatus === 'Finalizada';
 
   const handleRefund = async () => {
+    if (!isFinalized) return;
     setIsRefunding(true);
     setActionNotice(null);
     setShowRetentionForm(false);
@@ -95,6 +99,7 @@ export function DepositPageBody({
   };
 
   const handleRetainSubmit = async (data: RetainDepositFormData) => {
+    if (!isFinalized) return;
     setActionNotice(null);
 
     try {
@@ -186,13 +191,17 @@ export function DepositPageBody({
           <DepositOrderInfoCard
             depositInfo={currentDeposit}
             onRefundClick={handleRefund}
-            onRetainClick={() => setShowRetentionForm((prev) => !prev)}
+            onRetainClick={() => {
+              if (isFinalized) {
+                setShowRetentionForm((prev) => !prev);
+              }
+            }}
             isRefunding={isRefunding}
-            isRetaining={showRetentionForm}
+            isRetaining={showRetentionForm && isFinalized}
             className="w-full"
           />
 
-          {showRetentionForm && (
+          {showRetentionForm && isFinalized && (
             <RetainDepositForm
               depositAmount={currentDeposit.depositAmount}
               onSubmitSuccess={handleRetainSubmit}
