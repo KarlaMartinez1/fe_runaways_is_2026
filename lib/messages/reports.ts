@@ -14,6 +14,7 @@ export const reportMessages = {
     invalidDateRange: "La fecha final no puede ser anterior a la inicial.",
     periodExceeded: "El período no puede superar 365 días.",
     futureDateNotAllowed: "No se pueden seleccionar fechas futuras.",
+    incompleteDateRange: "Debes indicar las fechas Desde y Hasta juntas.",
   },
   summary: {
     title: "Ingresos totales",
