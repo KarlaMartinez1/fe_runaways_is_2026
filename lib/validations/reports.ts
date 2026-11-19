@@ -46,6 +46,16 @@ export const ratingsReportFilterSchema = z
   )
   .refine(
     (data) => {
+      if ((data.from && !data.to) || (!data.from && data.to)) return false;
+      return true;
+    },
+    {
+      message: reportMessages.filter.incompleteDateRange,
+      path: ["to"],
+    }
+  )
+  .refine(
+    (data) => {
       if (!data.from || !data.to) return true;
       return data.to >= data.from;
     },
@@ -71,6 +81,16 @@ export const occupancyReportFilterSchema = z
     },
     {
       message: reportMessages.filter.futureDateNotAllowed,
+      path: ["to"],
+    }
+  )
+  .refine(
+    (data) => {
+      if ((data.from && !data.to) || (!data.from && data.to)) return false;
+      return true;
+    },
+    {
+      message: reportMessages.filter.incompleteDateRange,
       path: ["to"],
     }
   )
