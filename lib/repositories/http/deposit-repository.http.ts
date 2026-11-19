@@ -43,13 +43,30 @@ interface RawOwnerBooking {
   } | null;
 }
 
+function formatDateOnly(dateStr?: string | null): string {
+  if (!dateStr) return "";
+  const clean = dateStr.split("T")[0];
+  const parts = clean.split("-");
+  if (parts.length === 3) {
+    const [year, month, day] = parts;
+    return `${day}/${month}/${year}`;
+  }
+  return dateStr;
+}
+
 function calculateDaysRemaining(endDate: string): { deadline: string; days: number } {
-  const end = new Date(endDate);
+  const clean = endDate.split("T")[0];
+  const parts = clean.split("-");
+  const end =
+    parts.length === 3
+      ? new Date(Date.UTC(Number(parts[0]), Number(parts[1]) - 1, Number(parts[2])))
+      : new Date(endDate);
   const deadlineDate = new Date(end.getTime() + 7 * 24 * 60 * 60 * 1000);
   const now = new Date();
   const diffMs = deadlineDate.getTime() - now.getTime();
   const days = Math.max(0, Math.ceil(diffMs / (24 * 60 * 60 * 1000)));
   const deadlineStr = deadlineDate.toLocaleDateString("es-ES", {
+    timeZone: "UTC",
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
@@ -62,10 +79,19 @@ export const httpDepositRepository: DepositRepository = {
     // 1. Intentar buscar en las reservas del arrendador (owner/bookings)
     try {
       const ownerBookings = await apiGet<{ data: RawOwnerBooking[] }>(
-        "api/v1/owner/bookings"
+        "api/v1/owner/bookings?pageSize=100"
       ).catch(() => null);
 
-      const booking = ownerBookings?.data?.find((b) => b.id === reservationId);
+      let booking = ownerBookings?.data?.find((b) => b.id === reservationId);
+
+      // Si no se encontró como arrendador, intentar como arrendatario (bookings/mine)
+      if (!booking) {
+        const tenantBookings = await apiGet<{ data: RawOwnerBooking[] }>(
+          "api/v1/bookings/mine?pageSize=100"
+        ).catch(() => null);
+        booking = tenantBookings?.data?.find((b) => b.id === reservationId);
+      }
+
       if (booking) {
         const depositAmount = parseFloat(
           booking.deposit?.amount || booking.property?.securityDeposit || "0"
@@ -82,13 +108,15 @@ export const httpDepositRepository: DepositRepository = {
           mappedPaymentStatus = "Finalizada";
         } else if (booking.status === "CANCELED") {
           mappedPaymentStatus = "Cancelada";
+        } else if (booking.status === "PAID") {
+          mappedPaymentStatus = "Pagada";
         }
 
         return {
           id: booking.deposit?.id || `dep-${booking.id}`,
           reservationId: booking.id,
           itemTitle: booking.property?.title || "Bien en renta",
-          rentalPeriod: `Del ${new Date(booking.startDate).toLocaleDateString("es-ES")} al ${new Date(booking.endDate).toLocaleDateString("es-ES")}`,
+          rentalPeriod: `Del ${formatDateOnly(booking.startDate)} al ${formatDateOnly(booking.endDate)}`,
           depositAmount,
           status: statusLabel,
           paymentStatus: mappedPaymentStatus,
@@ -119,10 +147,11 @@ export const httpDepositRepository: DepositRepository = {
           id: `dep-${summary.bookingId}`,
           reservationId: summary.bookingId,
           itemTitle: summary.propertyTitle,
-          rentalPeriod: `Del ${summary.startDate} al ${summary.endDate}`,
+          rentalPeriod: `Del ${formatDateOnly(summary.startDate)} al ${formatDateOnly(summary.endDate)}`,
           depositAmount: parseFloat(summary.depositAmount) || 0,
           status: "Pendiente de decisión",
-          paymentStatus: "Pagada",
+          paymentStatus: "Finalizada",
+          bookingStatus: "FINALIZADA",
           decisionDeadline: deadline,
           daysRemaining: days,
         };

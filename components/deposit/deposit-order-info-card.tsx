@@ -48,7 +48,7 @@ export function DepositOrderInfoCard({
           size="sm"
           className="px-2.5 py-0.5"
         >
-          {depositInfo.paymentStatus}
+          {isFinalized ? 'Finalizada' : depositInfo.paymentStatus}
         </Badge>
       </CardHeader>
 
