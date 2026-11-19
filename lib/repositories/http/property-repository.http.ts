@@ -235,7 +235,7 @@ export const httpPropertyRepository: PropertyRepository = {
       result.data.map((property) =>
         apiGet<{ securityDeposit: string }>(
           `api/v1/properties/${encodeURIComponent(property.id)}/owner`,
-        ).catch(() => ({ securityDeposit: "0.00" })),
+        ),
       ),
     );
     return {
