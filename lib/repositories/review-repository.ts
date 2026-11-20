@@ -11,4 +11,6 @@ export interface ReviewRepository {
     reservationId: string,
     input: PropertyReviewInput,
   ): Promise<PropertyReviewResult>;
+  getTenantReviewSummary(tenantId: string): Promise<{ average: number | null; count: number }>;
+  submitRenterReview(reservationId: string, input: { rating: number; comment?: string }): Promise<void>;
 }

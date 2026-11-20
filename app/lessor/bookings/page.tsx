@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { Navbar } from "@/components/layout/navbar";
 import { Badge } from "@/components/ui";
 import { BookingStatusFilter } from "@/components/bookings/booking-status-filter";
@@ -10,7 +11,7 @@ import type { BookingListResult, BookingStatus, Property } from "@/lib/api/types
 import { formatShortRange } from "@/lib/bookings/format";
 import { bookingMessages } from "@/lib/messages/bookings";
 import { categoryLabels } from "@/lib/messages/properties";
-import { bookingRepository, propertyRepository } from "@/lib/repositories";
+import { bookingRepository, propertyRepository, reviewRepository } from "@/lib/repositories";
 
 export const metadata: Metadata = { title: "Reservas de mis bienes | Runaways" };
 
@@ -59,6 +60,18 @@ export default async function LessorBookingsPage({ searchParams }: PageProps) {
   }
 
   const propertyById = new Map(properties.map((property) => [property.id, property]));
+  if (result) {
+    const tenantIds = [...new Set(result.data.map((booking) => booking.lesseeId).filter((id): id is string => Boolean(id)))];
+    const summaries = await Promise.all(tenantIds.map(async (id) => {
+      try { return [id, await reviewRepository.getTenantReviewSummary(id)] as const; }
+      catch { return [id, { average: null, count: 0 }] as const; }
+    }));
+    const summaryByTenant = new Map(summaries);
+    result.data.forEach((booking) => {
+      const summary = booking.lesseeId ? summaryByTenant.get(booking.lesseeId) : undefined;
+      if (summary) { booking.lesseeRatingAverage = summary.average; booking.lesseeRatingCount = summary.count; }
+    });
+  }
   const query: Record<string, string> = {};
   if (status) query.status = status;
 
@@ -75,9 +88,9 @@ export default async function LessorBookingsPage({ searchParams }: PageProps) {
           <>
             {result.data.length === 0 ? <p className="rounded-xl border border-dashed border-zinc-300 p-8 text-center text-zinc-600">{bookingMessages.lessor.empty}</p> : (
               <div className="overflow-x-auto rounded-2xl border border-zinc-200 bg-white">
-                <table className="w-full min-w-[960px] border-collapse text-left text-sm">
+                <table className="w-full min-w-[1120px] border-collapse text-left text-sm">
                   <thead className="bg-zinc-50 text-zinc-500">
-                    <tr>{["Bien", "Categoría", "Arrendatario", "Fechas", "Estado", "Acciones"].map((heading) => <th key={heading} scope="col" className="px-5 py-4 text-sm font-medium">{heading}</th>)}</tr>
+                    <tr>{["Bien", "Categoría", "Arrendatario", "Promedio de calificaciones", "Fechas", "Estado", "Reseña", "Acciones"].map((heading) => <th key={heading} scope="col" className="px-5 py-4 text-sm font-medium">{heading}</th>)}</tr>
                   </thead>
                   <tbody>
                     {result.data.map((booking) => {
@@ -88,8 +101,10 @@ export default async function LessorBookingsPage({ searchParams }: PageProps) {
                           <td className="px-5 py-4 font-medium">{booking.propertyTitle || property?.title || "—"}</td>
                           <td className="px-5 py-4">{bookingCategory ? categoryLabels[bookingCategory] : "—"}</td>
                           <td className="px-5 py-4">{booking.lesseeName || "—"}</td>
+                          <td className="px-5 py-4">{booking.lesseeRatingCount ? `${booking.lesseeRatingAverage?.toFixed(1) ?? "—"} (${booking.lesseeRatingCount})` : "Sin calificaciones"}</td>
                           <td className="whitespace-nowrap px-5 py-4 text-zinc-600">{formatShortRange(booking.startDate, booking.endDate)}</td>
                           <td className="px-5 py-4"><Badge variant={statusVariant[booking.status]} size="sm">{statusLabel[booking.status]}</Badge></td>
+                          <td className="px-5 py-4">{booking.status === "FINALIZADA" && !booking.ratedByMe ? <Link href={`/reservations/${booking.id}/rate-renter`} className="font-semibold text-[#1E4DB7] hover:underline">Calificar</Link> : <span className="text-zinc-400">—</span>}</td>
                           <td className="px-5 py-3">
                             <button type="button" disabled title="La mensajería estará disponible cuando se defina la ruta del backend" className="inline-flex h-11 cursor-not-allowed items-center gap-2 rounded-xl bg-blue-50 px-4 text-sm font-semibold text-[#1E4DB7] opacity-60">
                               <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">

@@ -103,6 +103,10 @@ export type BookingListItem = {
   deliveredAt: string | null;
   returnedAt: string | null;
   lesseeName?: string;
+  lesseeId?: string;
+  tenantId?: string;
+  lesseeRatingAverage?: number | null;
+  lesseeRatingCount?: number;
   finalizedAt?: string | null;
   ratedByMe?: boolean;
 };
