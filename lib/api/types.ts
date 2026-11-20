@@ -82,6 +82,7 @@ export type CreatedBooking = {
   days: number;
   pricePerDay: string;
   subtotal: string;
+  securityDeposit?: string;
   status: BookingStatus;
   expiresAt: string;
 };
@@ -92,19 +93,27 @@ export type BookingListItem = {
   id: string;
   propertyId: string;
   propertyTitle: string;
+  propertyImage?: string | null;
   propertyCategory?: PropertyCategory;
   startDate: string;
   endDate: string;
   days: number;
   subtotal: string;
+  securityDeposit?: string;
   status: BookingStatus;
   expiresAt: string | null;
   cancelReason: "VENCIDA" | null;
   deliveredAt: string | null;
   returnedAt: string | null;
   lesseeName?: string;
+  lesseeId?: string;
+  tenantId?: string;
+  lesseeRatingAverage?: number | null;
+  lesseeRatingCount?: number;
   finalizedAt?: string | null;
   ratedByMe?: boolean;
+  hasPropertyReview?: boolean;
+  hasRenterReview?: boolean;
 };
 
 export type BookingListResult = Paginated<BookingListItem>;
@@ -159,7 +168,7 @@ export type ReservationForReview = {
   endDate: string;
   days: number;
   subtotal: string;
-  securityDeposit: string;
+  securityDeposit?: string;
   status: BookingStatus;
   finalizedAt: string | null;
   ratedByMe: boolean;
@@ -172,12 +181,31 @@ export type PropertyReviewInput = {
   comment?: string;
 };
 
-// Resultado de publicar una reseña de bien.
+// Respuesta de POST /api/v1/reservations/:id/reviews/property:
+// detalle actualizado del bien y momento en que se creó la reseña.
 export type PropertyReviewResult = {
-  propertyId: string;
-  averageRating: number | null;
-  reviewCount: number;
-  createdAt: string;
+  id: string;
+  title: string;
+  description: string;
+  category: string;
+  department: string;
+  municipality: string;
+  pricePerDay: string;
+  securityDeposit: string;
+  images: string[];
+  owner: { id: string; name: string };
+  propertyRatingAverage: string | null;
+  propertyReviewCount: number;
+  ownerRatingAverage: string | null;
+  ownerReviewCount: number;
+  reviews: {
+    id: string;
+    propertyRating: number;
+    comment: string | null;
+    createdAt: string;
+    author: { name: string };
+  }[];
+  reviewCreatedAt: string;
 };
 
 // Respuesta de PATCH /api/v1/properties/:id/status (H5).
@@ -342,6 +370,7 @@ export type ConversationBooking = {
 export type ConversationSummary = {
   id: string;
   propertyId: string;
+  otherParticipantId?: string;
   propertyTitle: string;
   otherParticipantName: string;
   lastMessage: string | null;

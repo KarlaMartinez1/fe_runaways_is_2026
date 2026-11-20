@@ -10,6 +10,11 @@ export interface RoleChangeDialogProps {
   onConfirm: () => void | Promise<void>;
   onCancel: () => void;
   isLoading?: boolean;
+  title?: string;
+  body?: string;
+  confirmLabel?: string;
+  cancelLabel?: string;
+  badgeLabel?: string;
 }
 
 export function RoleChangeDialog({
@@ -19,6 +24,11 @@ export function RoleChangeDialog({
   onConfirm,
   onCancel,
   isLoading = false,
+  title,
+  body,
+  confirmLabel,
+  cancelLabel,
+  badgeLabel,
 }: RoleChangeDialogProps) {
   // Close on Escape key
   React.useEffect(() => {
@@ -69,16 +79,16 @@ export function RoleChangeDialog({
           id="role-change-dialog-title"
           className="mt-4 text-lg sm:text-xl font-bold tracking-tight text-gray-950"
         >
-          {profileMessages.dialogTitle}
+          {title ?? profileMessages.dialogTitle}
         </h3>
 
         <p className="mt-2 text-xs sm:text-sm text-gray-600 leading-relaxed">
-          {profileMessages.dialogBody(fromRoleLabel, toRoleLabel)}
+          {body ?? profileMessages.dialogBody(fromRoleLabel, toRoleLabel)}
         </p>
 
         <div className="mt-3.5">
           <span className="inline-flex items-center rounded-full bg-[#EAF7EE] px-3 py-1 text-xs font-semibold text-[#1D8338]">
-            {profileMessages.dialogConditionsBadge}
+            {badgeLabel ?? profileMessages.dialogConditionsBadge}
           </span>
         </div>
 
@@ -89,7 +99,7 @@ export function RoleChangeDialog({
             disabled={isLoading}
             className="rounded-xl border border-gray-200 bg-white px-5 py-2.5 text-xs sm:text-sm font-semibold text-gray-700 hover:bg-gray-50 active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50"
           >
-            {profileMessages.dialogCancelButton}
+            {cancelLabel ?? profileMessages.dialogCancelButton}
           </button>
 
           <button
@@ -100,7 +110,7 @@ export function RoleChangeDialog({
           >
             {isLoading
               ? profileMessages.dialogConfirmingButton
-              : profileMessages.dialogConfirmButton}
+              : confirmLabel ?? profileMessages.dialogConfirmButton}
           </button>
         </div>
       </div>

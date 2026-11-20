@@ -14,11 +14,13 @@ function addMoney(a: string, b: string) {
 }
 
 export function ReservationSummaryCard({ reservation }: ReservationSummaryCardProps) {
-  const total = addMoney(reservation.subtotal, reservation.securityDeposit);
+  const total = reservation.securityDeposit
+    ? addMoney(reservation.subtotal, reservation.securityDeposit)
+    : null;
 
   return (
-    <Card padding="md" className="flex flex-col gap-4 lg:sticky lg:top-8">
-      <div className="flex h-[200px] items-center justify-center overflow-hidden rounded-xl bg-[#dde3f5] text-sm text-[#5b6270]">
+    <Card padding="sm" className="flex flex-col gap-3 lg:sticky lg:top-6">
+      <div className="flex h-36 items-center justify-center overflow-hidden rounded-xl bg-[#dde3f5] text-sm text-[#5b6270] sm:h-40">
         {reservation.propertyImage ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img
@@ -31,21 +33,23 @@ export function ReservationSummaryCard({ reservation }: ReservationSummaryCardPr
         )}
       </div>
 
-      <h2 className="text-lg font-semibold text-[#1f2330]">{reservation.propertyTitle}</h2>
+      <h2 className="text-base font-semibold leading-snug text-[#1f2330]">{reservation.propertyTitle}</h2>
 
       <dl className="flex flex-col text-sm text-[#1f2330]">
-        <div className="flex items-center justify-between py-1.5">
+        <div className="flex items-center justify-between py-1">
           <dt>{reviewMessages.checkIn}</dt>
           <dd className="font-semibold">{formatShortDate(reservation.startDate)}</dd>
         </div>
-        <div className="flex items-center justify-between py-1.5">
+        <div className="flex items-center justify-between py-1">
           <dt>{reviewMessages.checkOut}</dt>
           <dd className="font-semibold">{formatShortDate(reservation.endDate)}</dd>
         </div>
-        <div className="mt-2 flex items-center justify-between border-t border-[#e5e7eb] pt-3.5 text-lg font-bold">
-          <dt>{reviewMessages.totalFinal}</dt>
-          <dd>{formatPrice(total)}</dd>
-        </div>
+        {total !== null && (
+          <div className="mt-1 flex items-center justify-between border-t border-[#e5e7eb] pt-2.5 text-base font-bold">
+            <dt>{reviewMessages.totalFinal}</dt>
+            <dd>{formatPrice(total)}</dd>
+          </div>
+        )}
       </dl>
     </Card>
   );

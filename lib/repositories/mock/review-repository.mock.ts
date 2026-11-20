@@ -20,7 +20,13 @@ import {
   rateableReservationSeeds,
   type RateableReservationSeed,
 } from "./fixtures/rateable-reservations";
-import { getPropertyOwnerName, isReservationRated, recordPropertyReview } from "./review-store";
+import {
+  getOwnerRatingSummary,
+  getPropertyOwnerName,
+  getPropertyReviews,
+  isReservationRated,
+  recordPropertyReview,
+} from "./review-store";
 import { mockUserProfileFixture } from "./fixtures/profile";
 
 // Códigos que devuelve el backend para cada motivo de bloqueo (409).
@@ -59,6 +65,8 @@ function toReservationForReview(seed: RateableReservationSeed): ReservationForRe
 }
 
 export const mockReviewRepository: ReviewRepository = {
+  async getTenantReviewSummary() { return { average: null, count: 0 }; },
+  async submitRenterReview() {},
   async getReservationForReview(reservationId) {
     const seed = findOwnedSeed(reservationId);
     return seed ? toReservationForReview(seed) : null;
@@ -83,6 +91,7 @@ export const mockReviewRepository: ReviewRepository = {
       throw new ApiError(409, BLOCK_ERROR_CODES[blockReason], blockReasonMessage[blockReason]);
     }
 
+    const reviewCreatedAt = new Date().toISOString();
     const summary = recordPropertyReview({
       reservationId,
       propertyId: seed.propertyId,
@@ -90,14 +99,36 @@ export const mockReviewRepository: ReviewRepository = {
       userRating: input.userRating,
       comment: input.comment,
       reviewerName: mockUserProfileFixture.fullName,
-      createdAt: new Date().toISOString(),
+      createdAt: reviewCreatedAt,
     });
 
+    const property = propertyFixtures.find((item) => item.id === seed.propertyId)!;
+    const ownerName = getPropertyOwnerName(seed.propertyId);
+    const ownerSummary = getOwnerRatingSummary(ownerName);
+
     return {
-      propertyId: seed.propertyId,
-      averageRating: summary.averageRating,
-      reviewCount: summary.reviewCount,
-      createdAt: new Date().toISOString(),
+      id: property.id,
+      title: property.title,
+      description: (propertyDetailExtras[seed.propertyId] ?? defaultDetailExtras).description,
+      category: property.category,
+      department: property.department,
+      municipality: property.municipality,
+      pricePerDay: property.pricePerDay,
+      securityDeposit: (propertyDetailExtras[seed.propertyId] ?? defaultDetailExtras).securityDeposit,
+      images: property.images,
+      owner: { id: "mock-owner", name: ownerName },
+      propertyRatingAverage: summary.averageRating?.toFixed(1) ?? null,
+      propertyReviewCount: summary.reviewCount,
+      ownerRatingAverage: ownerSummary.averageRating?.toFixed(1) ?? null,
+      ownerReviewCount: ownerSummary.reviewCount,
+      reviews: getPropertyReviews(seed.propertyId).map((review) => ({
+        id: review.id,
+        propertyRating: review.rating,
+        comment: review.comment ?? null,
+        createdAt: review.createdAt,
+        author: { name: review.reviewerName },
+      })),
+      reviewCreatedAt,
     };
   },
 };
