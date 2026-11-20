@@ -69,7 +69,7 @@ const fromApiCategory: Record<string, PropertyCategory> = {
 function mapBookingItem(raw: ApiBookingItem): BookingListItem {
   return {
     id: raw.id,
-    propertyId: raw.propertyId,
+    propertyId: raw.propertyId ?? raw.property?.id ?? "",
     propertyTitle: raw.propertyTitle || raw.property?.title || "Bien en renta",
     startDate: raw.startDate,
     endDate: raw.endDate,
