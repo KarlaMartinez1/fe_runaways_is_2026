@@ -106,8 +106,14 @@ export type BookingListItem = {
   deliveredAt: string | null;
   returnedAt: string | null;
   lesseeName?: string;
+  lesseeId?: string;
+  tenantId?: string;
+  lesseeRatingAverage?: number | null;
+  lesseeRatingCount?: number;
   finalizedAt?: string | null;
   ratedByMe?: boolean;
+  hasPropertyReview?: boolean;
+  hasRenterReview?: boolean;
 };
 
 export type BookingListResult = Paginated<BookingListItem>;
@@ -364,6 +370,7 @@ export type ConversationBooking = {
 export type ConversationSummary = {
   id: string;
   propertyId: string;
+  otherParticipantId?: string;
   propertyTitle: string;
   otherParticipantName: string;
   lastMessage: string | null;

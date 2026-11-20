@@ -65,6 +65,8 @@ function toReservationForReview(seed: RateableReservationSeed): ReservationForRe
 }
 
 export const mockReviewRepository: ReviewRepository = {
+  async getTenantReviewSummary() { return { average: null, count: 0 }; },
+  async submitRenterReview() {},
   async getReservationForReview(reservationId) {
     const seed = findOwnedSeed(reservationId);
     return seed ? toReservationForReview(seed) : null;
