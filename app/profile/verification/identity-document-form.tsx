@@ -72,7 +72,7 @@ export function IdentityDocumentForm({ onSubmitted }: IdentityDocumentFormProps)
     setFile(selected);
     setFileError(undefined);
     // Vista previa solo para imágenes; del PDF se muestra el nombre.
-    setPreviewUrl(selected.type.startsWith("image/") ? URL.createObjectURL(selected) : undefined);
+    setPreviewUrl(URL.createObjectURL(selected));
   };
 
   const removeFile = () => {
@@ -185,12 +185,19 @@ export function IdentityDocumentForm({ onSubmitted }: IdentityDocumentFormProps)
             isDragging ? "border-[#1d4ed8]" : fileError ? "border-red-500" : "border-[#B9C3EA]",
           )}
         >
-          {previewUrl && (
+          {previewUrl && file?.type.startsWith("image/") && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={previewUrl} alt={m.previewAlt} className="max-h-28 rounded-lg object-contain sm:max-h-36" />
           )}
-          {!previewUrl && <span className="text-sm font-semibold text-[#1d4ed8]">{m.dropzone}</span>}
-          {file && !previewUrl && <span className="text-xs text-zinc-600">{file.name}</span>}
+          {previewUrl && file?.type === "application/pdf" && (
+            <iframe
+              src={previewUrl}
+              title={m.previewAlt}
+              className="h-[420px] w-full rounded-lg border border-zinc-200 bg-white sm:h-[560px]"
+            />
+          )}
+          {!file && <span className="text-sm font-semibold text-[#1d4ed8]">{m.dropzone}</span>}
+          {file && <span className="text-xs text-zinc-600">{file.name}</span>}
           <input
             type="file"
             accept="image/jpeg,image/png,application/pdf"
