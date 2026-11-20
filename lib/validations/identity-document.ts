@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { identityDocumentMessages as m } from "@/lib/messages/identity-document";
 
-export const DOCUMENT_TYPES = ["DUI", "PASAPORTE"] as const;
+export const DOCUMENT_TYPES = ["DUI", "PASSPORT"] as const;
 export const DOCUMENT_FILE_TYPES = ["image/jpeg", "image/png", "application/pdf"];
 export const DOCUMENT_FILE_MAX_BYTES = 5 * 1024 * 1024;
 
@@ -19,7 +19,7 @@ export const identityDocumentSchema = z
     if (data.documentType === "DUI" && !DUI_PATTERN.test(data.documentNumber)) {
       ctx.addIssue({ code: "custom", path: ["documentNumber"], message: m.duiFormat });
     }
-    if (data.documentType === "PASAPORTE" && !PASSPORT_PATTERN.test(data.documentNumber)) {
+    if (data.documentType === "PASSPORT" && !PASSPORT_PATTERN.test(data.documentNumber)) {
       ctx.addIssue({ code: "custom", path: ["documentNumber"], message: m.passportFormat });
     }
   });
