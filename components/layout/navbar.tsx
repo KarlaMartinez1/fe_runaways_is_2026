@@ -21,7 +21,6 @@ const navLinksByRole = {
     { href: "/owner/reports", label: "Reportes" },
   ],
   ADMIN: [
-    { href: "/", label: "Inicio" },
     { href: "/admin/verifications", label: "Verificaciones" },
   ],
 } as const;
@@ -90,7 +89,7 @@ export function Navbar() {
           </Link>
         )}
 
-        <NotificationBell />
+        {user?.role !== "ADMIN" && <NotificationBell />}
 
         {/* Desktop user account dropdown */}
         <details className="relative hidden md:block">
@@ -108,17 +107,19 @@ export function Navbar() {
             </svg>
           </summary>
           <div className="absolute right-0 z-20 mt-2 w-44 rounded-lg border border-zinc-200 bg-white p-1 shadow-md">
-            <Link
-              href="/profile"
-              className={cn(
-                "block w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
-                isProfileActive
-                  ? "bg-blue-50 font-semibold text-[#1E4DB7]"
-                  : "text-zinc-800 hover:bg-zinc-100"
-              )}
-            >
-              Mi perfil
-            </Link>
+            {user?.role !== "ADMIN" && (
+              <Link
+                href="/profile"
+                className={cn(
+                  "block w-full rounded-md px-3 py-2 text-left text-sm transition-colors",
+                  isProfileActive
+                    ? "bg-blue-50 font-semibold text-[#1E4DB7]"
+                    : "text-zinc-800 hover:bg-zinc-100"
+                )}
+              >
+                Mi perfil
+              </Link>
+            )}
             <form action={logout}>
               <button
                 type="submit"
@@ -166,17 +167,19 @@ export function Navbar() {
               })}
             </div>
             <div className="pt-2 flex flex-col gap-1">
-              <Link
-                href="/profile"
-                className={cn(
-                  "block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors",
-                  isProfileActive
-                    ? "bg-blue-50 font-semibold text-[#1E4DB7]"
-                    : "text-zinc-800 hover:bg-zinc-100"
-                )}
-              >
-                Mi perfil
-              </Link>
+              {user?.role !== "ADMIN" && (
+                <Link
+                  href="/profile"
+                  className={cn(
+                    "block w-full rounded-lg px-3 py-2 text-left text-sm transition-colors",
+                    isProfileActive
+                      ? "bg-blue-50 font-semibold text-[#1E4DB7]"
+                      : "text-zinc-800 hover:bg-zinc-100"
+                  )}
+                >
+                  Mi perfil
+                </Link>
+              )}
               <form action={logout}>
                 <button
                   type="submit"

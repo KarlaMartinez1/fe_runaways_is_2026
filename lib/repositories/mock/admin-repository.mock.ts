@@ -76,6 +76,7 @@ export const mockAdminRepository: AdminRepository = {
       data: pending.slice(start, start + ADMIN_DOCUMENTS_PAGE_SIZE).map(toPending),
       total: pending.length,
       page,
+      pageSize: ADMIN_DOCUMENTS_PAGE_SIZE,
     };
   },
 

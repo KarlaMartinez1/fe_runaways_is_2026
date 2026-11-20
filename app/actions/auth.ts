@@ -21,9 +21,15 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
   if (!email || !password) return { error: "Ingresa tu correo y contraseña.", email };
   if (!EMAIL_REGEX.test(email)) return { error: "Ingresa un correo válido.", email };
 
+  let destination = "/";
   try {
     const result = await loginRequest(email, password);
     await createSession(result.accessToken, result.expiresIn, result.refreshToken, result.user.role);
+    if (result.user.role === "ADMIN") {
+      destination = "/admin/verifications";
+    } else if (result.user.role === "OWNER") {
+      destination = "/properties/mine";
+    }
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 401) return { error: "Correo o contraseña incorrectos.", email };
@@ -37,7 +43,7 @@ export async function login(_prevState: LoginState, formData: FormData): Promise
   }
 
   // redirect lanza una excepción interna de Next, por eso va fuera del try.
-  redirect("/");
+  redirect(destination);
 }
 
 export async function register(_prevState: RegisterState, formData: FormData): Promise<RegisterState> {

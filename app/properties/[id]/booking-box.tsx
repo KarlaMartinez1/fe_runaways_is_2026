@@ -11,6 +11,7 @@ import type { PropertyAvailabilityState } from "@/lib/api/types";
 import { bookingMessages } from "@/lib/messages/bookings";
 import { bookingBoxMessages, formatPrice, propertyMessages } from "@/lib/messages/properties";
 import { calculateSubtotal, countBookingDays, rangeOverlapsOccupied, validateBookingRange } from "@/lib/bookings/rules";
+import { VerificationRequiredDialog } from "./verification-required-dialog";
 
 type BookingBoxProps = {
   propertyId: string;
@@ -38,6 +39,7 @@ export function BookingBox({
   const [startDate, setStartDate] = useState<string | null>(null);
   const [endDate, setEndDate] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [verificationRequired, setVerificationRequired] = useState(false);
   const [isPending, startTransition] = useTransition();
   const hasDeposit = Number(securityDeposit) > 0;
   const available = availability.status === "ready";
@@ -45,6 +47,7 @@ export function BookingBox({
   const days = startDate && endDate ? countBookingDays(startDate, endDate) : 0;
   const selectDate = (date: string) => {
     setError(null);
+    setVerificationRequired(false);
     if (!startDate || endDate || date <= startDate) {
       setStartDate(date);
       setEndDate(null);
@@ -59,10 +62,12 @@ export function BookingBox({
       return;
     }
     setError(null);
+    setVerificationRequired(false);
     startTransition(async () => {
       const result = await createBookingAction({ propertyId, startDate, endDate });
       if (result.ok) { router.push("/bookings/mine?created=1"); return; }
       setError(result.message);
+      setVerificationRequired(Boolean(result.verificationRequired));
       if (result.sessionExpired) router.push("/login");
       if (result.conflict) router.refresh();
     });
@@ -93,7 +98,11 @@ export function BookingBox({
           {isPending ? bookingMessages.confirming : bookingMessages.confirm}
         </Button>
       )}
-      {error && <p role="alert" className="text-sm text-red-700">{error}</p>}
+      {error && !verificationRequired && <p role="alert" className="text-sm text-red-700">{error}</p>}
+      <VerificationRequiredDialog
+        isOpen={verificationRequired}
+        onClose={() => setVerificationRequired(false)}
+      />
 
            {/* H15: abre el hilo de conversación de este bien con su arrendador. */}
       <form action={startConversation.bind(null, propertyId)}>

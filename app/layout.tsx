@@ -16,6 +16,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "SI Boilerplate",
+  icons: { icon: "/icon-runaways.svg" },
   description: "Boilerplate con login básico",
 };
 
