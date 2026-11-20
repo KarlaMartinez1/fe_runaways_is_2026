@@ -34,7 +34,7 @@ type ApiBookingItem = {
   propertyId?: string;
   propertyTitle?: string;
   propertyCategory?: PropertyCategory;
-  property?: { id?: string; title?: string; name?: string; category?: string };
+  property?: { id?: string; title?: string; name?: string; category?: string; securityDeposit?: string; images?: string[] };
   tenant?: { name?: string };
   startDate: string;
   endDate: string;
@@ -71,10 +71,12 @@ function mapBookingItem(raw: ApiBookingItem): BookingListItem {
     id: raw.id,
     propertyId: raw.propertyId ?? raw.property?.id ?? "",
     propertyTitle: raw.propertyTitle || raw.property?.title || "Bien en renta",
+    propertyImage: raw.property?.images?.[0] ?? null,
     startDate: raw.startDate,
     endDate: raw.endDate,
     days: raw.days || countBookingDays(raw.startDate, raw.endDate),
     subtotal: raw.subtotal,
+    securityDeposit: raw.property?.securityDeposit,
     status: fromApiStatus[raw.status] || "PENDIENTE",
     expiresAt: raw.expiresAt || null,
     cancelReason: raw.cancelReason || (raw.status === "CANCELED" ? "VENCIDA" : null),
@@ -82,7 +84,7 @@ function mapBookingItem(raw: ApiBookingItem): BookingListItem {
     returnedAt: raw.returnedAt || null,
     lesseeName: raw.lesseeName || raw.tenant?.name,
     finalizedAt: raw.finalizedAt || null,
-    ratedByMe: raw.ratedByMe || false,
+    ratedByMe: raw.ratedByMe,
   };
 }
 
