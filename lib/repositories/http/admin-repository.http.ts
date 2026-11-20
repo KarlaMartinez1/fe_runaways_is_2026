@@ -14,7 +14,7 @@ import type {
 import { ADMIN_DOCUMENTS_PAGE_SIZE, type AdminRepository } from "../admin-repository";
 
 function toDocumentType(type: BackendDocumentType): DocumentType {
-  return type === "PASSPORT" ? "PASAPORTE" : "DUI";
+  return type;
 }
 
 function toDocumentStatus(status: BackendIdentityDocumentStatus): IdentityDocumentStatus {
