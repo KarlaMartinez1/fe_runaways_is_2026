@@ -115,6 +115,7 @@ function toRateableListItems(): BookingListItem[] {
         returnedAt: null,
         finalizedAt: seed.finalizedAt,
         ratedByMe: isReservationRated(seed.id),
+        hasPropertyReview: isReservationRated(seed.id),
       };
     });
 }
