@@ -45,10 +45,13 @@ type ApiBookingItem = {
   deliveredAt?: string | null;
   returnedAt?: string | null;
   finalizedAt?: string | null;
+  completedAt?: string | null;
+  updatedAt?: string | null;
   ratedByMe?: boolean;
+  hasPropertyReview?: boolean;
+  hasRenterReview?: boolean;
   lesseeName?: string;
   tenantId?: string;
-  tenant?: { id?: string; userId?: string; name?: string; rating?: { average?: number | null; count?: number } };
 };
 
 type ApiBookingListResult = {
@@ -86,8 +89,10 @@ function mapBookingItem(raw: ApiBookingItem): BookingListItem {
     lesseeId: raw.tenantId ?? raw.tenant?.id ?? raw.tenant?.userId,
     lesseeRatingAverage: raw.tenant?.rating?.average,
     lesseeRatingCount: raw.tenant?.rating?.count,
-    finalizedAt: raw.finalizedAt || null,
+    finalizedAt: raw.finalizedAt ?? raw.completedAt ?? raw.returnedAt ?? null,
     ratedByMe: raw.ratedByMe || false,
+    hasPropertyReview: raw.hasPropertyReview ?? false,
+    hasRenterReview: raw.hasRenterReview ?? false,
   };
 }
 

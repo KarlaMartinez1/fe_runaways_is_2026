@@ -25,12 +25,14 @@ export function getReviewDeadline(finalizedAt: string): number {
 
 // Devuelve el motivo por el que NO se puede calificar, o null si sí se puede.
 export function getRatingBlockReason(
-  reservation: { status: BookingStatus; finalizedAt: string | null; ratedByMe: boolean },
+  reservation: { status: BookingStatus; finalizedAt: string | null; endDate?: string; ratedByMe: boolean },
   now: number = Date.now(),
 ): ReviewBlockReason | null {
-  if (reservation.status !== "FINALIZADA" || !reservation.finalizedAt) return "NOT_FINALIZED";
+  if (reservation.status !== "FINALIZADA") return "NOT_FINALIZED";
   if (reservation.ratedByMe) return "ALREADY_REVIEWED";
-  if (now > getReviewDeadline(reservation.finalizedAt)) return "WINDOW_CLOSED";
+  // bookings/mine omits finalizedAt; endDate is the available fallback for the UI.
+  const reviewStart = reservation.finalizedAt ?? reservation.endDate ?? null;
+  if (reviewStart && now > getReviewDeadline(reviewStart)) return "WINDOW_CLOSED";
   return null;
 }
 
