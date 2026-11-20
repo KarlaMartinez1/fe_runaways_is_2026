@@ -18,19 +18,20 @@ export function isValidRating(value: unknown): value is number {
   );
 }
 
-// Momento límite (en milisegundos) para calificar: 14 días después de FINALIZADA.
-export function getReviewDeadline(finalizedAt: string): number {
-  return Date.parse(finalizedAt) + REVIEW_WINDOW_DAYS * DAY_MS;
+// Momento límite para calificar: 14 días después del último día de la reserva.
+export function getReviewDeadline(endDate: string): number {
+  const endOfLastRentalDay = new Date(`${endDate.slice(0, 10)}T23:59:59.999-06:00`).getTime();
+  return endOfLastRentalDay + REVIEW_WINDOW_DAYS * DAY_MS;
 }
 
 // Devuelve el motivo por el que NO se puede calificar, o null si sí se puede.
 export function getRatingBlockReason(
-  reservation: { status: BookingStatus; finalizedAt: string | null; ratedByMe: boolean },
+  reservation: { status: BookingStatus; endDate: string; ratedByMe: boolean },
   now: number = Date.now(),
 ): ReviewBlockReason | null {
-  if (reservation.status !== "FINALIZADA" || !reservation.finalizedAt) return "NOT_FINALIZED";
+  if (reservation.status !== "FINALIZADA") return "NOT_FINALIZED";
   if (reservation.ratedByMe) return "ALREADY_REVIEWED";
-  if (now > getReviewDeadline(reservation.finalizedAt)) return "WINDOW_CLOSED";
+  if (now > getReviewDeadline(reservation.endDate)) return "WINDOW_CLOSED";
   return null;
 }
 
