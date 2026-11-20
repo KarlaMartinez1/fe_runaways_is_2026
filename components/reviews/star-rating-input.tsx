@@ -19,7 +19,7 @@ export function StarRatingInput({ label, value, onChange, error }: StarRatingInp
   const errorId = `${labelId}-error`;
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div className="flex flex-col gap-1">
       <span id={labelId} className="text-[13px] font-semibold text-[#1f2330]">
         {label}
       </span>
@@ -42,7 +42,7 @@ export function StarRatingInput({ label, value, onChange, error }: StarRatingInp
               aria-label={reviewMessages.stars(star)}
               onClick={() => onChange(star)}
               className={cn(
-                "rounded text-[32px] leading-none transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600",
+                "rounded text-[27px] leading-none transition-transform hover:scale-110 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-blue-600 sm:text-[29px]",
                 filled ? "text-[#f5a623]" : "text-[#d1d5db]",
               )}
             >

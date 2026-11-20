@@ -22,14 +22,13 @@ const statusVariant: Record<BookingStatus, BadgeVariant> = {
 };
 
 // Misma regla que la pantalla de calificaciÃ³n: finalizada, sin reseÃ±a y dentro de 14 dÃ­as.
-function canRate(booking: BookingListItem) {
-  return (
-    getRatingBlockReason({
-      status: booking.status,
-      finalizedAt: booking.finalizedAt ?? null,
-      ratedByMe: booking.ratedByMe ?? false,
-    }) === null
-  );
+function getBookingRatingBlockReason(booking: BookingListItem) {
+  return getRatingBlockReason({
+    status: booking.status,
+    endDate: booking.endDate,
+    // Provisional: habilita probar el flujo mientras /bookings/mine agrega ratedByMe.
+    ratedByMe: booking.ratedByMe ?? false,
+  });
 }
 
 export function BookingList({ items, variant, emptyMessage }: BookingListProps) {
@@ -83,14 +82,29 @@ export function BookingList({ items, variant, emptyMessage }: BookingListProps) 
                 {booking.status === "FINALIZADA" ? "Gestionar depósito" : "Ver depósito"}
               </Link>
             )}
-            {variant === "mine" && canRate(booking) && (
-              <Link
-                href={`/reservations/${booking.id}/rate-property`}
-                className="rounded-lg border border-[#cfd3da] px-4 py-2 text-sm font-semibold text-[#1f2330] hover:bg-gray-50"
-              >
-                {reviewMessages.rateButton}
-              </Link>
-            )}
+            {variant === "mine" && booking.status === "FINALIZADA" && (() => {
+              const blockReason = getBookingRatingBlockReason(booking);
+              const reasonMessage = blockReason === "ALREADY_REVIEWED"
+                ? reviewMessages.errors.alreadyReviewed
+                : reviewMessages.errors.windowClosed;
+              return blockReason ? (
+                <button
+                  type="button"
+                  disabled
+                  title={reasonMessage}
+                  className="cursor-not-allowed rounded-lg border border-zinc-200 bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-500"
+                >
+                  {reviewMessages.rateButton}
+                </button>
+              ) : (
+                <Link
+                  href={`/reservations/${booking.id}/rate-property`}
+                  className="rounded-lg border border-[#cfd3da] px-4 py-2 text-sm font-semibold text-[#1f2330] hover:bg-gray-50"
+                >
+                  {reviewMessages.rateButton}
+                </Link>
+              );
+            })()}
           </div>
         </li>
       ))}

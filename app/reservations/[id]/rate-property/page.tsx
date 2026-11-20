@@ -5,7 +5,7 @@ import { RatePropertyBody } from "@/components/reviews/rate-property-body";
 import { ApiError } from "@/lib/api/client";
 import type { ReservationForReview } from "@/lib/api/types";
 import { reviewMessages } from "@/lib/messages/reviews";
-import { profileRepository, reviewRepository } from "@/lib/repositories";
+import { bookingRepository, profileRepository, propertyRepository } from "@/lib/repositories";
 
 export const metadata: Metadata = {
   title: "Calificación de mi reserva | Runaways",
@@ -28,7 +28,39 @@ export default async function RatePropertyPage({ params }: RatePropertyPageProps
     if (profile.role !== "TENANT") {
       forbidden = true;
     } else {
-      reservation = await reviewRepository.getReservationForReview(id);
+      const firstPage = await bookingRepository.listMine({ page: 1, status: "FINALIZADA" });
+      let booking = firstPage.data.find((item) => item.id === id);
+      for (let page = 2; !booking && page <= firstPage.totalPages; page += 1) {
+        const result = await bookingRepository.listMine({ page, status: "FINALIZADA" });
+        booking = result.data.find((item) => item.id === id);
+      }
+      if (booking) {
+        let propertyImage = booking.propertyImage ?? null;
+        if (!propertyImage) {
+          try {
+            const property = await propertyRepository.getById(booking.propertyId);
+            propertyImage = property?.images[0] ?? null;
+          } catch (error) {
+            if (error instanceof ApiError && error.status === 401) throw error;
+            console.error("Error al cargar la portada del bien para calificar:", error);
+          }
+        }
+        reservation = {
+          id: booking.id,
+          propertyId: booking.propertyId,
+          propertyTitle: booking.propertyTitle,
+          propertyImage,
+          startDate: booking.startDate,
+          endDate: booking.endDate,
+          days: booking.days,
+          subtotal: booking.subtotal,
+          securityDeposit: booking.securityDeposit,
+          status: booking.status,
+          finalizedAt: booking.finalizedAt ?? null,
+          // Provisional: el POST del backend sigue rechazando reseñas duplicadas.
+          ratedByMe: booking.ratedByMe ?? false,
+        };
+      }
     }
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) {
@@ -47,7 +79,7 @@ export default async function RatePropertyPage({ params }: RatePropertyPageProps
   return (
     <>
       <Navbar />
-      <main className="mx-auto flex w-full max-w-[1200px] flex-col gap-6 px-4 py-8 sm:px-6 md:px-10 lg:px-16">
+      <main className="mx-auto flex w-full max-w-[1200px] flex-col gap-4 px-4 py-6 sm:px-6 md:px-10 lg:px-16">
         <header className="flex flex-col gap-1.5">
           <h1 className="text-2xl font-bold text-[#1f2330] sm:text-3xl">
             {reviewMessages.pageTitle}
