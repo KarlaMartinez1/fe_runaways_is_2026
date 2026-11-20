@@ -22,6 +22,7 @@ export const httpConversationRepository: ConversationRepository = {
       (item): ConversationSummary => ({
         id: item.id,
         propertyId: item.propertyId,
+        otherParticipantId: item.participantId,
         propertyTitle: item.propertyTitle,
         otherParticipantName: item.participantName,
         lastMessage: null,

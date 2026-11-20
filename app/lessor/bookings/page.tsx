@@ -11,7 +11,7 @@ import type { BookingListResult, BookingStatus, Property } from "@/lib/api/types
 import { formatShortRange } from "@/lib/bookings/format";
 import { bookingMessages } from "@/lib/messages/bookings";
 import { categoryLabels } from "@/lib/messages/properties";
-import { bookingRepository, propertyRepository, reviewRepository } from "@/lib/repositories";
+import { bookingRepository, conversationRepository, propertyRepository, reviewRepository } from "@/lib/repositories";
 
 export const metadata: Metadata = { title: "Reservas de mis bienes | Runaways" };
 
@@ -24,6 +24,10 @@ const statusVariant = {
   PAGADA: "info",
   FINALIZADA: "success",
   CANCELADA: "danger",
+} as const;
+const categoryStyles = {
+  PROPIEDAD: "bg-[#E5EBFB] text-[#2449c6]",
+  EQUIPO: "bg-[#EEF0E2] text-zinc-800",
 } as const;
 
 type PageProps = { searchParams: Promise<{ status?: string; page?: string }> };
@@ -38,6 +42,7 @@ export default async function LessorBookingsPage({ searchParams }: PageProps) {
   const page = Math.max(1, Number(params.page) || 1);
 
   let result: BookingListResult | null = null;
+  let conversations: Awaited<ReturnType<typeof conversationRepository.list>> = [];
   let properties: Property[] = [];
   let errorMessage: string | null = null;
   try {
@@ -57,6 +62,13 @@ export default async function LessorBookingsPage({ searchParams }: PageProps) {
       ? bookingMessages.lessor.forbidden
       : bookingMessages.lessor.loadError;
     console.error("Error al cargar reservas del arrendador:", error);
+  }
+
+  try {
+    conversations = await conversationRepository.list();
+  } catch (error) {
+    if (error instanceof ApiError && error.status === 401) redirect("/login");
+    console.error("Error al cargar las conversaciones del arrendador:", error);
   }
 
   const propertyById = new Map(properties.map((property) => [property.id, property]));
@@ -99,20 +111,35 @@ export default async function LessorBookingsPage({ searchParams }: PageProps) {
                       return (
                         <tr key={booking.id} className="border-t border-zinc-200 text-zinc-800">
                           <td className="px-5 py-4 font-medium">{booking.propertyTitle || property?.title || "—"}</td>
-                          <td className="px-5 py-4">{bookingCategory ? categoryLabels[bookingCategory] : "—"}</td>
+                          <td className="px-5 py-4">{bookingCategory ? <span className={`inline-flex rounded-md px-2.5 py-0.5 text-xs font-semibold ${categoryStyles[bookingCategory]}`}>{categoryLabels[bookingCategory]}</span> : "—"}</td>
                           <td className="px-5 py-4">{booking.lesseeName || "—"}</td>
                           <td className="px-5 py-4">{booking.lesseeRatingCount ? `${booking.lesseeRatingAverage?.toFixed(1) ?? "—"} (${booking.lesseeRatingCount})` : "Sin calificaciones"}</td>
                           <td className="whitespace-nowrap px-5 py-4 text-zinc-600">{formatShortRange(booking.startDate, booking.endDate)}</td>
                           <td className="px-5 py-4"><Badge variant={statusVariant[booking.status]} size="sm">{statusLabel[booking.status]}</Badge></td>
-                          <td className="px-5 py-4">{booking.status === "FINALIZADA" && !booking.ratedByMe ? <Link href={`/reservations/${booking.id}/rate-renter`} className="font-semibold text-[#1E4DB7] hover:underline">Calificar</Link> : <span className="text-zinc-400">—</span>}</td>
+                          <td className="px-5 py-4">{booking.status === "FINALIZADA" && !booking.hasRenterReview ? <Link href={`/reservations/${booking.id}/rate-renter`} className="font-semibold text-[#1E4DB7] hover:underline">Calificar</Link> : booking.status === "FINALIZADA" ? <span className="text-zinc-500">Calificación enviada</span> : <span className="text-zinc-400">—</span>}</td>
                           <td className="px-5 py-3">
-                            <button type="button" disabled title="La mensajería estará disponible cuando se defina la ruta del backend" className="inline-flex h-11 cursor-not-allowed items-center gap-2 rounded-xl bg-blue-50 px-4 text-sm font-semibold text-[#1E4DB7] opacity-60">
-                              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                                <path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
-                                <path d="M8 9h8M8 12h5" />
-                              </svg>
-                              Mensaje
-                            </button>
+                            {(() => {
+                              const conversation = conversations.find((item) =>
+                                item.propertyId === booking.propertyId && item.otherParticipantId === booking.lesseeId,
+                              );
+                              return conversation ? (
+                                <Link href={`/messages/${encodeURIComponent(conversation.id)}`} className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-50 px-4 text-sm font-semibold text-[#1E4DB7] hover:bg-blue-100">
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                                    <path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+                                    <path d="M8 9h8M8 12h5" />
+                                  </svg>
+                                  Mensajes
+                                </Link>
+                              ) : (
+                                <Link href="/messages" className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-50 px-4 text-sm font-semibold text-[#1E4DB7] hover:bg-blue-100">
+                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+                                    <path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+                                    <path d="M8 9h8M8 12h5" />
+                                  </svg>
+                                  Mensajes
+                                </Link>
+                              );
+                            })()}
                           </td>
                         </tr>
                       );
