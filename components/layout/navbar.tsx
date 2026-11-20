@@ -6,29 +6,39 @@ import { usePathname } from "next/navigation";
 import { logout } from "@/app/actions/auth";
 import { cn } from "@/lib/utils/cn";
 import { NotificationBell } from "@/components/notifications";
+import { useSessionStore } from "@/lib/stores/session-store";
 
-const links = [
+const navLinksByRole = {
+  TENANT: [
+    { href: "/", label: "Inicio" },
+    { href: "/properties", label: "Catálogo" },
+    { href: "/bookings/mine", label: "Mis reservas" },
+  ],
+  OWNER: [
+    // { href: "/", label: "Inicio" },
+    { href: "/properties/mine", label: "Mis bienes" },
+    { href: "/lessor/bookings", label: "Reservas de mis bienes" },
+    { href: "/owner/reports", label: "Reportes" },
+  ],
+  ADMIN: [
+    { href: "/", label: "Inicio" },
+    { href: "/admin/verifications", label: "Verificaciones" },
+  ],
+} as const;
+
+const publicLinks = [
   { href: "/", label: "Inicio" },
-  { href: "#", label: "Sobre Nosotros" },
-  { href: "/bookings/mine", label: "Mis Reservas" },
+  { href: "/properties", label: "Catálogo" },
+  { href: "/login", label: "Iniciar sesión" },
 ];
 
 export function Navbar() {
   const pathname = usePathname();
+  const { user } = useSessionStore();
+  const links = user ? navLinksByRole[user.role] : publicLinks;
 
   const isLinkActive = (href: string) => {
-    if (href === "/") {
-      return pathname === "/";
-    }
-    if (href === "/bookings/mine") {
-      return (
-        pathname.startsWith("/bookings") ||
-        pathname.startsWith("/payment") ||
-        pathname.startsWith("/receipt") ||
-        pathname.startsWith("/deposit")
-      );
-    }
-    return pathname === href;
+    return href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(`${href}/`);
   };
 
   const isProfileActive = pathname.startsWith("/profile");
@@ -39,10 +49,10 @@ export function Navbar() {
         <Image
           src="/logo-runaways.svg"
           alt="Runaways Logo"
-          width={240}
-          height={64}
+          width={100}
+          height={10}
           unoptimized
-          className="h-12 sm:h-14 md:h-16 lg:h-[68px] w-auto"
+          className="h-9 sm:h-10 md:h-11 lg:h-12 w-auto"
         />
       </Link>
 
@@ -67,16 +77,18 @@ export function Navbar() {
       </nav>
 
       <div className="flex items-center gap-4 sm:gap-5 md:gap-6">
-        <Link
-          href="/messages"
-          aria-label="Mensajes"
-          className="p-1.5 text-zinc-800 hover:text-[#1E4DB7] transition-colors"
-        >
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-            <path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
-            <path d="M8 9h8M8 12h5" />
-          </svg>
-        </Link>
+        {(user?.role === "TENANT" || user?.role === "OWNER") && (
+          <Link
+            href="/messages"
+            aria-label="Mensajes"
+            className="p-1.5 text-zinc-800 hover:text-[#1E4DB7] transition-colors"
+          >
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
+              <path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+              <path d="M8 9h8M8 12h5" />
+            </svg>
+          </Link>
+        )}
 
         <NotificationBell />
 

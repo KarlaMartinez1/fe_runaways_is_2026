@@ -1,6 +1,8 @@
 import { apiGet, apiPost } from "@/lib/api/client";
-import type { BookingListItem, BookingListResult, BookingStatus, CreatedBooking } from "@/lib/api/types";
+import type { BookingListItem, BookingListResult, CreatedBooking, PropertyCategory } from "@/lib/api/types";
+import type { BookingStatus } from "@/lib/api/types";
 import type { BookingRepository, ListBookingsParams } from "../booking-repository";
+import { countBookingDays } from "@/lib/bookings/rules";
 
 type ApiBookingStatus = "PENDING" | "PAID" | "COMPLETED" | "CANCELED";
 
@@ -26,48 +28,52 @@ const fromApiStatus: Record<string, BookingStatus> = {
   CANCELADA: "CANCELADA",
 };
 
-function calculateDays(startDate: string, endDate: string): number {
-  if (!startDate || !endDate) return 1;
-  const start = new Date(startDate).getTime();
-  const end = new Date(endDate).getTime();
-  return Math.max(1, Math.round((end - start) / 86400000) + 1);
-}
-
-interface RawBackendBooking {
+type ApiBookingItem = {
   id: string;
-  propertyId: string;
-  tenantId?: string;
+  status: ApiBookingStatus;
+  propertyId?: string;
+  propertyTitle?: string;
+  propertyCategory?: PropertyCategory;
+  property?: { id?: string; title?: string; name?: string; category?: string };
+  tenant?: { name?: string };
   startDate: string;
   endDate: string;
+  days: number;
   subtotal: string;
-  status: string;
   expiresAt?: string | null;
-  propertyTitle?: string;
-  days?: number;
   cancelReason?: "VENCIDA" | null;
   deliveredAt?: string | null;
   returnedAt?: string | null;
   finalizedAt?: string | null;
   ratedByMe?: boolean;
   lesseeName?: string;
-  property?: {
-    title: string;
-    securityDeposit?: string;
-  };
-  tenant?: {
-    name?: string;
-    email?: string;
-  };
-}
+};
 
-function mapBookingItem(raw: RawBackendBooking): BookingListItem {
+type ApiBookingListResult = {
+  data: ApiBookingItem[];
+  total: number;
+  page: number;
+  pageSize?: number;
+  totalPages?: number;
+};
+
+const BOOKING_PAGE_SIZE = 10;
+
+const fromApiCategory: Record<string, PropertyCategory> = {
+  PROPERTY: "PROPIEDAD",
+  EQUIPMENT: "EQUIPO",
+  PROPIEDAD: "PROPIEDAD",
+  EQUIPO: "EQUIPO",
+};
+
+function mapBookingItem(raw: ApiBookingItem): BookingListItem {
   return {
     id: raw.id,
-    propertyId: raw.propertyId,
+    propertyId: raw.propertyId ?? raw.property?.id ?? "",
     propertyTitle: raw.propertyTitle || raw.property?.title || "Bien en renta",
     startDate: raw.startDate,
     endDate: raw.endDate,
-    days: raw.days || calculateDays(raw.startDate, raw.endDate),
+    days: raw.days || countBookingDays(raw.startDate, raw.endDate),
     subtotal: raw.subtotal,
     status: fromApiStatus[raw.status] || "PENDIENTE",
     expiresAt: raw.expiresAt || null,
@@ -80,8 +86,29 @@ function mapBookingItem(raw: RawBackendBooking): BookingListItem {
   };
 }
 
-function fromApiBooking<T extends { status: ApiBookingStatus }>(booking: T): T & { status: BookingStatus } {
-  return { ...booking, status: fromApiStatus[booking.status] || "PENDIENTE" };
+type ApiCreatedBooking = Omit<CreatedBooking, "status"> & { status: ApiBookingStatus };
+
+function fromApiBooking(raw: ApiCreatedBooking): CreatedBooking {
+  return {
+    ...raw,
+    status: fromApiStatus[raw.status] || "PENDIENTE",
+  };
+}
+
+function fromApiList(result: ApiBookingListResult): BookingListResult {
+  const pageSize = result.pageSize ?? BOOKING_PAGE_SIZE;
+  return {
+    data: result.data.map((item) => mapBookingItem({
+      ...item,
+      propertyId: item.propertyId ?? item.property?.id ?? "",
+      propertyTitle: item.propertyTitle ?? item.property?.title ?? item.property?.name ?? "",
+      propertyCategory: item.propertyCategory ?? (item.property?.category ? fromApiCategory[item.property.category] : undefined),
+      lesseeName: item.lesseeName ?? item.tenant?.name,
+    })),
+    total: result.total,
+    page: result.page,
+    totalPages: result.totalPages ?? Math.max(1, Math.ceil(result.total / pageSize)),
+  };
 }
 
 function buildQuery(params: Record<string, string | number | undefined>) {
@@ -94,40 +121,20 @@ function buildQuery(params: Record<string, string | number | undefined>) {
 
 export const httpBookingRepository: BookingRepository = {
   async create(input) {
-    const booking = await apiPost<Omit<CreatedBooking, "status"> & { status: ApiBookingStatus }>(
+    const booking = await apiPost<ApiCreatedBooking>(
       "api/v1/bookings",
       input,
     );
     return fromApiBooking(booking);
   },
 
-  async listMine({ page, status }: ListBookingsParams): Promise<BookingListResult> {
-    const backendStatus = status ? toApiStatus[status] || status : undefined;
-    const query = buildQuery({ page, status: backendStatus, pageSize: 10 });
-    const rawResult = await apiGet<{ data: RawBackendBooking[]; total: number; page: number }>(
-      `api/v1/bookings/mine?${query}`
-    );
-    const total = rawResult?.total || 0;
-    return {
-      data: (rawResult?.data || []).map(mapBookingItem),
-      page: rawResult?.page || page,
-      totalPages: Math.max(1, Math.ceil(total / 10)),
-      total,
-    };
+  async listMine({ page, status }: ListBookingsParams) {
+    const query = buildQuery({ page, status: status ? toApiStatus[status] : undefined, pageSize: BOOKING_PAGE_SIZE });
+    return fromApiList(await apiGet<ApiBookingListResult>(`api/v1/bookings/mine?${query}`));
   },
 
-  async listLessor({ page, status, propertyId }: ListBookingsParams): Promise<BookingListResult> {
-    const backendStatus = status ? toApiStatus[status] || status : undefined;
-    const query = buildQuery({ page, status: backendStatus, propertyId, pageSize: 10 });
-    const rawResult = await apiGet<{ data: RawBackendBooking[]; total: number; page: number }>(
-      `api/v1/owner/bookings?${query}`
-    );
-    const total = rawResult?.total || 0;
-    return {
-      data: (rawResult?.data || []).map(mapBookingItem),
-      page: rawResult?.page || page,
-      totalPages: Math.max(1, Math.ceil(total / 10)),
-      total,
-    };
+  async listLessor({ page, status, propertyId }: ListBookingsParams) {
+    const query = buildQuery({ page, status: status ? toApiStatus[status] : undefined, propertyId, pageSize: BOOKING_PAGE_SIZE });
+    return fromApiList(await apiGet<ApiBookingListResult>(`api/v1/owner/bookings?${query}`));
   },
 };
