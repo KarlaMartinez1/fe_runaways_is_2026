@@ -71,6 +71,8 @@ export function OccupancyPageBody({
         });
 
         setOccupancy(result);
+        setFrom(newFrom);
+        setTo(newTo);
         syncUrl(newFrom, newTo, newOrder, newPage);
       } catch (err) {
         console.error("Error fetching occupancy:", err);
@@ -156,8 +158,8 @@ export function OccupancyPageBody({
 
       <PropertyOccupancyTable
         items={occupancy.data}
-        from={occupancy.from}
-        to={occupancy.to}
+        from={from}
+        to={to}
         periodDays={occupancy.periodDays}
         order={order}
         onOrderChange={handleOrderChange}

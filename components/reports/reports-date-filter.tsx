@@ -58,7 +58,7 @@ export function ReportsDateFilter({
   } = useForm<ReportDateFilterFormData>({
     resolver: zodResolver(schema),
     mode: "onChange",
-    defaultValues: {
+    values: {
       from: initialFrom,
       to: initialTo,
     },
@@ -150,7 +150,11 @@ export function ReportsDateFilter({
         365
   );
 
-  const hasValidationError = isFutureDate || isInvalidRange || isPeriodExceeded;
+  const isIncompleteRange = Boolean(
+    checkMaxDays && ((fromValue && !toValue) || (!fromValue && toValue))
+  );
+
+  const hasValidationError = isFutureDate || isInvalidRange || isPeriodExceeded || isIncompleteRange;
 
   const onSubmit = (data: ReportDateFilterFormData) => {
     if (hasValidationError) return;
