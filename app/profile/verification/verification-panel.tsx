@@ -25,7 +25,7 @@ export function VerificationPanel({ initialInfo }: VerificationPanelProps) {
   };
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4">
       {justSubmitted && (
         <p role="status" className="rounded-xl bg-[#dcfce7] px-4 py-3 text-sm font-medium text-[#14532d]">
           {m.submitted}
@@ -35,7 +35,7 @@ export function VerificationPanel({ initialInfo }: VerificationPanelProps) {
       <div
         className={
           showForm
-            ? "grid items-start gap-6 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]"
+            ? "grid items-start gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]"
             : "max-w-xl"
         }
       >

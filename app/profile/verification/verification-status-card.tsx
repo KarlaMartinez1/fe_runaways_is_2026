@@ -25,7 +25,7 @@ export function VerificationStatusCard({ info, onUploadNew, showUploadNew }: Ver
   return (
     <section
       aria-labelledby="verification-status-title"
-      className="flex flex-col gap-4 rounded-2xl border border-zinc-200 bg-white p-6"
+      className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-4 sm:p-5"
     >
       <h2 id="verification-status-title" className="text-lg font-semibold text-zinc-900">
         {m.statusTitle}
@@ -52,7 +52,7 @@ export function VerificationStatusCard({ info, onUploadNew, showUploadNew }: Ver
       {status !== "VERIFICADA" && (
         <div className="flex flex-col gap-2">
           <h3 className="text-sm font-semibold text-zinc-900">{m.requirementsTitle}</h3>
-          <ul className="flex list-disc flex-col gap-1.5 pl-5 text-sm text-zinc-700">
+          <ul className="flex list-disc flex-col gap-1 pl-5 text-sm text-zinc-700">
             {m.requirements.map((requirement) => (
               <li key={requirement}>{requirement}</li>
             ))}

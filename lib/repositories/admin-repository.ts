@@ -8,7 +8,7 @@ export const ADMIN_DOCUMENTS_PAGE_SIZE = 10;
 
 // H20: revisión de documentos de identidad (solo ADMIN).
 export interface AdminRepository {
-  // Documentos PENDIENTE, del más antiguo al más reciente, 10 por página.
+  // Documentos pendientes, del más antiguo al más reciente; 10 por página por defecto.
   listPendingDocuments(page: number): Promise<PendingIdentityDocumentList>;
   // Documento de un usuario con su archivo. null si no existe.
   getDocument(userId: string): Promise<IdentityDocumentReview | null>;
