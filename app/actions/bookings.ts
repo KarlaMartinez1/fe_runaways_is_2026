@@ -37,17 +37,17 @@ export async function createBookingAction(input: {
       if (error.code === "VERIFICATION_REQUIRED") {
         return { ok: false, message: bookingMessages.verificationRequired, verificationRequired: true };
       }
-      if (error.status === 409) {
+      if (error.status === 409 && error.code === "DATES_UNAVAILABLE") {
         return { ok: false, message: bookingMessages.unavailableDates, conflict: true };
       }
-      if (error.status === 404) {
+      if (error.status === 404 && error.code === "PROPERTY_NOT_AVAILABLE") {
         return { ok: false, message: bookingMessages.propertyUnavailable };
       }
       if (error.status === 403) {
         return { ok: false, message: bookingMessages.notAllowed };
       }
-      if (error.status === 400 && error.message) {
-        return { ok: false, message: error.message };
+      if (error.status === 400 && error.code === "VALIDATION_ERROR") {
+        return { ok: false, message: error.message ?? bookingMessages.genericError };
       }
     }
 

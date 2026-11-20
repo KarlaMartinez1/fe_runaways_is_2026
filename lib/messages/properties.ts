@@ -37,7 +37,9 @@ export const bookingBoxMessages = {
   noDeposit: "Sin depósito",
   reserve: "Reservar",
   verificationRequired: "Debes verificar tu cuenta para rentar.",
+  verificationDialogTitle: "Verifica tu cuenta primero",
   verifyAccount: "Verificar mi cuenta",
+  dialogClose: "Entendido",
   askOwner: "Preguntar al arrendador",
 };
 export const detailMessages = {
