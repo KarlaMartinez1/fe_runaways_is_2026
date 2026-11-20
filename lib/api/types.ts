@@ -26,7 +26,7 @@ export type Paginated<T> = {
 
 export type PropertyDetail = Property & {
   description: string;
-  securityDeposit?: string;
+  securityDeposit: string;
   ownerName: string;
   reviewCount: number;
   ownerAverageRating?: number | null;

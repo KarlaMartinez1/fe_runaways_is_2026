@@ -20,7 +20,13 @@ import {
   rateableReservationSeeds,
   type RateableReservationSeed,
 } from "./fixtures/rateable-reservations";
-import { getPropertyOwnerName, isReservationRated, recordPropertyReview } from "./review-store";
+import {
+  getOwnerRatingSummary,
+  getPropertyOwnerName,
+  getPropertyReviews,
+  isReservationRated,
+  recordPropertyReview,
+} from "./review-store";
 import { mockUserProfileFixture } from "./fixtures/profile";
 
 // Códigos que devuelve el backend para cada motivo de bloqueo (409).
