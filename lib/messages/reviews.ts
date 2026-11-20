@@ -20,6 +20,7 @@ export const reviewMessages = {
   confirmBack: "Volver",
   success: "Calificación enviada",
   rateButton: "Calificar",
+  confirmTitle: "¿Enviar calificación?",
   backToBookings: "Volver a Mis reservas",
   checkIn: "Check-in",
   checkOut: "Check-out",
