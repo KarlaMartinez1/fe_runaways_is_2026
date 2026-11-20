@@ -83,6 +83,7 @@ export const mockReviewRepository: ReviewRepository = {
       throw new ApiError(409, BLOCK_ERROR_CODES[blockReason], blockReasonMessage[blockReason]);
     }
 
+    const reviewCreatedAt = new Date().toISOString();
     const summary = recordPropertyReview({
       reservationId,
       propertyId: seed.propertyId,
@@ -90,14 +91,36 @@ export const mockReviewRepository: ReviewRepository = {
       userRating: input.userRating,
       comment: input.comment,
       reviewerName: mockUserProfileFixture.fullName,
-      createdAt: new Date().toISOString(),
+      createdAt: reviewCreatedAt,
     });
 
+    const property = propertyFixtures.find((item) => item.id === seed.propertyId)!;
+    const ownerName = getPropertyOwnerName(seed.propertyId);
+    const ownerSummary = getOwnerRatingSummary(ownerName);
+
     return {
-      propertyId: seed.propertyId,
-      averageRating: summary.averageRating,
-      reviewCount: summary.reviewCount,
-      createdAt: new Date().toISOString(),
+      id: property.id,
+      title: property.title,
+      description: (propertyDetailExtras[seed.propertyId] ?? defaultDetailExtras).description,
+      category: property.category,
+      department: property.department,
+      municipality: property.municipality,
+      pricePerDay: property.pricePerDay,
+      securityDeposit: (propertyDetailExtras[seed.propertyId] ?? defaultDetailExtras).securityDeposit,
+      images: property.images,
+      owner: { id: "mock-owner", name: ownerName },
+      propertyRatingAverage: summary.averageRating?.toFixed(1) ?? null,
+      propertyReviewCount: summary.reviewCount,
+      ownerRatingAverage: ownerSummary.averageRating?.toFixed(1) ?? null,
+      ownerReviewCount: ownerSummary.reviewCount,
+      reviews: getPropertyReviews(seed.propertyId).map((review) => ({
+        id: review.id,
+        propertyRating: review.rating,
+        comment: review.comment ?? null,
+        createdAt: review.createdAt,
+        author: { name: review.reviewerName },
+      })),
+      reviewCreatedAt,
     };
   },
 };

@@ -7,7 +7,7 @@ import { validateReviewInput } from "@/lib/reviews/rules";
 import { reviewRepository } from "@/lib/repositories";
 
 export type SubmitPropertyReviewResult =
-  | { ok: true }
+  | { ok: true; reviewCreatedAt: string }
   | { ok: false; message: string; sessionExpired?: boolean };
 
 // Mensajes para los 409, según el código que devuelve el backend.
@@ -23,21 +23,20 @@ export async function submitPropertyReviewAction(input: {
   userRating: number;
   comment?: string;
 }): Promise<SubmitPropertyReviewResult> {
-  // Primera barrera: se valida antes de llamar al servidor.
-  const validationError = validateReviewInput(input);
+  const comment = input.comment?.trim() || undefined;
+  // Validar el mismo texto que se enviará al backend.
+  const validationError = validateReviewInput({ ...input, comment });
   if (validationError) {
     return { ok: false, message: validationError };
   }
 
-  const comment = input.comment?.trim() || undefined;
-
   try {
-    await reviewRepository.submitPropertyReview(input.reservationId, {
+    const result = await reviewRepository.submitPropertyReview(input.reservationId, {
       propertyRating: input.propertyRating,
       userRating: input.userRating,
       comment,
     });
-    return { ok: true };
+    return { ok: true, reviewCreatedAt: result.reviewCreatedAt };
   } catch (error) {
     if (error instanceof ApiError) {
       if (error.status === 401) {
@@ -49,8 +48,11 @@ export async function submitPropertyReviewAction(input: {
       if (error.status === 404) {
         return { ok: false, message: reviewMessages.errors.notFound };
       }
-      if (error.status === 409 && error.code && conflictMessages[error.code]) {
-        return { ok: false, message: conflictMessages[error.code] };
+      if (error.status === 409) {
+        return {
+          ok: false,
+          message: (error.code && conflictMessages[error.code]) || error.message || reviewMessages.errors.submit,
+        };
       }
       if (error.status === 400 && error.message) {
         return { ok: false, message: error.message };
