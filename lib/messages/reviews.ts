@@ -22,6 +22,7 @@ export const reviewMessages = {
   confirmBack: "Volver",
   success: "Calificación enviada",
   rateButton: "Calificar",
+  confirmTitle: "¿Enviar calificación?",
   backToBookings: "Volver a Mis reservas",
   checkIn: "Check-in",
   checkOut: "Check-out",
@@ -34,7 +35,6 @@ export const reviewMessages = {
       : `★ ${average.toFixed(1)} como arrendador (${count} ${count === 1 ? "reseña" : "reseñas"})`,
   errors: {
     propertyRating: "Elija una puntuación del bien.",
-    renterCommentMin: "El comentario debe tener al menos 10 caracteres.",
     renterRating: "Elija una puntuación del arrendatario.",
     ownerRating: "Elija una puntuación del arrendador.",
     comment: "El comentario no puede superar 200 caracteres.",

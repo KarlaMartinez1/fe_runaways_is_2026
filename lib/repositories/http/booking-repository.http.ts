@@ -34,7 +34,7 @@ type ApiBookingItem = {
   propertyId?: string;
   propertyTitle?: string;
   propertyCategory?: PropertyCategory;
-  property?: { id?: string; title?: string; name?: string; category?: string };
+  property?: { id?: string; title?: string; name?: string; category?: string; images?: string[]; securityDeposit?: string };
   tenant?: { id?: string; userId?: string; name?: string; rating?: { average?: number | null; count?: number } };
   startDate: string;
   endDate: string;
@@ -76,10 +76,12 @@ function mapBookingItem(raw: ApiBookingItem): BookingListItem {
     id: raw.id,
     propertyId: raw.propertyId ?? raw.property?.id ?? "",
     propertyTitle: raw.propertyTitle || raw.property?.title || "Bien en renta",
+    propertyImage: raw.property?.images?.[0] ?? null,
     startDate: raw.startDate,
     endDate: raw.endDate,
     days: raw.days || countBookingDays(raw.startDate, raw.endDate),
     subtotal: raw.subtotal,
+    securityDeposit: raw.property?.securityDeposit,
     status: fromApiStatus[raw.status] || "PENDIENTE",
     expiresAt: raw.expiresAt || null,
     cancelReason: raw.cancelReason || (raw.status === "CANCELED" ? "VENCIDA" : null),
@@ -90,7 +92,7 @@ function mapBookingItem(raw: ApiBookingItem): BookingListItem {
     lesseeRatingAverage: raw.tenant?.rating?.average,
     lesseeRatingCount: raw.tenant?.rating?.count,
     finalizedAt: raw.finalizedAt ?? raw.completedAt ?? raw.returnedAt ?? null,
-    ratedByMe: raw.ratedByMe || false,
+    ratedByMe: raw.ratedByMe ?? false,
     hasPropertyReview: raw.hasPropertyReview ?? false,
     hasRenterReview: raw.hasRenterReview ?? false,
   };

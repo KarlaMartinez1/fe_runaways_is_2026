@@ -22,14 +22,11 @@ export function RateRenterForm({ reservationId }: { reservationId: string }) {
   const [isConfirming, setIsConfirming] = useState(false);
   const [isPending, startTransition] = useTransition();
   const commentExceeded = comment.length > COMMENT_MAX_LENGTH;
-  const commentTooShort = comment.trim().length < 10;
-  const canSubmit = rating !== null && !commentTooShort && !commentExceeded && !isPending;
+  const canSubmit = rating !== null && !commentExceeded && !isPending;
 
   function handleRequestSubmit() {
     const nextRatingError = rating === null ? reviewMessages.errors.renterRating : undefined;
-    const nextCommentError = commentTooShort
-      ? reviewMessages.errors.renterCommentMin
-      : commentExceeded ? reviewMessages.errors.comment : undefined;
+    const nextCommentError = commentExceeded ? reviewMessages.errors.comment : undefined;
     setRatingError(nextRatingError);
     setCommentError(nextCommentError);
     setServerError(null);
