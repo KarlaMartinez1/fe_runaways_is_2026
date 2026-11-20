@@ -98,7 +98,7 @@ export function IdentityDocumentForm({ onSubmitted }: IdentityDocumentFormProps)
     const formData = new FormData();
     formData.append("documentType", values.documentType);
     formData.append("documentNumber", values.documentNumber);
-    formData.append("file", file);
+    formData.append("documentUrl", file);
 
     const result = await submitIdentityDocument(formData);
     if (!result.ok) {

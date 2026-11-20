@@ -12,7 +12,7 @@ export type SubmitIdentityDocumentResult =
   | { ok: true; info: IdentityDocumentInfo }
   | { ok: false; message: string };
 
-// H19: envía el documento de identidad. Recibe FormData con documentType, documentNumber y file.
+// H19: el archivo se recibe con el nombre documentUrl del contrato API.
 export async function submitIdentityDocument(
   formData: FormData,
 ): Promise<SubmitIdentityDocumentResult> {
@@ -24,7 +24,7 @@ export async function submitIdentityDocument(
     return { ok: false, message: parsed.error.issues[0]?.message ?? m.saveError };
   }
 
-  const file = formData.get("file");
+  const file = formData.get("documentUrl");
   const fileError = getDocumentFileError(file instanceof File ? file : null);
   if (fileError || !(file instanceof File)) {
     return { ok: false, message: fileError ?? m.fileRequired };

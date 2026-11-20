@@ -8,7 +8,7 @@ export const identityDocumentMessages = {
   // Formulario
   formTitle: "Formulario de verificación",
   typeLabel: "Tipo de documento",
-  typeOptions: { DUI: "DUI", PASAPORTE: "Pasaporte" },
+  typeOptions: { DUI: "DUI", PASSPORT: "Pasaporte" },
   numberLabel: "Número de documento",
   duiPlaceholder: "00000000-0",
   fileLabel: "Documento (JPG, PNG o PDF, máx. 5 MB)",
