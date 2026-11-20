@@ -10,7 +10,6 @@ import type { PendingIdentityDocumentList } from "@/lib/api/types";
 import { adminDocumentsMessages as m } from "@/lib/messages/admin-documents";
 import { identityDocumentMessages } from "@/lib/messages/identity-document";
 import { adminRepository } from "@/lib/repositories";
-import { ADMIN_DOCUMENTS_PAGE_SIZE } from "@/lib/repositories/admin-repository";
 import { formatDateTime } from "@/lib/utils/date-time";
 
 export const metadata: Metadata = {
@@ -64,7 +63,7 @@ export default async function AdminVerificationsPage({ searchParams }: AdminVeri
     redirect("/login");
   }
 
-  const totalPages = result ? Math.max(1, Math.ceil(result.total / ADMIN_DOCUMENTS_PAGE_SIZE)) : 1;
+  const totalPages = result ? Math.max(1, Math.ceil(result.total / result.pageSize)) : 1;
   if (result && result.data.length === 0 && page > 1) {
     redirect("/admin/verifications");
   }
