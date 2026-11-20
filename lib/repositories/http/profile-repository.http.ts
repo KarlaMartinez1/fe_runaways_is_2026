@@ -75,7 +75,7 @@ export const httpProfileRepository: ProfileRepository = {
       ratingCount: profile.rating?.count ?? 0,
       documentType:
         profile.document?.type === "PASSPORT"
-          ? "PASAPORTE"
+          ? "PASSPORT"
           : profile.document?.type ?? null,
       documentNumber: profile.document?.number ?? null,
       memberSince: formatMemberSince(profile.createdAt),

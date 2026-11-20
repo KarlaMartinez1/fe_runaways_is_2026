@@ -17,7 +17,7 @@ const SAMPLE_FILE_URL = `data:image/svg+xml;utf8,${encodeURIComponent(
 // Documentos pendientes de ejemplo (los del Figma). Los que suben los usuarios en H19 se suman a estos.
 const sampleDocuments: Omit<StoredIdentityDocument, "fileName" | "fileType" | "fileUrl" | "status">[] = [
   { userId: "sample-andrea", name: "Andrea Flores", email: "andrea.flores@correo.com", documentType: "DUI", documentNumber: "01234567-8", submittedAt: "2026-10-28T15:12:00Z" },
-  { userId: "sample-kevin", name: "Kevin Morales", email: "kevin.morales@correo.com", documentType: "PASAPORTE", documentNumber: "B1234567", submittedAt: "2026-10-29T22:40:00Z" },
+  { userId: "sample-kevin", name: "Kevin Morales", email: "kevin.morales@correo.com", documentType: "PASSPORT", documentNumber: "B1234567", submittedAt: "2026-10-29T22:40:00Z" },
   { userId: "sample-sofia", name: "Sofía Rivera", email: "sofia.rivera@correo.com", documentType: "DUI", documentNumber: "05432198-7", submittedAt: "2026-10-31T17:03:00Z" },
   { userId: "sample-diego", name: "Diego Pineda", email: "diego.pineda@correo.com", documentType: "DUI", documentNumber: "06789012-3", submittedAt: "2026-11-02T02:25:00Z" },
 ];

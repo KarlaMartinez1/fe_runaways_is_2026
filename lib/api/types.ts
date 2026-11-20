@@ -188,7 +188,7 @@ export type PropertyStatusChange = {
 };
 
 // H19: tipo de documento de identidad.
-export type DocumentType = "DUI" | "PASAPORTE";
+export type DocumentType = "DUI" | "PASSPORT";
 
 // H19: respuesta de GET /api/v1/profile/document.
 export type IdentityDocumentInfo = ProfileDocument & {
@@ -209,6 +209,21 @@ export type SubmittedIdentityDocument = {
   documentType: DocumentType;
   documentStatus: "PENDIENTE";
   documentSubmittedAt: string;
+};
+
+export type BackendSubmittedIdentityDocument = {
+  documentType: DocumentType;
+  documentStatus: "PENDING";
+  documentSubmittedAt: string;
+};
+
+// Contrato de GET /api/v1/profile/document. Los estados del backend se
+// convierten al modelo de interfaz dentro del repositorio HTTP.
+export type BackendIdentityDocumentInfo = {
+  accountStatus: "UNVERIFIED" | "PENDING" | "VERIFIED" | "REJECTED";
+  documentType?: DocumentType;
+  documentSubmittedAt?: string;
+  rejectionReason?: string;
 };
 
 // H20: estado del documento en la revisión del ADMIN.
