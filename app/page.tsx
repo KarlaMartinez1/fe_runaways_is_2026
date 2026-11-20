@@ -19,6 +19,9 @@ const RECENT_COUNT = 5;
 export default async function Home() {
   // El catálogo (H2) es solo para TENANT; el arrendador va a sus publicaciones.
   const user = await getCurrentUser();
+  if (user?.role === "ADMIN") {
+    redirect("/admin/verifications");
+  }
   if (user?.role === "OWNER") {
     redirect("/properties/mine");
   }
