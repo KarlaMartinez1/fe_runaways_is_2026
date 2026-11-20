@@ -44,9 +44,9 @@ export function RatingsPageBody({
       if (newPage > 1) params.set("page", String(newPage));
 
       const query = params.toString();
-      const newUrl = query
-        ? `/owner/reports/ratings?${query}`
-        : "/owner/reports/ratings";
+      const currentPath =
+        typeof window !== "undefined" ? window.location.pathname : "/owner/reports/ratings";
+      const newUrl = query ? `${currentPath}?${query}` : currentPath;
       router.replace(newUrl);
     },
     [router]

@@ -104,7 +104,8 @@ export interface DepositInfo {
   rentalPeriod: string;
   depositAmount: number;
   status: DepositDecisionStatus;
-  paymentStatus: 'Pagada' | 'Pendiente';
+  paymentStatus: 'Pagada' | 'Pendiente' | 'Finalizada' | 'Cancelada';
+  bookingStatus?: 'PENDIENTE' | 'PAGADA' | 'FINALIZADA' | 'CANCELADA';
   decisionDeadline: string;
   daysRemaining: number;
 }

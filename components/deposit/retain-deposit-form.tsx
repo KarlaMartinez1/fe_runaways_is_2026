@@ -16,7 +16,7 @@ import type { RetainDepositFormData } from '@/types';
 
 export interface RetainDepositFormProps {
   depositAmount: number;
-  onSubmitSuccess?: (data: RetainDepositFormData) => void;
+  onSubmitSuccess?: (data: RetainDepositFormData) => Promise<void> | void;
   onCancel?: () => void;
   className?: string;
 }
@@ -41,9 +41,8 @@ export function RetainDepositForm({
   } = useForm<RetainDepositFormValues>({
     resolver: zodResolver(retainDepositSchema),
     defaultValues: {
-      amount: 20.0,
-      reason:
-        'Se encontraron rayones profundos en la mesa de madera después de la entrega del servicio.',
+      amount: depositAmount > 0 ? depositAmount : 0,
+      reason: '',
     },
   });
 
@@ -79,16 +78,19 @@ export function RetainDepositForm({
   const onSubmit = async (values: RetainDepositFormValues) => {
     setSubmissionFeedback(null);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 800));
+      if (onSubmitSuccess) {
+        await onSubmitSuccess(values);
+      }
       setSubmissionFeedback({
         type: 'success',
         message: depositMessages.retentionSuccessNotice,
       });
-      onSubmitSuccess?.(values);
-    } catch {
+    } catch (error) {
+      const message =
+        error instanceof Error ? error.message : depositMessages.errorNotice;
       setSubmissionFeedback({
         type: 'error',
-        message: depositMessages.errorNotice,
+        message,
       });
     }
   };

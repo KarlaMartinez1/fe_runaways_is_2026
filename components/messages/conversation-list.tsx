@@ -16,9 +16,14 @@ export function ConversationList({ conversations, activeId }: ConversationListPr
     return <p className="py-10 text-center text-sm text-zinc-600">{m.emptyList}</p>;
   }
 
+  // H16: de la conversación con el mensaje más reciente a la más antigua; las que no tienen mensajes, al final.
+  const sorted = [...conversations].sort((a, b) =>
+    (b.lastMessageAt ?? "").localeCompare(a.lastMessageAt ?? ""),
+  );
+
   return (
     <ul className="flex flex-col gap-1">
-      {conversations.map((conversation) => {
+      {sorted.map((conversation) => {
         const isActive = conversation.id === activeId;
         const initial = conversation.otherParticipantName.trim().charAt(0).toUpperCase();
 
@@ -52,21 +57,21 @@ export function ConversationList({ conversations, activeId }: ConversationListPr
                 </span>
                 <span className="truncate text-xs text-zinc-500">{conversation.propertyTitle}</span>
                 {conversation.lastMessage && (
-                  <span className="flex items-center justify-between gap-2">
-                    <span
-                      className={cn(
-                        "line-clamp-2 text-sm",
-                        conversation.hasUnread ? "font-semibold text-zinc-900" : "text-zinc-600",
-                      )}
-                    >
-                      {conversation.lastMessageIsMine && m.youPrefix}
-                      {conversation.lastMessage}
-                    </span>
-                    {conversation.hasUnread && (
-                      <span className="h-2 w-2 shrink-0 rounded-full bg-[#1d4ed8]">
-                        <span className="sr-only">{m.unread}</span>
-                      </span>
+                  <span
+                    className={cn(
+                      "line-clamp-2 text-sm",
+                      conversation.unreadCount > 0 ? "font-semibold text-zinc-900" : "text-zinc-600",
                     )}
+                  >
+                    {conversation.lastMessageIsMine && m.youPrefix}
+                    {conversation.lastMessage}
+                  </span>
+                )}
+                {/* El backend envía la cantidad de mensajes sin leer; se muestra en lugar de la vista previa. */}
+                {conversation.unreadCount > 0 && (
+                  <span className="flex items-center gap-2 text-sm font-semibold text-[#1d4ed8]">
+                    <span aria-hidden="true" className="h-2 w-2 shrink-0 rounded-full bg-[#1d4ed8]" />
+                    {m.unreadCount(conversation.unreadCount)}
                   </span>
                 )}
               </span>

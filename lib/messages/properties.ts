@@ -35,7 +35,6 @@ export const galleryMessages = {
 export const bookingBoxMessages = {
   depositLabel: "Depósito de garantía",
   noDeposit: "Sin depósito",
-  requiresVerification: "Requiere cuenta verificada",
   reserve: "Reservar",
   verificationRequired: "Debes verificar tu cuenta para rentar.",
   verifyAccount: "Verificar mi cuenta",

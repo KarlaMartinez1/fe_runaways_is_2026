@@ -6,7 +6,7 @@ import { PropertyGallery } from "@/components/properties/property-gallery";
 import { PropertyReviewsTabs } from "@/components/reviews/property-reviews-tabs";
 import { ApiError } from "@/lib/api/client";
 import type { PropertyAvailabilityState, PropertyDetail } from "@/lib/api/types";
-import { bookingBoxMessages, categoryLabels, detailMessages } from "@/lib/messages/properties";
+import { categoryLabels, detailMessages } from "@/lib/messages/properties";
 import { reviewMessages } from "@/lib/messages/reviews";
 import { propertyRepository } from "@/lib/repositories";
 import { BookingBox } from "./booking-box";
@@ -114,10 +114,6 @@ export default async function PropertyDetailPage({ params }: PropertyDetailPageP
               <h1 className="text-3xl font-bold text-zinc-900">{property.title}</h1>
               <span className={`rounded-md px-2.5 py-0.5 text-xs font-semibold ${categoryStyle}`}>
                 {categoryLabels[property.category]}
-              </span>
-              {/* H21: la regla aplica a todos los bienes, así que la etiqueta se muestra siempre. */}
-              <span className="rounded-md bg-[#FDE7D3] px-2.5 py-0.5 text-xs font-semibold text-[#9a3412]">
-                {bookingBoxMessages.requiresVerification}
               </span>
             </div>
 

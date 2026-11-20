@@ -6,7 +6,7 @@ export const messagingMessages = {
   you: "Tú",
   youPrefix: "Tú: ",
   yesterday: "Ayer",
-  unread: "Mensaje sin leer",
+  unreadCount: (count: number) => `Mensajes sin leer: ${count}`,
   backToList: "Volver a mensajes",
   emptyList: "Aún no tienes conversaciones.",
   selectConversation: "Selecciona una conversación para ver los mensajes.",

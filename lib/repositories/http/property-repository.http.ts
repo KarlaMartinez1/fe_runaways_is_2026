@@ -12,7 +12,7 @@ import type {
   NewPropertyInput,
 } from "@/lib/api/types";
 import { filtersToQuery } from "@/lib/filters/property-filters";
-import type { ManageableStatus, PropertyRepository } from "../property-repository";
+import type { PropertyRepository } from "../property-repository";
 
 // El backend usa el enum PropertyCategory en inglés.
 const apiCategory: Record<PropertyCategory, string> = {
@@ -186,16 +186,9 @@ export const httpPropertyRepository: PropertyRepository = {
 
   async getById(id) {
     try {
-      const data = await apiGet<PropertyDetail & { owner?: { name?: string } }>(
-        `api/v1/properties/${encodeURIComponent(id)}`,
-      );
-      // La API puede incluir el nombre como ownerName o dentro de owner.name.
-      // Normalizar aquí mantiene el modelo que consume la pantalla.
-      return {
-        ...data,
-        ownerName: data.ownerName ?? data.owner?.name ?? "",
-      };
-
+      const data = await apiGet<ApiPropertyDetail>(`api/v1/properties/${encodeURIComponent(id)}`);
+      // H3: traduce categoría, promedios y reseñas al modelo que consume la pantalla.
+      return toPropertyDetail(data);
     } catch (error) {
       if (error instanceof ApiError && (error.status === 404 || error.status === 400)) {
         return null;
@@ -276,11 +269,13 @@ export const httpPropertyRepository: PropertyRepository = {
     );
   },
 
-  changeStatus(id, status) {
-    return apiPatch<PropertyStatusChange, { status: ManageableStatus }>(
+  // H5: el backend recibe y devuelve el estado en inglés (AVAILABLE, PAUSED).
+  async changeStatus(id, status) {
+    const result = await apiPatch<PropertyStatusChange & { status: string }, { status: string }>(
       `api/v1/properties/${encodeURIComponent(id)}/status`,
-      { status },
+      { status: status === "PAUSADO" ? "PAUSED" : "AVAILABLE" },
     );
+    return { ...result, status: fromApiStatus[result.status] };
   },
 
   remove(id) {
