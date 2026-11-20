@@ -2,6 +2,7 @@ import { apiGet, apiPost } from "@/lib/api/client";
 import type { BookingListItem, BookingListResult, CreatedBooking, PropertyCategory } from "@/lib/api/types";
 import type { BookingStatus } from "@/lib/api/types";
 import type { BookingRepository, ListBookingsParams } from "../booking-repository";
+import { countBookingDays } from "@/lib/bookings/rules";
 
 type ApiBookingStatus = "PENDING" | "PAID" | "COMPLETED" | "CANCELED";
 
@@ -65,14 +66,14 @@ const fromApiCategory: Record<string, PropertyCategory> = {
   EQUIPO: "EQUIPO",
 };
 
-function mapBookingItem(raw: RawBackendBooking): BookingListItem {
+function mapBookingItem(raw: ApiBookingItem): BookingListItem {
   return {
     id: raw.id,
     propertyId: raw.propertyId,
     propertyTitle: raw.propertyTitle || raw.property?.title || "Bien en renta",
     startDate: raw.startDate,
     endDate: raw.endDate,
-    days: raw.days || calculateDays(raw.startDate, raw.endDate),
+    days: raw.days || countBookingDays(raw.startDate, raw.endDate),
     subtotal: raw.subtotal,
     status: fromApiStatus[raw.status] || "PENDIENTE",
     expiresAt: raw.expiresAt || null,
@@ -85,22 +86,25 @@ function mapBookingItem(raw: RawBackendBooking): BookingListItem {
   };
 }
 
+type ApiCreatedBooking = Omit<CreatedBooking, "status"> & { status: ApiBookingStatus };
+
+function fromApiBooking(raw: ApiCreatedBooking): CreatedBooking {
+  return {
+    ...raw,
+    status: fromApiStatus[raw.status] || "PENDIENTE",
+  };
+}
+
 function fromApiList(result: ApiBookingListResult): BookingListResult {
   const pageSize = result.pageSize ?? BOOKING_PAGE_SIZE;
   return {
-    data: result.data.map((item) => {
-      const normalized: Omit<ApiBookingItem, "status"> & { status: BookingStatus } = {
-        ...item,
-        status: fromApiStatus[item.status],
-      };
-      return {
-        ...normalized,
-        propertyId: item.propertyId ?? item.property?.id ?? "",
-        propertyTitle: item.propertyTitle ?? item.property?.title ?? item.property?.name ?? "",
-        propertyCategory: item.propertyCategory ?? (item.property?.category ? fromApiCategory[item.property.category] : undefined),
-        lesseeName: item.lesseeName ?? item.tenant?.name,
-      } as BookingListItem;
-    }),
+    data: result.data.map((item) => mapBookingItem({
+      ...item,
+      propertyId: item.propertyId ?? item.property?.id ?? "",
+      propertyTitle: item.propertyTitle ?? item.property?.title ?? item.property?.name ?? "",
+      propertyCategory: item.propertyCategory ?? (item.property?.category ? fromApiCategory[item.property.category] : undefined),
+      lesseeName: item.lesseeName ?? item.tenant?.name,
+    })),
     total: result.total,
     page: result.page,
     totalPages: result.totalPages ?? Math.max(1, Math.ceil(result.total / pageSize)),
@@ -117,7 +121,7 @@ function buildQuery(params: Record<string, string | number | undefined>) {
 
 export const httpBookingRepository: BookingRepository = {
   async create(input) {
-    const booking = await apiPost<Omit<CreatedBooking, "status"> & { status: ApiBookingStatus }>(
+    const booking = await apiPost<ApiCreatedBooking>(
       "api/v1/bookings",
       input,
     );
