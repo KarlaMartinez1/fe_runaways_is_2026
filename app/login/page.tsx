@@ -1,17 +1,20 @@
 import type { Metadata } from "next";
+import Link from "next/link";
+import { AuthCard } from "@/components/auth/auth-card";
 import { LoginForm } from "./login-form";
 
 export const metadata: Metadata = {
-  title: "Iniciar sesión",
+  title: "Iniciar sesión | Runaways",
 };
 
 export default function LoginPage() {
   return (
-    <div className="flex flex-1 items-center justify-center px-4">
-      <main className="w-full max-w-sm rounded-xl border border-zinc-200 p-8 dark:border-zinc-800">
-        <h1 className="mb-6 text-2xl font-semibold">Iniciar sesión</h1>
-        <LoginForm />
-      </main>
-    </div>
+    <AuthCard
+      title="Iniciar sesión"
+      description="Ingresa tus datos para continuar"
+      footer={<>¿No tienes cuenta? <Link href="/register">Regístrate</Link></>}
+    >
+      <LoginForm />
+    </AuthCard>
   );
 }

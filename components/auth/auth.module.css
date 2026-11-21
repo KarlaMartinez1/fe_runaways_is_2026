@@ -1,0 +1,274 @@
+.shell {
+  box-sizing: border-box;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  max-width: 100vw;
+  height: 100vh;
+  height: 100svh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: clamp(16px, 4vh, 40px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  color: #2449c6;
+  font-size: 23px;
+  font-weight: 600;
+  letter-spacing: -0.035em;
+}
+
+.logo {
+  width: 58px;
+  height: 55px;
+  object-fit: contain;
+}
+
+.card {
+  box-sizing: border-box;
+  width: 90%;
+  min-width: 0;
+  max-width: 397px;
+  padding: 30px 32px 26px;
+  border: 1px solid #2449c6;
+  border-radius: 18px;
+  background: #f6f9ff;
+}
+
+.title {
+  margin: 0;
+  color: #20232b;
+  font-size: 28px;
+  font-weight: 700;
+  line-height: 1.25;
+  letter-spacing: -0.035em;
+}
+
+.description {
+  margin: 10px 0 14px;
+  color: #4b5563;
+  font-size: 14px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.field label {
+  color: #22252d;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.field input {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: 46px;
+  padding: 0 14px;
+  border: 1px solid #929aa8;
+  border-radius: 11px;
+  background: #fff;
+  color: #20232b;
+  font: inherit;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 150ms ease, box-shadow 150ms ease;
+}
+
+.field input::placeholder {
+  color: #667085;
+  opacity: 1;
+}
+
+.field input:focus {
+  border-color: #2449c6;
+  box-shadow: 0 0 0 3px rgb(36 73 198 / 14%);
+}
+
+.passwordInput {
+  position: relative;
+  width: 100%;
+}
+
+.passwordInput input {
+  padding-right: 44px;
+}
+
+.passwordToggle {
+  position: absolute;
+  top: 50%;
+  right: 10px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  padding: 4px;
+  transform: translateY(-50%);
+  place-items: center;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: #000;
+  cursor: pointer;
+}
+
+.passwordToggle:focus-visible {
+  outline: 2px solid #000;
+  outline-offset: 2px;
+}
+
+.passwordToggle svg {
+  width: 19px;
+  height: 19px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.7;
+}
+
+.error {
+  margin: -5px 0 -5px;
+  color: #b42318;
+  font-size: 13px;
+}
+
+.error:empty {
+  display: none;
+}
+
+.submitButton {
+  min-height: 47px;
+  border: 0;
+  border-radius: 13px;
+  background: #2449c6;
+  color: #fff;
+  cursor: pointer;
+  font: inherit;
+  font-size: 15px;
+  font-weight: 600;
+  transition: background-color 150ms ease, opacity 150ms ease;
+}
+
+.submitButton:hover:not(:disabled) {
+  background: #1d3eae;
+}
+
+.submitButton:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+
+.footer {
+  margin-top: 14px;
+  color: #4b5563;
+  text-align: center;
+  font-size: 14px;
+}
+
+.footer a {
+  margin-left: 4px;
+  color: #2449c6;
+  font-weight: 600;
+  text-decoration: none;
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
+@media (max-width: 560px) {
+  .shell {
+    padding: 14px;
+  }
+
+  .brand {
+    gap: 9px;
+    margin-bottom: 12px;
+    font-size: 21px;
+  }
+
+  .logo {
+    width: 50px;
+    height: 48px;
+  }
+
+  .card {
+    padding: 24px 20px 22px;
+    border-radius: 16px;
+  }
+
+  .title {
+    font-size: 25px;
+  }
+
+  .form {
+    gap: 11px;
+  }
+}
+
+@media (max-height: 650px) {
+  .shell {
+    padding-top: 8px;
+    padding-bottom: 8px;
+  }
+
+  .brand {
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 19px;
+  }
+
+  .logo {
+    width: 42px;
+    height: 40px;
+  }
+
+  .card {
+    padding-top: 18px;
+    padding-bottom: 16px;
+  }
+
+  .title {
+    font-size: 23px;
+  }
+
+  .description {
+    margin: 7px 0 10px;
+  }
+
+  .form {
+    gap: 8px;
+  }
+
+  .field {
+    gap: 3px;
+  }
+
+  .field label {
+    font-size: 14px;
+  }
+
+  .field input,
+  .submitButton {
+    height: 42px;
+    min-height: 42px;
+  }
+
+  .footer {
+    margin-top: 10px;
+  }
+}
