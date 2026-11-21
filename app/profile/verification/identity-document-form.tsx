@@ -72,7 +72,7 @@ export function IdentityDocumentForm({ onSubmitted }: IdentityDocumentFormProps)
     setFile(selected);
     setFileError(undefined);
     // Vista previa solo para imágenes; del PDF se muestra el nombre.
-    setPreviewUrl(selected.type.startsWith("image/") ? URL.createObjectURL(selected) : undefined);
+    setPreviewUrl(URL.createObjectURL(selected));
   };
 
   const removeFile = () => {
@@ -113,7 +113,7 @@ export function IdentityDocumentForm({ onSubmitted }: IdentityDocumentFormProps)
       onSubmit={handleSubmit(onSubmit)}
       noValidate
       aria-labelledby="verification-form-title"
-      className="flex flex-col gap-5 rounded-2xl border border-zinc-200 bg-white p-6"
+      className="flex flex-col gap-3 rounded-2xl border border-zinc-200 bg-white p-4 sm:gap-4 sm:p-5"
     >
       <h2 id="verification-form-title" className="text-lg font-semibold text-zinc-900">
         {m.formTitle}
@@ -180,16 +180,23 @@ export function IdentityDocumentForm({ onSubmitted }: IdentityDocumentFormProps)
           onDragLeave={() => setIsDragging(false)}
           onDrop={handleDrop}
           className={cn(
-            "flex min-h-[170px] cursor-pointer flex-col items-center justify-center gap-3 rounded-xl border-2 border-dashed p-4 text-center",
+            "flex min-h-[112px] cursor-pointer flex-col items-center justify-center gap-2 rounded-xl border-2 border-dashed p-3 text-center sm:min-h-[124px]",
             "bg-[#EEF1FB] focus-within:border-[#1d4ed8]",
             isDragging ? "border-[#1d4ed8]" : fileError ? "border-red-500" : "border-[#B9C3EA]",
           )}
         >
-          {previewUrl && (
+          {previewUrl && file?.type.startsWith("image/") && (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={previewUrl} alt={m.previewAlt} className="max-h-40 rounded-lg object-contain" />
+            <img src={previewUrl} alt={m.previewAlt} className="max-h-28 rounded-lg object-contain sm:max-h-36" />
           )}
-          <span className="text-sm font-semibold text-[#1d4ed8]">{m.dropzone}</span>
+          {previewUrl && file?.type === "application/pdf" && (
+            <iframe
+              src={previewUrl}
+              title={m.previewAlt}
+              className="h-[420px] w-full rounded-lg border border-zinc-200 bg-white sm:h-[560px]"
+            />
+          )}
+          {!file && <span className="text-sm font-semibold text-[#1d4ed8]">{m.dropzone}</span>}
           {file && <span className="text-xs text-zinc-600">{file.name}</span>}
           <input
             type="file"

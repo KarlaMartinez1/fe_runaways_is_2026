@@ -6,7 +6,8 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "eslint"
+    "lint": "eslint",
+    "test": "jest"
   },
   "dependencies": {
     "@hookform/resolvers": "^7.0.3",
@@ -20,12 +21,21 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+<<<<<<< HEAD
+=======
+    "@testing-library/dom": "^10.4.2",
+    "@testing-library/jest-dom": "^8.0.0",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.13",
+>>>>>>> 6e9e9bb8ba2a26651e9a19a47dd68bf1436afefc
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
     "eslint": "^9",
     "eslint-config-next": "16.3.6",
+    "jest": "^30.5.2",
+    "jest-environment-jsdom": "^30.5.2",
     "tailwindcss": "^4",
     "typescript": "^5"
   }

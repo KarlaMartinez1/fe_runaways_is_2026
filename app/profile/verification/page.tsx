@@ -41,10 +41,10 @@ export default async function VerificationPage() {
   return (
     <>
       <Navbar />
-      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-6 px-6 py-10 md:px-10">
+      <main className="mx-auto flex w-full max-w-[1320px] flex-col gap-4 px-4 py-5 sm:px-6 md:gap-5 md:px-10 md:py-6">
         <div>
-          <h1 className="text-3xl font-bold text-zinc-900">{m.title}</h1>
-          <p className="mt-1 text-sm text-zinc-500">{m.subtitle}</p>
+          <h1 className="text-2xl font-bold text-zinc-900 sm:text-3xl">{m.title}</h1>
+          <p className="mt-1 max-w-3xl text-sm text-zinc-500">{m.subtitle}</p>
         </div>
 
         {info ? (

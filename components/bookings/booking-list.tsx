@@ -6,7 +6,7 @@ import type { BookingListItem, BookingStatus } from "@/lib/api/types";
 import { bookingMessages } from "@/lib/messages/bookings";
 import { formatPrice } from "@/lib/messages/properties";
 import { reviewMessages } from "@/lib/messages/reviews";
-import { getRatingBlockReason } from "@/lib/reviews/rules";
+import { blockReasonMessage, getRatingBlockReason } from "@/lib/reviews/rules";
 
 type BookingListProps = {
   items: BookingListItem[];
@@ -21,13 +21,13 @@ const statusVariant: Record<BookingStatus, BadgeVariant> = {
   CANCELADA: "danger",
 };
 
-// Misma regla que la pantalla de calificaciÃ³n: finalizada, sin reseÃ±a y dentro de 14 dÃ­as.
+// Uses the review flag from the API and the available booking date.
 function getBookingRatingBlockReason(booking: BookingListItem) {
   return getRatingBlockReason({
     status: booking.status,
+    finalizedAt: booking.finalizedAt ?? null,
     endDate: booking.endDate,
-    // Provisional: habilita probar el flujo mientras /bookings/mine agrega ratedByMe.
-    ratedByMe: booking.ratedByMe ?? false,
+    ratedByMe: booking.hasPropertyReview ?? false,
   });
 }
 
@@ -84,18 +84,21 @@ export function BookingList({ items, variant, emptyMessage }: BookingListProps) 
             )}
             {variant === "mine" && booking.status === "FINALIZADA" && (() => {
               const blockReason = getBookingRatingBlockReason(booking);
-              const reasonMessage = blockReason === "ALREADY_REVIEWED"
-                ? reviewMessages.errors.alreadyReviewed
-                : reviewMessages.errors.windowClosed;
               return blockReason ? (
-                <button
-                  type="button"
-                  disabled
-                  title={reasonMessage}
-                  className="cursor-not-allowed rounded-lg border border-zinc-200 bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-500"
-                >
-                  {reviewMessages.rateButton}
-                </button>
+                <span className="group relative inline-flex" title={blockReasonMessage[blockReason]}>
+                  <button
+                    type="button"
+                    disabled
+                    aria-disabled="true"
+                    aria-label={`${reviewMessages.rateButton}: ${blockReasonMessage[blockReason]}`}
+                    className="cursor-not-allowed rounded-lg border border-zinc-200 bg-zinc-100 px-4 py-2 text-sm font-semibold text-zinc-500"
+                  >
+                    {reviewMessages.rateButton}
+                  </button>
+                  <span role="tooltip" className="pointer-events-none absolute bottom-full left-1/2 z-20 mb-2 w-max max-w-64 -translate-x-1/2 rounded-lg bg-zinc-900 px-3 py-2 text-xs font-medium text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                    {blockReasonMessage[blockReason]}
+                  </span>
+                </span>
               ) : (
                 <Link
                   href={`/reservations/${booking.id}/rate-property`}

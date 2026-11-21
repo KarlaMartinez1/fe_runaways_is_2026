@@ -106,8 +106,14 @@ export type BookingListItem = {
   deliveredAt: string | null;
   returnedAt: string | null;
   lesseeName?: string;
+  lesseeId?: string;
+  tenantId?: string;
+  lesseeRatingAverage?: number | null;
+  lesseeRatingCount?: number;
   finalizedAt?: string | null;
   ratedByMe?: boolean;
+  hasPropertyReview?: boolean;
+  hasRenterReview?: boolean;
 };
 
 export type BookingListResult = Paginated<BookingListItem>;
@@ -250,6 +256,8 @@ export type BackendIdentityDocumentInfo = {
 
 // H20: estado del documento en la revisión del ADMIN.
 export type IdentityDocumentStatus = "PENDIENTE" | "APROBADO" | "RECHAZADO";
+export type BackendIdentityDocumentStatus = "PENDING" | "APPROVED" | "REJECTED";
+export type BackendDocumentType = "DUI" | "PASSPORT";
 
 // H20: elemento de GET /api/v1/profile/document/admin.
 export type PendingIdentityDocument = {
@@ -266,20 +274,45 @@ export type PendingIdentityDocumentList = {
   data: PendingIdentityDocument[];
   total: number;
   page: number;
+  pageSize: number;
+};
+
+export type BackendPendingIdentityDocument = Omit<PendingIdentityDocument, "documentType"> & {
+  documentType: BackendDocumentType;
+};
+
+export type BackendPendingIdentityDocumentList = {
+  data: BackendPendingIdentityDocument[];
+  total: number;
+  page: number;
+  pageSize: number;
 };
 
 // H20: respuesta de GET /api/v1/profile/document/admin/:userId.
-// fileUrl es un enlace firmado válido por 5 minutos (expiresAt).
+// Modelo de interfaz para el detalle. El repositorio adapta documentUrl del backend a fileUrl.
 export type IdentityDocumentReview = PendingIdentityDocument & {
   documentStatus: IdentityDocumentStatus;
   fileUrl: string;
-  expiresAt: string;
+  expiresAt?: string;
+};
+
+export type BackendIdentityDocumentReview = BackendPendingIdentityDocument & {
+  documentStatus: BackendIdentityDocumentStatus;
+  documentUrl: string;
 };
 
 // H20: respuesta de PATCH .../approve y .../reject.
 export type IdentityDocumentDecision = {
   userId: string;
   documentStatus: IdentityDocumentStatus;
+  isVerified?: boolean;
+  rejectionReason?: string;
+  reviewedAt: string;
+};
+
+export type BackendIdentityDocumentDecision = {
+  userId: string;
+  documentStatus: BackendIdentityDocumentStatus;
   isVerified?: boolean;
   rejectionReason?: string;
   reviewedAt: string;
@@ -337,6 +370,7 @@ export type ConversationBooking = {
 export type ConversationSummary = {
   id: string;
   propertyId: string;
+  otherParticipantId?: string;
   propertyTitle: string;
   otherParticipantName: string;
   lastMessage: string | null;
