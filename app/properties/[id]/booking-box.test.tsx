@@ -53,7 +53,7 @@ describe("BookingBox", () => {
     (startConversation as jest.Mock).mockReturnValue(jest.fn());
   });
 
-  it("calcula los días y el subtotal, deshabilita el envío pendiente y redirige al crear la reserva", async () => {
+  it("H10 AC1: muestra días, subtotal y depósito con dos decimales", async () => {
     const user = userEvent.setup();
     let resolveBooking: (result: { ok: true; bookingId: string }) => void = () => {};
     mockedCreateBooking.mockImplementation(
@@ -107,7 +107,28 @@ describe("BookingBox", () => {
     });
   });
 
-  it("impide confirmar un período que incluye una fecha ocupada", async () => {
+  it("H10 AC4: deshabilita Confirmar reserva mientras espera la respuesta", async () => {
+    const user = userEvent.setup();
+    mockedCreateBooking.mockImplementation(() => new Promise(() => {}));
+
+    render(
+      <BookingBox
+        propertyId="property-1"
+        pricePerDay="25.50"
+        securityDeposit="30.00"
+        availability={{ status: "ready", from: today, to: addDaysIso(today, 60), occupiedDates: [] }}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: bookingMessages.selectDates }));
+    await selectCalendarDate(user, startDate);
+    await selectCalendarDate(user, endDate);
+    await user.click(screen.getByRole("button", { name: bookingMessages.confirm }));
+
+    expect(await screen.findByRole("button", { name: bookingMessages.confirming })).toBeDisabled();
+  });
+
+  it("H10 AC7: impide confirmar un período que incluye una fecha ocupada", async () => {
     const user = userEvent.setup();
     render(
       <BookingBox
@@ -132,7 +153,7 @@ describe("BookingBox", () => {
     expect(mockedCreateBooking).not.toHaveBeenCalled();
   });
 
-  it("muestra el conflicto cuando el servidor ya reservó esas fechas", async () => {
+  it("H10 AC6: muestra el conflicto cuando el servidor ya reservó esas fechas", async () => {
     const user = userEvent.setup();
     mockedCreateBooking.mockResolvedValueOnce({
       ok: false,
