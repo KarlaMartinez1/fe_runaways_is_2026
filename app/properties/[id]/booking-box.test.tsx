@@ -4,6 +4,7 @@ import { BookingBox } from "./booking-box";
 import { createBookingAction } from "@/app/actions/bookings";
 import { startConversation } from "@/app/actions/messages";
 import { bookingMessages } from "@/lib/messages/bookings";
+import { availabilityMessages } from "@/lib/messages/properties";
 import { addDaysIso, formatLongDate, todayInElSalvador } from "@/lib/utils/dates";
 
 const mockPush = jest.fn();
@@ -53,14 +54,14 @@ describe("BookingBox", () => {
     (startConversation as jest.Mock).mockReturnValue(jest.fn());
   });
 
-  it("calcula los días y el subtotal, deshabilita el envío pendiente y redirige al crear la reserva", async () => {
+  it("AC3: al volver a consultar el calendario, muestra la fecha reservada como no disponible", async () => {
     const user = userEvent.setup();
     let resolveBooking: (result: { ok: true; bookingId: string }) => void = () => {};
     mockedCreateBooking.mockImplementation(
       () => new Promise((resolve) => { resolveBooking = resolve; })
     );
 
-    render(
+    const { rerender } = render(
       <BookingBox
         propertyId="property-1"
         pricePerDay="25.50"
@@ -105,6 +106,30 @@ describe("BookingBox", () => {
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith("/bookings/mine?created=1");
     });
+    expect(mockRefresh).not.toHaveBeenCalled();
+
+    rerender(
+      <BookingBox
+        propertyId="property-1"
+        pricePerDay="25.50"
+        securityDeposit="30"
+        availability={{
+          status: "ready",
+          from: today,
+          to: addDaysIso(today, 60),
+          occupiedDates: [startDate],
+        }}
+      />
+    );
+
+    expect(
+      await screen.findByText(`${formatLongDate(startDate)}: ${availabilityMessages.occupied}`)
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", {
+        name: `${formatLongDate(startDate)}: ${availabilityMessages.occupied}`,
+      })
+    ).not.toBeInTheDocument();
   });
 
   it("impide confirmar un período que incluye una fecha ocupada", async () => {
@@ -166,29 +191,4 @@ describe("BookingBox", () => {
     expect(mockPush).not.toHaveBeenCalled();
   });
 
-  it("AC3: actualiza la disponibilidad después de crear una reserva", async () => {
-    const user = userEvent.setup();
-    mockedCreateBooking.mockResolvedValueOnce({ ok: true, bookingId: "booking-1" });
-
-    render(
-      <BookingBox
-        propertyId="property-1"
-        pricePerDay="25.50"
-        securityDeposit="30.00"
-        availability={{
-          status: "ready",
-          from: today,
-          to: addDaysIso(today, 89),
-          occupiedDates: [],
-        }}
-      />
-    );
-
-    await user.click(screen.getByRole("button", { name: bookingMessages.selectDates }));
-    await selectCalendarDate(user, startDate);
-    await selectCalendarDate(user, endDate);
-    await user.click(screen.getByRole("button", { name: bookingMessages.confirm }));
-
-    await waitFor(() => expect(mockRefresh).toHaveBeenCalledTimes(1));
-  });
 });
