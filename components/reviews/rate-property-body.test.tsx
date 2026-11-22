@@ -22,8 +22,8 @@ const reservation: ReservationForReview = {
   ratedByMe: false,
 };
 
-describe("RatePropertyBody", () => {
-  it("muestra el formulario para una reserva finalizada y aún calificable", () => {
+describe("h17: RatePropertyBody", () => {
+  it("AC2: muestra el formulario para una reserva finalizada dentro del plazo", () => {
     render(<RatePropertyBody reservation={reservation} />);
 
     expect(
@@ -32,7 +32,7 @@ describe("RatePropertyBody", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
-  it("bloquea reservas no finalizadas, ya calificadas o fuera del plazo", () => {
+  it("AC3: bloquea reservas no finalizadas, ya calificadas o fuera del plazo", () => {
     const { rerender } = render(
       <RatePropertyBody reservation={{ ...reservation, status: "PENDIENTE" }} />
     );
@@ -50,7 +50,11 @@ describe("RatePropertyBody", () => {
 
     rerender(
       <RatePropertyBody
-        reservation={{ ...reservation, endDate: "2020-01-01" }}
+        reservation={{
+          ...reservation,
+          endDate: "2020-01-01",
+          finalizedAt: "2020-01-01T12:00:00.000Z",
+        }}
       />
     );
     expect(screen.getByRole("alert")).toHaveTextContent(
