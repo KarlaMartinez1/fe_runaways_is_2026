@@ -165,4 +165,30 @@ describe("BookingBox", () => {
     expect(mockRefresh).toHaveBeenCalledTimes(1);
     expect(mockPush).not.toHaveBeenCalled();
   });
+
+  it("AC3: actualiza la disponibilidad después de crear una reserva", async () => {
+    const user = userEvent.setup();
+    mockedCreateBooking.mockResolvedValueOnce({ ok: true, bookingId: "booking-1" });
+
+    render(
+      <BookingBox
+        propertyId="property-1"
+        pricePerDay="25.50"
+        securityDeposit="30.00"
+        availability={{
+          status: "ready",
+          from: today,
+          to: addDaysIso(today, 89),
+          occupiedDates: [],
+        }}
+      />
+    );
+
+    await user.click(screen.getByRole("button", { name: bookingMessages.selectDates }));
+    await selectCalendarDate(user, startDate);
+    await selectCalendarDate(user, endDate);
+    await user.click(screen.getByRole("button", { name: bookingMessages.confirm }));
+
+    await waitFor(() => expect(mockRefresh).toHaveBeenCalledTimes(1));
+  });
 });
