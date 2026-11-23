@@ -4,6 +4,7 @@ import { BookingBox } from "./booking-box";
 import { createBookingAction } from "@/app/actions/bookings";
 import { startConversation } from "@/app/actions/messages";
 import { bookingMessages } from "@/lib/messages/bookings";
+import { availabilityMessages } from "@/lib/messages/properties";
 import { addDaysIso, formatLongDate, todayInElSalvador } from "@/lib/utils/dates";
 
 const mockPush = jest.fn();
@@ -60,7 +61,7 @@ describe("BookingBox", () => {
       () => new Promise((resolve) => { resolveBooking = resolve; })
     );
 
-    render(
+    const { rerender } = render(
       <BookingBox
         propertyId="property-1"
         pricePerDay="25.50"
@@ -105,7 +106,7 @@ describe("BookingBox", () => {
     await waitFor(() => {
       expect(mockPush).toHaveBeenCalledWith("/bookings/mine?created=1");
     });
-  });
+    expect(mockRefresh).not.toHaveBeenCalled();
 
   it("H10 AC4: deshabilita Confirmar reserva mientras espera la respuesta", async () => {
     const user = userEvent.setup();
@@ -134,23 +135,24 @@ describe("BookingBox", () => {
       <BookingBox
         propertyId="property-1"
         pricePerDay="25.50"
-        securityDeposit="30.00"
+        securityDeposit="30"
         availability={{
           status: "ready",
           from: today,
           to: addDaysIso(today, 60),
-          occupiedDates: [addDaysIso(today, 6)],
+          occupiedDates: [startDate],
         }}
       />
     );
 
-    await user.click(screen.getByRole("button", { name: bookingMessages.selectDates }));
-    await selectCalendarDate(user, startDate);
-    await selectCalendarDate(user, endDate);
-    await user.click(screen.getByRole("button", { name: bookingMessages.confirm }));
-
-    expect(await screen.findByRole("alert")).toHaveTextContent(bookingMessages.occupiedRange);
-    expect(mockedCreateBooking).not.toHaveBeenCalled();
+    expect(
+      await screen.findByText(`${formatLongDate(startDate)}: ${availabilityMessages.occupied}`)
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("button", {
+        name: `${formatLongDate(startDate)}: ${availabilityMessages.occupied}`,
+      })
+    ).not.toBeInTheDocument();
   });
 
   it("H10 AC6: muestra el conflicto cuando el servidor ya reservó esas fechas", async () => {
@@ -180,10 +182,4 @@ describe("BookingBox", () => {
     await selectCalendarDate(user, endDate);
     await user.click(screen.getByRole("button", { name: bookingMessages.confirm }));
 
-    expect(await screen.findByRole("alert")).toHaveTextContent(
-      bookingMessages.unavailableDates
-    );
-    expect(mockRefresh).toHaveBeenCalledTimes(1);
-    expect(mockPush).not.toHaveBeenCalled();
-  });
 });

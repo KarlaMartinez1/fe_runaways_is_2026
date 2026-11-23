@@ -3,7 +3,6 @@ import type {
   PropertyReviewInput,
   PropertyReviewResult,
   ReservationForReview,
-  ReviewBlockReason,
 } from "@/lib/api/types";
 import { calculateSubtotal } from "@/lib/bookings/rules";
 import { reviewMessages } from "@/lib/messages/reviews";
@@ -29,12 +28,7 @@ import {
 } from "./review-store";
 import { mockUserProfileFixture } from "./fixtures/profile";
 
-// Códigos que devuelve el backend para cada motivo de bloqueo (409).
-const BLOCK_ERROR_CODES: Record<ReviewBlockReason, string> = {
-  NOT_FINALIZED: "BOOKING_NOT_FINALIZED",
-  ALREADY_REVIEWED: "ALREADY_REVIEWED",
-  WINDOW_CLOSED: "REVIEW_WINDOW_CLOSED",
-};
+const DAY_MS = 86_400_000;
 
 // Solo devuelve reservas del usuario en sesión; si no lo son, devuelve undefined.
 function findOwnedSeed(reservationId: string): RateableReservationSeed | undefined {
@@ -88,7 +82,16 @@ export const mockReviewRepository: ReviewRepository = {
       ? getRatingBlockReason(reservation)
       : "NOT_FINALIZED";
     if (blockReason) {
-      throw new ApiError(409, BLOCK_ERROR_CODES[blockReason], blockReasonMessage[blockReason]);
+      throw new ApiError(409, "REVIEW_NOT_ALLOWED", blockReasonMessage[blockReason]);
+    }
+    // En modo mock, simular la validación que realiza el backend al recibir el POST.
+    const finalizedAt = seed.finalizedAt ? Date.parse(seed.finalizedAt) : Date.parse(`${seed.endDate}T23:59:59.999-06:00`);
+    if (Date.now() > finalizedAt + 14 * DAY_MS) {
+      throw new ApiError(
+        409,
+        "REVIEW_NOT_ALLOWED",
+        "El plazo de 14 días para calificar esta reserva venció.",
+      );
     }
 
     const reviewCreatedAt = new Date().toISOString();
@@ -124,6 +127,7 @@ export const mockReviewRepository: ReviewRepository = {
       reviews: getPropertyReviews(seed.propertyId).map((review) => ({
         id: review.id,
         propertyRating: review.rating,
+        userRating: review.userRating ?? review.rating,
         comment: review.comment ?? null,
         createdAt: review.createdAt,
         author: { name: review.reviewerName },
