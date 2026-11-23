@@ -32,7 +32,7 @@ describe("RatePropertyBody", () => {
     expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
-  it("bloquea reservas no finalizadas, ya calificadas o fuera del plazo", () => {
+  it("bloquea reservas no finalizadas o ya calificadas", () => {
     const { rerender } = render(
       <RatePropertyBody reservation={{ ...reservation, status: "PENDIENTE" }} />
     );
@@ -48,13 +48,8 @@ describe("RatePropertyBody", () => {
       reviewMessages.errors.alreadyReviewed
     );
 
-    rerender(
-      <RatePropertyBody
-        reservation={{ ...reservation, endDate: "2020-01-01" }}
-      />
-    );
-    expect(screen.getByRole("alert")).toHaveTextContent(
-      reviewMessages.errors.windowClosed
-    );
+    rerender(<RatePropertyBody reservation={{ ...reservation, endDate: "2020-01-01" }} />);
+    expect(screen.getByRole("button", { name: reviewMessages.submit })).toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 });
