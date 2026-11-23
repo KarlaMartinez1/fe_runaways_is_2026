@@ -61,7 +61,7 @@ describe("BookingBox", () => {
       () => new Promise((resolve) => { resolveBooking = resolve; })
     );
 
-    const { rerender } = render(
+    render(
       <BookingBox
         propertyId="property-1"
         pricePerDay="25.50"
@@ -145,11 +145,10 @@ describe("BookingBox", () => {
       />
     );
 
+    await user.click(screen.getByRole("button", { name: bookingMessages.selectDates }));
     expect(
       await screen.findByText(`${formatLongDate(startDate)}: ${availabilityMessages.occupied}`)
     ).toBeInTheDocument();
-  });  
-});
     expect(
       screen.queryByRole("button", {
         name: `${formatLongDate(startDate)}: ${availabilityMessages.occupied}`,
@@ -184,4 +183,9 @@ describe("BookingBox", () => {
     await selectCalendarDate(user, endDate);
     await user.click(screen.getByRole("button", { name: bookingMessages.confirm }));
 
+    expect(
+      await screen.findByText(bookingMessages.unavailableDates)
+    ).toBeInTheDocument();
+    expect(mockPush).not.toHaveBeenCalled();
+  });
 });

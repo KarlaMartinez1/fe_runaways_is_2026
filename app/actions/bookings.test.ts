@@ -1,215 +1,125 @@
-import { act, render, screen, waitFor, within } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
-import { BookingBox } from "./booking-box";
+import { ApiError } from "@/lib/api/client";
 import { createBookingAction } from "@/app/actions/bookings";
-import { startConversation } from "@/app/actions/messages";
 import { bookingMessages } from "@/lib/messages/bookings";
-import { availabilityMessages } from "@/lib/messages/properties";
-import { addDaysIso, formatLongDate, todayInElSalvador } from "@/lib/utils/dates";
+import { bookingRepository } from "@/lib/repositories";
+import { addDaysIso, todayInElSalvador } from "@/lib/utils/dates";
 
-const mockPush = jest.fn();
-const mockRefresh = jest.fn();
-
-jest.mock("next/navigation", () => ({
-  useRouter: () => ({ push: mockPush, refresh: mockRefresh }),
+jest.mock("@/lib/repositories", () => ({
+  bookingRepository: {
+    create: jest.fn(),
+  },
 }));
 
-jest.mock("@/app/actions/bookings", () => ({
-  createBookingAction: jest.fn(),
-}));
-
-jest.mock("@/app/actions/messages", () => ({
-  startConversation: jest.fn(),
-}));
-
-const mockedCreateBooking = createBookingAction as jest.MockedFunction<
-  typeof createBookingAction
+const mockedCreate = bookingRepository.create as jest.MockedFunction<
+  typeof bookingRepository.create
 >;
 
 const today = todayInElSalvador();
-const startDate = addDaysIso(today, 5);
-const endDate = addDaysIso(today, 7);
+const validInput = {
+  propertyId: "property-1",
+  startDate: addDaysIso(today, 5),
+  endDate: addDaysIso(today, 7),
+};
 
-async function selectCalendarDate(
-  user: ReturnType<typeof userEvent.setup>,
-  date: string
-) {
-  const dateLabel = `${formatLongDate(date)}: Libre`;
-  for (let month = 0; month < 3; month += 1) {
-    const dateButton = screen.queryByRole("button", { name: dateLabel });
-    if (dateButton) {
-      await user.click(dateButton);
-      return;
-    }
-    const nextMonth = screen.queryByRole("button", { name: "Mes siguiente" });
-    if (!nextMonth || nextMonth.hasAttribute("disabled")) break;
-    await user.click(nextMonth);
-  }
-  throw new Error(`No se encontró la fecha seleccionable ${dateLabel}`);
-}
-
-describe("H10. Reserva de un bien por un periodo", () => {
+describe("createBookingAction", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (startConversation as jest.Mock).mockReturnValue(jest.fn());
   });
 
-  it("AC1: muestra días, subtotal y depósito con dos decimales", async () => {
-    const user = userEvent.setup();
-    let resolveBooking: (result: { ok: true; bookingId: string }) => void = () => {};
-    mockedCreateBooking.mockImplementation(
-      () => new Promise((resolve) => { resolveBooking = resolve; })
-    );
-
-    render(
-      <BookingBox
-        propertyId="property-1"
-        pricePerDay="25.50"
-        securityDeposit="30"
-        availability={{
-          status: "ready",
-          from: today,
-          to: addDaysIso(today, 60),
-          occupiedDates: [],
-        }}
-      />
-    );
-
-    await user.click(screen.getByRole("button", { name: bookingMessages.selectDates }));
-    await selectCalendarDate(user, startDate);
-    await selectCalendarDate(user, endDate);
-
-    expect(
-      within(screen.getByText(bookingMessages.days).parentElement!).getByText("3")
-    ).toBeInTheDocument();
-    expect(screen.getByText("$76.50")).toBeInTheDocument();
-    expect(screen.getByText("$30.00")).toBeInTheDocument();
-
-    const confirmButton = screen.getByRole("button", { name: bookingMessages.confirm });
-    expect(confirmButton).toBeEnabled();
-    await user.click(confirmButton);
-
-    const pendingButton = await screen.findByRole("button", {
-      name: bookingMessages.confirming,
-    });
-    expect(pendingButton).toBeDisabled();
-    expect(mockedCreateBooking).toHaveBeenCalledWith({
-      propertyId: "property-1",
-      startDate,
-      endDate,
+  it("rechaza un rango inválido antes de llamar al repositorio", async () => {
+    const result = await createBookingAction({
+      ...validInput,
+      startDate: addDaysIso(today, -1),
     });
 
-    await act(async () => {
-      resolveBooking({ ok: true, bookingId: "booking-1" });
+    expect(result).toEqual({ ok: false, message: bookingMessages.startBeforeToday });
+    expect(mockedCreate).not.toHaveBeenCalled();
+  });
+
+  it("devuelve el id cuando crea la reserva", async () => {
+    mockedCreate.mockResolvedValueOnce({
+      id: "booking-1",
+      ...validInput,
+      days: 3,
+      pricePerDay: "25.50",
+      subtotal: "76.50",
+      status: "PENDIENTE",
+      expiresAt: "2026-11-25T18:00:00.000Z",
+    });
+
+    const result = await createBookingAction(validInput);
+
+    expect(result).toEqual({ ok: true, bookingId: "booking-1" });
+    expect(mockedCreate).toHaveBeenCalledWith(validInput);
+  });
+
+  it("marca la sesión como expirada ante un 401", async () => {
+    mockedCreate.mockRejectedValueOnce(new ApiError(401, "UNAUTHORIZED"));
+
+    await expect(createBookingAction(validInput)).resolves.toEqual({
+      ok: false,
+      message: bookingMessages.sessionExpired,
+      sessionExpired: true,
     });
   });
 
-  it("AC3: redirige a Mis reservas con created=1 después de crear la reserva", async () => {
-    const user = userEvent.setup();
-    mockedCreateBooking.mockResolvedValueOnce({ ok: true, bookingId: "booking-1" });
+  it("devuelve el requisito de verificación del backend", async () => {
+    mockedCreate.mockRejectedValueOnce(new ApiError(403, "VERIFICATION_REQUIRED"));
 
-    render(
-      <BookingBox
-        propertyId="property-1"
-        pricePerDay="25.50"
-        securityDeposit="30.00"
-        availability={{
-          status: "ready",
-          from: today,
-          to: addDaysIso(today, 60),
-          occupiedDates: [],
-        }}
-      />
-    );
-
-    await user.click(screen.getByRole("button", { name: bookingMessages.selectDates }));
-    await selectCalendarDate(user, startDate);
-    await selectCalendarDate(user, endDate);
-    await user.click(screen.getByRole("button", { name: bookingMessages.confirm }));
-
-    await waitFor(() => {
-      expect(mockPush).toHaveBeenCalledWith("/bookings/mine?created=1");
+    await expect(createBookingAction(validInput)).resolves.toEqual({
+      ok: false,
+      message: bookingMessages.verificationRequired,
+      verificationRequired: true,
     });
   });
 
-  it("AC4: deshabilita Confirmar reserva mientras espera la respuesta", async () => {
-    const user = userEvent.setup();
-    mockedCreateBooking.mockImplementation(() => new Promise(() => {}));
+  it("muestra el conflicto si las fechas dejaron de estar disponibles", async () => {
+    mockedCreate.mockRejectedValueOnce(new ApiError(409, "DATES_UNAVAILABLE"));
 
-    render(
-      <BookingBox
-        propertyId="property-1"
-        pricePerDay="25.50"
-        securityDeposit="30.00"
-        availability={{ status: "ready", from: today, to: addDaysIso(today, 60), occupiedDates: [] }}
-      />
-    );
-
-    await user.click(screen.getByRole("button", { name: bookingMessages.selectDates }));
-    await selectCalendarDate(user, startDate);
-    await selectCalendarDate(user, endDate);
-    await user.click(screen.getByRole("button", { name: bookingMessages.confirm }));
-
-    expect(
-      await screen.findByRole("button", { name: bookingMessages.confirming })
-    ).toBeDisabled();
-  });
-
-  it("AC6: muestra el conflicto cuando el servidor ya reservó esas fechas", async () => {
-    const user = userEvent.setup();
-    mockedCreateBooking.mockResolvedValueOnce({
+    await expect(createBookingAction(validInput)).resolves.toEqual({
       ok: false,
       message: bookingMessages.unavailableDates,
       conflict: true,
     });
-
-    render(
-      <BookingBox
-        propertyId="property-1"
-        pricePerDay="25.50"
-        securityDeposit="30.00"
-        availability={{
-          status: "ready",
-          from: today,
-          to: addDaysIso(today, 60),
-          occupiedDates: [],
-        }}
-      />
-    );
-
-    await user.click(screen.getByRole("button", { name: bookingMessages.selectDates }));
-    await selectCalendarDate(user, startDate);
-    await selectCalendarDate(user, endDate);
-    await user.click(screen.getByRole("button", { name: bookingMessages.confirm }));
-
-    expect(
-      await screen.findByText(bookingMessages.unavailableDates)
-    ).toBeInTheDocument();
-    expect(mockPush).not.toHaveBeenCalled();
   });
 
-  it("AC7: impide seleccionar una fecha ocupada en el calendario", async () => {
-    render(
-      <BookingBox
-        propertyId="property-1"
-        pricePerDay="25.50"
-        securityDeposit="30"
-        availability={{
-          status: "ready",
-          from: today,
-          to: addDaysIso(today, 60),
-          occupiedDates: [startDate],
-        }}
-      />
+  it("muestra que el bien ya no está disponible ante el 404 específico", async () => {
+    mockedCreate.mockRejectedValueOnce(new ApiError(404, "PROPERTY_NOT_AVAILABLE"));
+
+    await expect(createBookingAction(validInput)).resolves.toEqual({
+      ok: false,
+      message: bookingMessages.propertyUnavailable,
+    });
+  });
+
+  it("rechaza una cuenta sin permiso para reservar", async () => {
+    mockedCreate.mockRejectedValueOnce(new ApiError(403, "FORBIDDEN"));
+
+    await expect(createBookingAction(validInput)).resolves.toEqual({
+      ok: false,
+      message: bookingMessages.notAllowed,
+    });
+  });
+
+  it("conserva el mensaje de validación de la API", async () => {
+    mockedCreate.mockRejectedValueOnce(
+      new ApiError(400, "VALIDATION_ERROR", "La fecha no es válida.")
     );
 
-    expect(
-      await screen.findByText(`${formatLongDate(startDate)}: ${availabilityMessages.occupied}`)
-    ).toBeInTheDocument();
-    expect(
-      screen.queryByRole("button", {
-        name: `${formatLongDate(startDate)}: ${availabilityMessages.occupied}`,
-      })
-    ).not.toBeInTheDocument();
+    await expect(createBookingAction(validInput)).resolves.toEqual({
+      ok: false,
+      message: "La fecha no es válida.",
+    });
+  });
+
+  it("devuelve el mensaje genérico ante un error inesperado", async () => {
+    const consoleError = jest.spyOn(console, "error").mockImplementation(() => {});
+    mockedCreate.mockRejectedValueOnce(new Error("unexpected"));
+
+    await expect(createBookingAction(validInput)).resolves.toEqual({
+      ok: false,
+      message: bookingMessages.genericError,
+    });
+    consoleError.mockRestore();
   });
 });
