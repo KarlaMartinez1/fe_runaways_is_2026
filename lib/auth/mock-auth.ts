@@ -92,7 +92,7 @@ export function mockMe(accessToken: string): AuthUser {
 }
 
 export function mockRefresh(refreshToken: string) {
-  const userId = activeRefreshTokens.get(refreshToken) ?? refreshToken.match(/^mock-refresh-([0-9a-f-]+)\./i)?.[1];
+  const userId = activeRefreshTokens.get(refreshToken);
   const user = users.find((candidate) => candidate.id === userId);
   if (!userId || (user && !user.isActive)) fail(401, "INVALID_REFRESH_TOKEN", "Sesión inválida.");
   activeRefreshTokens.delete(refreshToken);
@@ -100,7 +100,7 @@ export function mockRefresh(refreshToken: string) {
 }
 
 export function mockLogout(refreshToken: string) {
-  const userId = activeRefreshTokens.get(refreshToken) ?? refreshToken.match(/^mock-refresh-([0-9a-f-]+)\./i)?.[1];
+  const userId = activeRefreshTokens.get(refreshToken);
   if (!userId) {
     fail(401, "INVALID_REFRESH_TOKEN", "Sesión inválida.");
   }
