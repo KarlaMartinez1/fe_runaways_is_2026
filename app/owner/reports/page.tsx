@@ -63,15 +63,7 @@ export default async function OwnerReportsPage({
   if (!forbidden) {
     try {
       const hasDateFilter = Boolean(from || to);
-      const summaryPromise = hasDateFilter
-        ? reportRepository.getIncomeSummary({ from, to })
-        : Promise.resolve({
-            from: null,
-            to: null,
-            rentalIncome: "0.00",
-            retainedDepositIncome: "0.00",
-            totalIncome: "0.00",
-          });
+      const summaryPromise = reportRepository.getIncomeSummary({ from, to });
 
       const propertyIncomePromise = hasDateFilter
         ? reportRepository.getIncomeByProperty({
