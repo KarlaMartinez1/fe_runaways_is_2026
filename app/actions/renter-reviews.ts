@@ -12,7 +12,7 @@ export async function submitRenterReviewAction(reservationId: string, rating: nu
     return { ok: true as const };
   } catch (error) {
     if (error instanceof ApiError && error.status === 401) return { ok: false as const, message: "Sesión expirada", sessionExpired: true };
-    if (error instanceof ApiError && error.status === 403) return { ok: false as const, message: "No tienes permiso para ver esta página" };
+    if (error instanceof ApiError && error.status === 403) return { ok: false as const, message: error.message || "No tienes permiso para realizar esta acción." };
     return { ok: false as const, message: error instanceof ApiError ? error.message : "No se pudo enviar la reseña. Intenta de nuevo." };
   }
 }
