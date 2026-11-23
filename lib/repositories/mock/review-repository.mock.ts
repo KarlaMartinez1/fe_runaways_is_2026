@@ -87,7 +87,11 @@ export const mockReviewRepository: ReviewRepository = {
     // En modo mock, simular la validación que realiza el backend al recibir el POST.
     const finalizedAt = seed.finalizedAt ? Date.parse(seed.finalizedAt) : Date.parse(`${seed.endDate}T23:59:59.999-06:00`);
     if (Date.now() > finalizedAt + 14 * DAY_MS) {
-      throw new ApiError(409, "REVIEW_NOT_ALLOWED", reviewMessages.errors.windowClosed);
+      throw new ApiError(
+        409,
+        "REVIEW_NOT_ALLOWED",
+        "El plazo de 14 días para calificar esta reserva venció.",
+      );
     }
 
     const reviewCreatedAt = new Date().toISOString();
