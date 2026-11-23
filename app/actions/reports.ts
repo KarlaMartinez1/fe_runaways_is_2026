@@ -21,18 +21,10 @@ export async function fetchReportsDataAction(params: FetchReportsParams): Promis
   propertyIncome: PropertyIncomeListResult;
 }> {
   const hasDateFilter = Boolean(params.from || params.to);
-  const summaryPromise = hasDateFilter
-    ? reportRepository.getIncomeSummary({
-        from: params.from,
-        to: params.to,
-      })
-    : Promise.resolve({
-        from: null,
-        to: null,
-        rentalIncome: "0.00",
-        retainedDepositIncome: "0.00",
-        totalIncome: "0.00",
-      });
+  const summaryPromise = reportRepository.getIncomeSummary({
+    from: params.from,
+    to: params.to,
+  });
 
   const propertyIncomePromise = hasDateFilter
     ? reportRepository.getIncomeByProperty({
