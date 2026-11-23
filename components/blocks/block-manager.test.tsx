@@ -4,8 +4,9 @@ import { BlockManager } from "./block-manager";
 import { createBlockAction, deleteBlockAction } from "@/app/actions/blocks";
 import type { NoAvailabilityBlock } from "@/lib/api/types";
 import { blockMessages } from "@/lib/messages/blocks";
+import { availabilityMessages } from "@/lib/messages/properties";
 import { addDaysIso, formatLongDate, todayInElSalvador } from "@/lib/utils/dates";
-import { formatShortRange } from "@/lib/bookings/format";
+import { formatShortDate, formatShortRange } from "@/lib/bookings/format";
 
 const mockPush = jest.fn();
 const mockRefresh = jest.fn();
@@ -62,9 +63,9 @@ describe("BlockManager", () => {
     mockedDeleteBlock.mockResolvedValue({ ok: true, message: blockMessages.deleted });
   });
 
-  it("crea un bloqueo para el rango elegido y muestra confirmación", async () => {
+  it("H12 AC1: crea el bloqueo, lo lista y marca los días como No disponible", async () => {
     const user = userEvent.setup();
-    render(
+    const { rerender } = render(
       <BlockManager
         propertyId="property-1"
         from={today}
@@ -83,9 +84,24 @@ describe("BlockManager", () => {
     expect(await screen.findByRole("status")).toHaveTextContent(blockMessages.created);
     expect(mockedCreateBlock).toHaveBeenCalledWith("property-1", { startDate, endDate });
     expect(mockRefresh).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <BlockManager
+        propertyId="property-1"
+        from={today}
+        to={addDaysIso(today, 60)}
+        occupiedDates={[]}
+        blocks={[sampleBlock]}
+      />
+    );
+    const blockedLabel = `${formatLongDate(startDate)}: ${availabilityMessages.occupied}`;
+    expect(screen.getByText(formatShortDate(startDate))).toBeInTheDocument();
+    expect(screen.getByText(formatShortDate(endDate))).toBeInTheDocument();
+    expect(screen.getByText(blockedLabel)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: blockedLabel })).not.toBeInTheDocument();
   });
 
-  it("rechaza un rango que se traslapa con una fecha ocupada", async () => {
+  it("H12 AC5: rechaza un rango que se traslapa con una reserva activa", async () => {
     const user = userEvent.setup();
     render(
       <BlockManager
@@ -105,9 +121,9 @@ describe("BlockManager", () => {
     expect(mockedCreateBlock).not.toHaveBeenCalled();
   });
 
-  it("solicita confirmación antes de eliminar y actualiza al confirmar", async () => {
+  it("H12 AC2: elimina un bloqueo tras confirmar y vuelve a mostrar sus días libres", async () => {
     const user = userEvent.setup();
-    render(
+    const { rerender } = render(
       <BlockManager
         propertyId="property-1"
         from={today}
@@ -129,9 +145,22 @@ describe("BlockManager", () => {
     });
     expect(await screen.findByRole("status")).toHaveTextContent(blockMessages.deleted);
     expect(mockRefresh).toHaveBeenCalledTimes(1);
+
+    rerender(
+      <BlockManager
+        propertyId="property-1"
+        from={today}
+        to={addDaysIso(today, 60)}
+        occupiedDates={[]}
+        blocks={[]}
+      />
+    );
+    const freeLabel = `${formatLongDate(startDate)}: ${availabilityMessages.free}`;
+    expect(screen.getByText(freeLabel)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: freeLabel })).toBeInTheDocument();
   });
 
-  it("muestra el estado vacío cuando el bien no tiene bloqueos", () => {
+  it("H12 AC3: muestra el mensaje vacío cuando no hay bloqueos", () => {
     render(
       <BlockManager
         propertyId="property-1"
@@ -143,5 +172,26 @@ describe("BlockManager", () => {
     );
 
     expect(screen.getByText(blockMessages.empty)).toBeInTheDocument();
+  });
+
+  it("H12 AC5: rechaza un rango que se traslapa con otro bloqueo del bien", async () => {
+    const user = userEvent.setup();
+    const blockingRangeStart = addDaysIso(today, 4);
+    const blockingRangeEnd = addDaysIso(today, 8);
+    render(
+      <BlockManager
+        propertyId="property-1"
+        from={today}
+        to={addDaysIso(today, 60)}
+        occupiedDates={[]}
+        blocks={[sampleBlock]}
+      />
+    );
+
+    await selectCalendarDate(user, blockingRangeStart);
+    await selectCalendarDate(user, blockingRangeEnd);
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(blockMessages.conflict);
+    expect(mockedCreateBlock).not.toHaveBeenCalled();
   });
 });

@@ -38,6 +38,7 @@ export type ReviewListItem = {
   id: string;
   reviewerName: string;
   rating: number;
+  userRating?: number;
   comment?: string | null;
   createdAt: string;
 };
@@ -156,7 +157,7 @@ export type UpdatePropertyInput = PropertyFields & {
   images: File[];
 };
 
-export type ReviewBlockReason = "NOT_FINALIZED" | "ALREADY_REVIEWED" | "WINDOW_CLOSED";
+export type ReviewBlockReason = "NOT_FINALIZED" | "ALREADY_REVIEWED";
 
 // Reserva con los datos necesarios para la pantalla "Calificar mi renta".
 export type ReservationForReview = {
@@ -170,7 +171,7 @@ export type ReservationForReview = {
   subtotal: string;
   securityDeposit?: string;
   status: BookingStatus;
-  finalizedAt: string | null;
+  finalizedAt?: string | null;
   ratedByMe: boolean;
 };
 
@@ -201,6 +202,7 @@ export type PropertyReviewResult = {
   reviews: {
     id: string;
     propertyRating: number;
+    userRating: number;
     comment: string | null;
     createdAt: string;
     author: { name: string };

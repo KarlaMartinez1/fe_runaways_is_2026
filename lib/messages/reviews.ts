@@ -40,7 +40,6 @@ export const reviewMessages = {
     comment: "El comentario no puede superar 200 caracteres.",
     notFinalized: "Solo puede calificar reservas finalizadas.",
     alreadyReviewed: "Esta reserva ya fue calificada.",
-    windowClosed: "El plazo para calificar esta reserva terminó.",
     submit: "No se pudo enviar la calificación. Intente de nuevo.",
     forbidden: "No tiene permiso para ver esta página",
     notFound: "Reserva no encontrada",
