@@ -28,10 +28,10 @@ export default async function RatePropertyPage({ params }: RatePropertyPageProps
     if (profile.role !== "TENANT") {
       forbidden = true;
     } else {
-      const firstPage = await bookingRepository.listMine({ page: 1, status: "FINALIZADA" });
+      const firstPage = await bookingRepository.listMine({ page: 1 });
       let booking = firstPage.data.find((item) => item.id === id);
       for (let page = 2; !booking && page <= firstPage.totalPages; page += 1) {
-        const result = await bookingRepository.listMine({ page, status: "FINALIZADA" });
+        const result = await bookingRepository.listMine({ page });
         booking = result.data.find((item) => item.id === id);
       }
       if (booking) {
@@ -58,7 +58,7 @@ export default async function RatePropertyPage({ params }: RatePropertyPageProps
           status: booking.status,
           finalizedAt: booking.finalizedAt ?? null,
           // Provisional: el POST del backend sigue rechazando reseñas duplicadas.
-          ratedByMe: booking.ratedByMe ?? false,
+          ratedByMe: booking.hasPropertyReview ?? booking.ratedByMe ?? false,
         };
       }
     }

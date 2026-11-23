@@ -10,13 +10,6 @@ export type SubmitPropertyReviewResult =
   | { ok: true; reviewCreatedAt: string }
   | { ok: false; message: string; sessionExpired?: boolean };
 
-// Mensajes para los 409, según el código que devuelve el backend.
-const conflictMessages: Record<string, string> = {
-  BOOKING_NOT_FINALIZED: reviewMessages.errors.notFinalized,
-  ALREADY_REVIEWED: reviewMessages.errors.alreadyReviewed,
-  REVIEW_WINDOW_CLOSED: reviewMessages.errors.windowClosed,
-};
-
 export async function submitPropertyReviewAction(input: {
   reservationId: string;
   propertyRating: number;
@@ -43,15 +36,16 @@ export async function submitPropertyReviewAction(input: {
         return { ok: false, message: bookingMessages.sessionExpired, sessionExpired: true };
       }
       if (error.status === 403) {
-        return { ok: false, message: reviewMessages.errors.forbidden };
+        return { ok: false, message: error.message || reviewMessages.errors.forbidden };
       }
       if (error.status === 404) {
-        return { ok: false, message: reviewMessages.errors.notFound };
+        return { ok: false, message: error.message || reviewMessages.errors.notFound };
       }
       if (error.status === 409) {
         return {
           ok: false,
-          message: (error.code && conflictMessages[error.code]) || error.message || reviewMessages.errors.submit,
+          // REVIEW_NOT_ALLOWED agrupa causas distintas; conservar el mensaje específico del backend.
+          message: error.message || reviewMessages.errors.submit,
         };
       }
       if (error.status === 400 && error.message) {

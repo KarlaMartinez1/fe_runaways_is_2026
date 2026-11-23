@@ -105,7 +105,7 @@ export function recordPropertyReview({
 
   propertyReviews.set(propertyId, [
     ...(propertyReviews.get(propertyId) ?? []),
-    { id: reservationId, reviewerName, rating: propertyRating, comment: comment || null, createdAt },
+    { id: reservationId, reviewerName, rating: propertyRating, userRating, comment: comment || null, createdAt },
   ]);
   ownerReviews.set(ownerName, [
     ...(ownerReviews.get(ownerName) ?? []),
