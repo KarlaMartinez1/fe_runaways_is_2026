@@ -107,7 +107,7 @@ describe("BookingBox", () => {
       expect(mockPush).toHaveBeenCalledWith("/bookings/mine?created=1");
     });
     expect(mockRefresh).not.toHaveBeenCalled();
-
+  });
   it("H10 AC4: deshabilita Confirmar reserva mientras espera la respuesta", async () => {
     const user = userEvent.setup();
     mockedCreateBooking.mockImplementation(() => new Promise(() => {}));
@@ -148,6 +148,8 @@ describe("BookingBox", () => {
     expect(
       await screen.findByText(`${formatLongDate(startDate)}: ${availabilityMessages.occupied}`)
     ).toBeInTheDocument();
+  });  
+});
     expect(
       screen.queryByRole("button", {
         name: `${formatLongDate(startDate)}: ${availabilityMessages.occupied}`,
