@@ -11,7 +11,7 @@ import type { BookingListResult, BookingStatus, Property } from "@/lib/api/types
 import { formatShortRange } from "@/lib/bookings/format";
 import { bookingMessages } from "@/lib/messages/bookings";
 import { categoryLabels } from "@/lib/messages/properties";
-import { bookingRepository, conversationRepository, propertyRepository, reviewRepository } from "@/lib/repositories";
+import { bookingRepository, propertyRepository, reviewRepository } from "@/lib/repositories";
 
 export const metadata: Metadata = { title: "Reservas de mis bienes | Runaways" };
 
@@ -42,7 +42,6 @@ export default async function LessorBookingsPage({ searchParams }: PageProps) {
   const page = Math.max(1, Number(params.page) || 1);
 
   let result: BookingListResult | null = null;
-  let conversations: Awaited<ReturnType<typeof conversationRepository.list>> = [];
   let properties: Property[] = [];
   let errorMessage: string | null = null;
   try {
@@ -62,13 +61,6 @@ export default async function LessorBookingsPage({ searchParams }: PageProps) {
       ? bookingMessages.lessor.forbidden
       : bookingMessages.lessor.loadError;
     console.error("Error al cargar reservas del arrendador:", error);
-  }
-
-  try {
-    conversations = await conversationRepository.list();
-  } catch (error) {
-    if (error instanceof ApiError && error.status === 401) redirect("/login");
-    console.error("Error al cargar las conversaciones del arrendador:", error);
   }
 
   const propertyById = new Map(properties.map((property) => [property.id, property]));
@@ -118,28 +110,26 @@ export default async function LessorBookingsPage({ searchParams }: PageProps) {
                           <td className="px-5 py-4"><Badge variant={statusVariant[booking.status]} size="sm">{statusLabel[booking.status]}</Badge></td>
                           <td className="px-5 py-4">{booking.status === "FINALIZADA" && !booking.hasRenterReview ? <Link href={`/reservations/${booking.id}/rate-renter`} className="font-semibold text-[#1E4DB7] hover:underline">Calificar</Link> : booking.status === "FINALIZADA" ? <span className="text-zinc-500">Calificación enviada</span> : <span className="text-zinc-400">—</span>}</td>
                           <td className="px-5 py-3">
-                            {(() => {
-                              const conversation = conversations.find((item) =>
-                                item.propertyId === booking.propertyId && item.otherParticipantId === booking.lesseeId,
-                              );
-                              return conversation ? (
-                                <Link href={`/messages/${encodeURIComponent(conversation.id)}`} className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-50 px-4 text-sm font-semibold text-[#1E4DB7] hover:bg-blue-100">
-                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                                    <path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
-                                    <path d="M8 9h8M8 12h5" />
-                                  </svg>
-                                  Mensajes
-                                </Link>
-                              ) : (
-                                <Link href="/messages" className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-50 px-4 text-sm font-semibold text-[#1E4DB7] hover:bg-blue-100">
-                                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" aria-hidden="true">
-                                    <path d="M5 4h14a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H10l-4 3v-3H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
-                                    <path d="M8 9h8M8 12h5" />
-                                  </svg>
-                                  Mensajes
-                                </Link>
-                              );
-                            })()}
+                            <Link
+                              href={`/deposit?reservationId=${encodeURIComponent(booking.id)}`}
+                              className="inline-flex h-11 items-center gap-2 rounded-xl bg-blue-50 px-4 text-sm font-semibold text-[#1E4DB7] hover:bg-blue-100"
+                            >
+                              <svg
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.8"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                aria-hidden="true"
+                              >
+                                <path d="M3 10h10a5 5 0 0 1 5 5v2" />
+                                <path d="M7 6L3 10l4 4" />
+                              </svg>
+                              {bookingMessages.lessor.refundDeposit}
+                            </Link>
                           </td>
                         </tr>
                       );
