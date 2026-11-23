@@ -10,6 +10,20 @@ const nextConfig: NextConfig = {
     // proxy.ts intercepta las acciones y por defecto corta el cuerpo en 10 MB.
     proxyClientMaxBodySize: "26mb",
   },
+  async redirects() {
+    return [
+      {
+        source: "/reports",
+        destination: "/owner/reports",
+        permanent: false,
+      },
+      {
+        source: "/lessor/reports",
+        destination: "/owner/reports",
+        permanent: false,
+      },
+    ];
+  },
 };
 
 export default nextConfig;

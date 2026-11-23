@@ -44,6 +44,7 @@ function allowedRoles(pathname: string): Role[] | null {
   if (/^\/bookings\/[^/]+\/(movements|deposit)$/.test(pathname)) return ["TENANT", "OWNER"];
   if (pathname === "/lessor" || pathname.startsWith("/lessor/")) return ["OWNER"];
   if (pathname === "/owner" || pathname.startsWith("/owner/")) return ["OWNER"];
+  if (pathname === "/reports" || pathname.startsWith("/reports/")) return ["OWNER"];
   if (pathname === "/admin" || pathname.startsWith("/admin/")) return ["ADMIN"];
   if (pathname === "/profile" || pathname.startsWith("/profile/")) return ["TENANT", "OWNER"];
   if (pathname === "/messages" || pathname.startsWith("/messages/")) return ["TENANT", "OWNER"];
